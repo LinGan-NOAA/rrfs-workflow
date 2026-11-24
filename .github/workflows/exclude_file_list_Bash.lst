@@ -1,6 +1,7 @@
 ./.github/*
 ./sorc/app_build.sh
 ./sorc/_workaround_/*
+./versions/*.ver
 ./ush/rocoto/*
 ./ush/retro/*
 ./ush/generate_FV3LAM_wflow.sh
