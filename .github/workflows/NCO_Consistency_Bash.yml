@@ -1,6 +1,8 @@
 ---
 # Workflow: NCO_Consistency_Bash (design v1 - Optimized Two-Workflow Analyzer)
 # Purpose: Static Bash linting, NCO repository convention checks, and skip/check audit logging.
+# Scope: Checks only actual Bash/shell scripts matching NCO/GFS shell extensions/patterns or line-1 shell shebangs.
+#        Non-shell files (such as modulefiles/*.lua, YAML, Jinja2, Python, C/Fortran) are ignored.
 # Companion Reporter: .github/workflows/NCO_Consistency_Bash_Report.yml
 # Summary Tool: .github/workflows/tools/bash_analysis_summary.py
 name: NCO_Consistency_Bash
@@ -215,10 +217,12 @@ jobs:
             log_audit "EXCLUDE_RULE_DIR: ./${dir_p}/*"
           done
 
-          # Execute single-pass find that prunes .git and excluded directories
+          # Execute single-pass find that prunes .git and excluded directories, and skips non-shell formats (*.lua, *.yml, *.yaml, *.j2, *.py, *.md)
           mapfile -d '' candidate_files < <(
             find -L . \( "${prune_dirs[@]}" \) -prune -o -type f \
+              -not -iname '*.lua' \
               -not -iname '*.yml' -not -iname '*.yaml' -not -iname '*.j2' \
+              -not -iname '*.py' -not -iname '*.md' \
               -print0 | sort -zu
           )
 
@@ -245,13 +249,15 @@ jobs:
               continue
             fi
 
-            # Determine if file matches target directory/extension patterns
+            # Match only Bash/shell script extensions and naming patterns from NCO CI and GFS CI:
+            # - NCO CI: jobs/*, scripts/*, *.sh, *.bash
+            # - GFS CI: dev/jobs/*, dev/scripts/*, config.*, JG*, *.env, *.sh, *.bash (plus line-1 #!...sh shebang files)
+            # Non-shell files in modulefiles/* (e.g., modulefiles/*.lua), sorc/*, parm/*, versions/* are NOT matched by directory alone;
+            # they are checked ONLY if they have a GFS/NCO bash extension/name OR start with a shell shebang (#!...sh) on line 1.
             matches_pattern=0
             case "$norm_file" in
-              jobs/*|scripts/*|dev/jobs/*|dev/scripts/*|ush/*|modulefiles/*|versions/*|version/*|sorc/*|parm/*)
-                matches_pattern=1
-                ;;
-              */config.*|config.*|*/JG*|JG*|*.env|*.sh|*.SH|*.bash|*.BASH)
+              jobs/*|scripts/*|dev/jobs/*|dev/scripts/*|*/config.*|config.*|*/JG*|JG*|*.env|*.sh|*.SH|*.bash|*.BASH)
+                # Mark file as matching NCO/GFS bash script path or extension rules
                 matches_pattern=1
                 ;;
             esac
@@ -272,7 +278,7 @@ jobs:
                 NR == 1 {
                   first = $0
                   sub(/[[:space:]]+$/, "", first)
-                  # If file did not match path/name pattern, require line-1 shell shebang
+                  # If file did not match NCO/GFS bash extension/name pattern, require line-1 shell shebang (#!...sh)
                   if (matches_pat == 0 && first !~ /^#!.*sh([[:space:]]|$)/) {
                     print "NOT_SHELL"
                     exit 0
@@ -309,7 +315,7 @@ jobs:
               ' "$file"
             )
 
-            # Skip files outside target directories that do not start with a shell shebang
+            # Skip files that neither match bash extensions/patterns nor start with a shell shebang (e.g. modulefiles/*.lua)
             if [[ "$awk_meta" == "NOT_SHELL" || -z "$awk_meta" ]]; then
               continue
             fi
