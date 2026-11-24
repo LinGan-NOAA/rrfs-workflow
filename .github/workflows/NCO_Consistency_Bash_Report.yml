@@ -58,8 +58,13 @@ jobs:
         run: |
           # Exit immediately on failure
           set -euo pipefail
-          # Create local binary directory only if it does not already exist
-          if [[ ! -d "${HOME}/.local/bin" ]]; then mkdir -p "${HOME}/.local/bin"; fi
+          # Remove non-directory collision if present, and create ~/.local/bin only if missing
+          if [[ -e "${HOME}/.local/bin" || -L "${HOME}/.local/bin" ]] && [[ ! -d "${HOME}/.local/bin" ]]; then
+            rm -f "${HOME}/.local/bin"
+          fi
+          if [[ ! -d "${HOME}/.local/bin" ]]; then
+            mkdir -p "${HOME}/.local/bin"
+          fi
           # Download pinned reviewdog archive
           curl -sSfL "https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}/reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz" \
             | tar -xzf - -C "${RUNNER_TEMP}" reviewdog

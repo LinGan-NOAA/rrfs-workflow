@@ -62,9 +62,13 @@ jobs:
         run: |
           # Abort immediately on command failure, unset variable, or pipeline error
           set -euo pipefail
-          # Create local binary directory if not present
-          # Create local binary directory only if it does not already exist
-          if [[ ! -d "${HOME}/.local/bin" ]]; then mkdir -p "${HOME}/.local/bin"; fi
+          # Remove non-directory collision if present, and create ~/.local/bin only if missing
+          if [[ -e "${HOME}/.local/bin" || -L "${HOME}/.local/bin" ]] && [[ ! -d "${HOME}/.local/bin" ]]; then
+            rm -f "${HOME}/.local/bin"
+          fi
+          if [[ ! -d "${HOME}/.local/bin" ]]; then
+            mkdir -p "${HOME}/.local/bin"
+          fi
           # Download pinned ShellCheck release archive and extract binary to RUNNER_TEMP
           curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
             | tar -xJf - -C "${RUNNER_TEMP}"
@@ -89,10 +93,18 @@ jobs:
         run: |
           # Propagate pipeline errors without exiting early so full audit logs and artifacts are always written
           set -uo pipefail
+          # Resolve base temporary directory safely (fallback to /tmp if RUNNER_TEMP is unset)
+          base_tmp="${RUNNER_TEMP:-/tmp}"
           # Define temporary artifact directory for reviewdog diagnostics and audit logs
-          outdir="${RUNNER_TEMP}/reviewdog"
-          # Create artifact output directory only if it does not already exist
-          if [[ ! -d "${outdir}" ]]; then mkdir -p "${outdir}"; fi
+          outdir="${base_tmp}/reviewdog"
+          # Remove non-directory file or broken symlink if blocking outdir
+          if [[ -e "${outdir}" || -L "${outdir}" ]] && [[ ! -d "${outdir}" ]]; then
+            rm -f "${outdir}"
+          fi
+          # Create artifact output directory only when it does not already exist as a directory
+          if [[ ! -d "${outdir}" ]]; then
+            mkdir -p "${outdir}"
+          fi
 
           # Define main execution audit log file path (uploaded in artifact and printed to console)
           audit_log="${outdir}/nco_bash_ci_audit.log"
@@ -108,7 +120,7 @@ jobs:
           # Helper function to write entries to both stdout and audit_log simultaneously
           log_audit() {
             # Print message to console and append to audit log file
-            printf '%s\n' "$*" | tee -a "${audit_log}"
+            printf '%s\n' "$*" \vert{} tee -a "${audit_log}"
           }
 
           # Record workflow execution header in audit log
@@ -160,13 +172,13 @@ jobs:
             # Read exclusion file line by line
             while IFS= read -r pattern || [[ -n "$pattern" ]]; do
               # Strip carriage return characters (CRLF safety)
-              pattern="${pattern%$'\r'}"
+              pattern="${pattern\%$'\r'}"
               # Strip leading whitespace
               pattern="${pattern#"${pattern%%[![:space:]]*}"}"
               # Strip trailing whitespace
-              pattern="${pattern%"${pattern##*[![:space:]]}"}"
+              pattern="${pattern\%"${pattern##*[![:space:]]}"}"
               # Skip blank lines and comment lines
-              [[ -z "$pattern" || "$pattern" == \#* ]] && continue
+              [[ -z "$pattern" \vert{}\vert{} "$pattern" == \#* ]] && continue
               # Record configured exclusion pattern in excluded_lst_log
               printf '%s\n' "$pattern" >> "${excluded_lst_log}"
               # Remove leading ./ for canonical path comparison
@@ -226,7 +238,7 @@ jobs:
             # Check O(1) exact-file exclusion hash map
             if [[ -n "${exclude_file_map[$norm_file]+_}" ]]; then
               # Record exact-file exclusion in both audit_log and excluded_lst_log
-              log_audit "SKIPPED_FILE: ${norm_file} | REASON: Matched exact rule ./${norm_file} in ${EXCLUDE_FILE}"
+              log_audit "SKIPPED_FILE: ${norm_file} | REASON: Matched exact rule ./${norm_file} in${EXCLUDE_FILE}"
               printf 'MATCHED_FILE: %s (pattern: ./%s)\n' "$norm_file" "$norm_file" >> "${excluded_lst_log}"
               continue
             fi
@@ -294,7 +306,7 @@ jobs:
             )
 
             # Skip files outside target directories that do not start with a shell shebang
-            if [[ "$awk_meta" == "NOT_SHELL" || -z "$awk_meta" ]]; then
+            if [[ "$awk_meta" == "NOT_SHELL" \vert{}\vert{} -z "$awk_meta" ]]; then
               continue
             fi
 
@@ -325,12 +337,12 @@ jobs:
                   ;;
                 SKIP_LINE)
                   # Record exact file:line:directive into both audit_log and inline_skips_log
-                  log_audit "SKIPPED_LINE: ${norm_file}:${col1} | DIRECTIVE: ${col2}"
+                  log_audit "SKIPPED_LINE: ${norm_file}:${col1} \vert{} DIRECTIVE:${col2}"
                   printf '%s:%s:%s\n' "$norm_file" "$col1" "$col2" >> "${inline_skips_log}"
                   # Evaluate whether directive is a ci-ignore or ci-skip rule
                   if [[ "$col2" =~ ^#[[:space:]]*(ci-ignore|ci-skip): ]]; then
                     # Check for file-wide 'all' skip keyword
-                    if [[ "$col2" =~ (^|[^a-zA-Z0-9_])all([^a-zA-Z0-9_]|$) ]]; then
+                    if [[ "$col2" =~ (^\vert{}[^a-zA-Z0-9_])all([^a-zA-Z0-9_]\vert{}$) ]]; then
                       skip_all_inline=1
                     fi
                     # Check for bash_shellcheck skip keyword
@@ -392,7 +404,7 @@ jobs:
 
             if (( run_bash_exitzero == 1 && skip_exitzero_inline == 0 )); then
               checked_list+=("bash_exitzero")
-              if [[ "$last_line" =~ ^[[:space:]]*exit[[:space:]]+0([[:space:]]*|;.*)?$ ]]; then
+              if [[ "$last_line" =~ ^[[:space:]]*exit[[:space:]]+0([[:space:]]*\vert{};.*)?$ ]]; then
                 log_audit "FAIL (bash_exitzero): ${norm_file} -> Unconditional 'exit 0' on last line is not allowed"
                 failed=1
               fi
@@ -402,7 +414,7 @@ jobs:
 
             # Log explicit CHECKED_FILE summary line showing exact checks executed on this file
             if (( ${#checked_list[@]} > 0 )); then
-              log_audit "CHECKED_FILE: ${norm_file} | CHECKS: ${checked_list[*]}"
+              log_audit "CHECKED_FILE: ${norm_file} \vert{} CHECKS:${checked_list[*]}"
             fi
           done
 
