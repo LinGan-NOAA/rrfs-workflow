@@ -1,6 +1,6 @@
 ---
 # Workflow: NCO_Consistency_Bash_Report (Trusted Companion Reporter for NCO_Consistency_Bash design v1)
-# Purpose: Safely posts inline PR review comments and updates a single sticky summary comment using .github/workflows/tools/bash_analysis_summary.py.
+# Purpose: Safely posts inline PR review comments and updates a single sticky summary comment.
 name: NCO_Consistency_Bash_Report
 
 "on":
@@ -66,7 +66,8 @@ jobs:
             mkdir -p "${HOME}/.local/bin"
           fi
           # Download pinned reviewdog archive
-          curl -sSfL "https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}/reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz" \
+          rd_url="https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}"
+          curl -sSfL "${rd_url}/reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz" \
             | tar -xzf - -C "${RUNNER_TEMP}" reviewdog
           # Install binary into ~/.local/bin
           install "${RUNNER_TEMP}/reviewdog" "${HOME}/.local/bin/reviewdog"
