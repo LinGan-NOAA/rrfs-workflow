@@ -63,7 +63,8 @@ jobs:
           # Abort immediately on command failure, unset variable, or pipeline error
           set -euo pipefail
           # Create local binary directory if not present
-          mkdir -p "${HOME}/.local/bin"
+          # Create local binary directory only if it does not already exist
+          if [[ ! -d "${HOME}/.local/bin" ]]; then mkdir -p "${HOME}/.local/bin"; fi
           # Download pinned ShellCheck release archive and extract binary to RUNNER_TEMP
           curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
             | tar -xJf - -C "${RUNNER_TEMP}"
@@ -90,8 +91,8 @@ jobs:
           set -uo pipefail
           # Define temporary artifact directory for reviewdog diagnostics and audit logs
           outdir="${RUNNER_TEMP}/reviewdog"
-          # Create artifact output directory
-          mkdir -p "${outdir}"
+          # Create artifact output directory only if it does not already exist
+          if [[ ! -d "${outdir}" ]]; then mkdir -p "${outdir}"; fi
 
           # Define main execution audit log file path (uploaded in artifact and printed to console)
           audit_log="${outdir}/nco_bash_ci_audit.log"
