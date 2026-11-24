@@ -30,13 +30,13 @@ jobs:
     steps:
       - name: Checkout base repo
         # Check out trusted default branch only (never untrusted fork PR code)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: false
 
       - name: Download diagnostics from the analysis run
         # Fetch diagnostic and audit log artifact produced by NCO_Consistency_Bash
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: bash-code-analysis-reviewdog
           run-id: ${{ github.event.workflow_run.id }}
@@ -46,7 +46,7 @@ jobs:
       - name: Cache reviewdog binary
         # Cache pinned reviewdog binary across reporting runs
         id: cache-rd
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/bin
           key: ${{ runner.os }}-nco-bash-reporter-rd-${{ env.REVIEWDOG_VERSION }}

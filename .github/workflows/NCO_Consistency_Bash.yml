@@ -41,8 +41,8 @@ jobs:
 
     steps:
       - name: Check out repository
-        # Use actions/checkout@v4 with submodules disabled for fast, isolated checkout
-        uses: actions/checkout@v4
+        # Use actions/checkout@v5 with submodules disabled for fast, isolated checkout
+        uses: actions/checkout@v5
         with:
           # Avoid cloning heavy external submodules during static Bash linting
           submodules: false
@@ -50,7 +50,7 @@ jobs:
       - name: Cache ShellCheck and reviewdog binaries
         # Cache pinned binaries across workflow runs to eliminate repeated network downloads
         id: cache-tools
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           # Store installed binaries in user-local bin directory
           path: ~/.local/bin
@@ -473,7 +473,7 @@ jobs:
       - name: Upload reviewdog and skip-audit diagnostics
         # Always upload diagnostics and audit logs so checked files, skipped files, and skipped lines are preserved
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bash-code-analysis-reviewdog
           path: ${{ runner.temp }}/reviewdog
