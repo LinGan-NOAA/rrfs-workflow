@@ -1,215 +1,459 @@
 ---
-# NCO Consistency GitHub CI for Bash scripts
-# Admin can implement exclusive ci-ignore: (bash_setx, ETC) to ignore the test in target script.
-# Admin can implement insert file in the exclude_file_list.lst to ignore the file being checked.
+# Workflow: NCO_Consistency_Bash (design v1 - Optimized Two-Workflow Analyzer)
+# Purpose: Static Bash linting, NCO repository convention checks, and skip/check audit logging.
+# Companion Reporter: .github/workflows/NCO_Consistency_Bash_Report.yml
+# Summary Tool: .github/workflows/tools/bash_analysis_summary.py
 name: NCO_Consistency_Bash
 
 "on":
+  # Trigger on direct branch pushes
   push:
+  # Trigger on pull requests in read-only sandbox (prevents fork PR privilege escalation)
   pull_request:
+  # Allow invocation as a reusable workflow
   workflow_call:
+  # Allow manual execution from GitHub Actions UI
+  workflow_dispatch:
 
 permissions:
+  # Grant strictly read-only repository access to untrusted PR code
   contents: read
 
 jobs:
   shell-consistency:
+    # Run on standard GitHub-hosted Ubuntu runner
     runs-on: ubuntu-latest
     env:
+      # Pin ShellCheck release version for deterministic analysis and supply-chain security
+      SHELLCHECK_VERSION: "0.10.0"
+      # Pin reviewdog release version to avoid mutable branch install scripts
+      REVIEWDOG_VERSION: "0.20.2"
+      # Forward PR number to companion reporter (validated with regex before API use)
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      # Forward PR head SHA to companion reporter (validated with regex before API use)
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      # Collect commit message, PR title, and PR body for global CI_IGNORE evaluation
       CI_IGNORE: >-
         ${{ github.event.head_commit.message }}
         ${{ github.event.pull_request.title }}${{ github.event.pull_request.body }}
+
     steps:
       - name: Check out repository
+        # Use actions/checkout@v4 with submodules disabled for fast, isolated checkout
         uses: actions/checkout@v4
+        with:
+          # Avoid cloning heavy external submodules during static Bash linting
+          submodules: false
 
-      - name: Ensure ShellCheck
-        run: |
-          if ! command -v shellcheck &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install --no-install-recommends --yes shellcheck
-          fi
+      - name: Cache ShellCheck and reviewdog binaries
+        # Cache pinned binaries across workflow runs to eliminate repeated network downloads
+        id: cache-tools
+        uses: actions/cache@v4
+        with:
+          # Store installed binaries in user-local bin directory
+          path: ~/.local/bin
+          # Key cache by runner OS and exact pinned tool versions
+          key: ${{ runner.os }}-nco-bash-tools-sc-${{ env.SHELLCHECK_VERSION }}-rd-${{ env.REVIEWDOG_VERSION }}
 
-      - name: Check Bash scripts
+      - name: Ensure ShellCheck and reviewdog
+        # Skip download step completely when binary cache hits
+        if: steps.cache-tools.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          # 0. Parse GLOBAL ci-ignore options from commit/PR body/title
+          # Abort immediately on command failure, unset variable, or pipeline error
+          set -euo pipefail
+          # Create local binary directory if not present
+          mkdir -p "${HOME}/.local/bin"
+          # Download pinned ShellCheck release archive and extract binary to RUNNER_TEMP
+          curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar -xJf - -C "${RUNNER_TEMP}"
+          # Install ShellCheck binary with executable permissions into ~/.local/bin
+          install "${RUNNER_TEMP}/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" "${HOME}/.local/bin/shellcheck"
+          # Download pinned reviewdog release archive and extract binary to RUNNER_TEMP
+          curl -sSfL "https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}/reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xzf - -C "${RUNNER_TEMP}" reviewdog
+          # Install reviewdog binary with executable permissions into ~/.local/bin
+          install "${RUNNER_TEMP}/reviewdog" "${HOME}/.local/bin/reviewdog"
+
+      - name: Add local bin to PATH
+        # Expose ~/.local/bin to subsequent steps regardless of cache hit or miss
+        shell: bash
+        run: echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Check Bash scripts and collect audit logs
+        # Assign step ID for downstream traceability
+        id: analyze
+        # Execute using bash shell
+        shell: bash
+        run: |
+          # Propagate pipeline errors without exiting early so full audit logs and artifacts are always written
+          set -uo pipefail
+          # Define temporary artifact directory for reviewdog diagnostics and audit logs
+          outdir="${RUNNER_TEMP}/reviewdog"
+          # Create artifact output directory
+          mkdir -p "${outdir}"
+
+          # Define main execution audit log file path (uploaded in artifact and printed to console)
+          audit_log="${outdir}/nco_bash_ci_audit.log"
+          # Define structured exclusion audit file for summary parser
+          excluded_lst_log="${outdir}/excluded_files_from_list.txt"
+          # Define structured inline skip audit file (file:line:directive) for summary parser
+          inline_skips_log="${outdir}/inline_skipped_directives.txt"
+          # Truncate/initialize all three log files before processing
+          : > "${audit_log}"
+          : > "${excluded_lst_log}"
+          : > "${inline_skips_log}"
+
+          # Helper function to write entries to both stdout and audit_log simultaneously
+          log_audit() {
+            # Print message to console and append to audit log file
+            printf '%s\n' "$*" | tee -a "${audit_log}"
+          }
+
+          # Record workflow execution header in audit log
+          log_audit "=== NCO_Consistency_Bash (design v1) Execution & Skip Audit Log ==="
+
+          # Initialize global check enablement flags (1 = enabled, 0 = skipped)
           run_bash_shellcheck=1
           run_shebang_script=1
           run_bash_setx=1
           run_bash_exitzero=1
 
+          # Check CI_IGNORE for global bash_shellcheck skip request
           if echo "$CI_IGNORE" | grep -iq "bash_shellcheck"; then
+            # Disable bash_shellcheck across entire run
             run_bash_shellcheck=0
-            echo "Globally skipping bash_shellcheck"
+            # Record global skip decision in audit log
+            log_audit "GLOBAL_SKIP: bash_shellcheck disabled via CI_IGNORE"
           fi
+          # Check CI_IGNORE for global shebang_script skip request
           if echo "$CI_IGNORE" | grep -iq "shebang_script"; then
+            # Disable shebang_script across entire run
             run_shebang_script=0
-            echo "Globally skipping shebang_script"
+            # Record global skip decision in audit log
+            log_audit "GLOBAL_SKIP: shebang_script disabled via CI_IGNORE"
           fi
+          # Check CI_IGNORE for global bash_setx skip request
           if echo "$CI_IGNORE" | grep -iq "bash_setx"; then
+            # Disable bash_setx across entire run
             run_bash_setx=0
-            echo "Globally skipping bash_setx"
+            # Record global skip decision in audit log
+            log_audit "GLOBAL_SKIP: bash_setx disabled via CI_IGNORE"
           fi
+          # Check CI_IGNORE for global bash_exitzero skip request
           if echo "$CI_IGNORE" | grep -iq "bash_exitzero"; then
+            # Disable bash_exitzero across entire run
             run_bash_exitzero=0
-            echo "Globally skipping bash_exitzero"
+            # Record global skip decision in audit log
+            log_audit "GLOBAL_SKIP: bash_exitzero disabled via CI_IGNORE"
           fi
 
-          # 1. Discover all scripts matching target paths and extensions
-          mapfile -d '' shell_files < <(
-            find -L . -type f \
-              \( -path './jobs/*' -o -path './scripts/*' -o -iname '*.sh' -o -iname '*.bash' \) \
-              -not -path '*/\.git/*' -print0 | sort -zu
-          )
-
-          if (( ${#shell_files[@]} == 0 )); then
-            echo "No Bash scripts found to check."
-            exit 0
-          fi
-
-          failed=0
-          source_path="SCRIPTDIR:ush:ush/bash_utils"
-
-          # 1.5 Load exclusion list to apply globally (separated by dir vs file)
+          # Load global exclusion list into an associative array for O(1) exact-file lookup and prefix array for directories
           EXCLUDE_FILE=".github/workflows/exclude_file_list_Bash.lst"
+          # Declare associative array for O(1) exact file path lookups
+          declare -A exclude_file_map=()
+          # Declare indexed array for directory prefix matching
           exclude_dir_patterns=()
-          exclude_file_patterns=()
+          # Check if exclude_file_list_Bash.lst exists
           if [[ -f "$EXCLUDE_FILE" ]]; then
+            # Read exclusion file line by line
             while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+              # Strip carriage return characters (CRLF safety)
               pattern="${pattern%$'\r'}"
+              # Strip leading whitespace
               pattern="${pattern#"${pattern%%[![:space:]]*}"}"
+              # Strip trailing whitespace
               pattern="${pattern%"${pattern##*[![:space:]]}"}"
+              # Skip blank lines and comment lines
               [[ -z "$pattern" || "$pattern" == \#* ]] && continue
-
+              # Record configured exclusion pattern in excluded_lst_log
+              printf '%s\n' "$pattern" >> "${excluded_lst_log}"
+              # Remove leading ./ for canonical path comparison
               norm_pattern="${pattern#./}"
+              # Classify trailing /* as directory prefix
               if [[ "$norm_pattern" == *"/*" ]]; then
                 exclude_dir_patterns+=("${norm_pattern%"/*"}")
+              # Classify trailing / as directory prefix
               elif [[ "$norm_pattern" == *"/" ]]; then
                 exclude_dir_patterns+=("${norm_pattern%"/"}")
+              # Classify existing directory path as directory prefix
               elif [[ -d "$norm_pattern" ]]; then
                 exclude_dir_patterns+=("$norm_pattern")
+              # Store exact file path in O(1) associative hash map
               else
-                exclude_file_patterns+=("$norm_pattern")
+                exclude_file_map["$norm_pattern"]=1
               fi
             done < "$EXCLUDE_FILE"
           fi
 
-          # 2. Filter files (Global Exclude.lst + inline shellcheck ignores)
-          valid_shell_files=()
+          # Persist validated PR metadata for downstream workflow_run reporter
+          printf '%s' "${PR_NUMBER}" > "${outdir}/pr-number"
+          printf '%s' "${PR_HEAD_SHA}" > "${outdir}/pr-head-sha"
+
+          # Single-pass directory traversal pruning .git and excluded top-level directories early to minimize disk I/O
+          prune_dirs=( -path './.git' )
+          # Append each directory exclusion pattern to find -prune list
+          for dir_p in "${exclude_dir_patterns[@]}"; do
+            # Add directory path to prune expression
+            prune_dirs+=( -o -path "./${dir_p}" )
+            # Record directory-level prune rule in audit log
+            log_audit "EXCLUDE_RULE_DIR: ./${dir_p}/*"
+          done
+
+          # Execute single-pass find that prunes .git and excluded directories, skips YAML/Jinja2 templates, and emits candidate files
+          mapfile -d '' candidate_files < <(
+            find -L . \( "${prune_dirs[@]}" \) -prune -o -type f \
+              -not -iname '*.yml' -not -iname '*.yaml' -not -iname '*.j2' \
+              -print0 | sort -zu
+          )
+
+          # Initialize failure exit flag (0 = all checks passed, 1 = violation found)
+          failed=0
+          # Define ShellCheck source resolution path for NCO and GFS libraries
+          source_path="SCRIPTDIR:ush:ush/bash_utils:dev/ush"
+
+          # Initialize array for files eligible for ShellCheck
           shellcheck_files=()
 
-          for file in "${shell_files[@]}"; do
+          # Evaluate each discovered file in a single I/O pass using awk
+          for file in "${candidate_files[@]}"; do
+            # Normalize path by removing leading ./
             norm_file="${file#./}"
+            # Strip trailing slash if present
             norm_file="${norm_file%/}"
-            excluded=0
 
-            for dir_p in "${exclude_dir_patterns[@]}"; do
-              if [[ "$norm_file" == "$dir_p"/* ]]; then
-                excluded=1
-                break
-              fi
-            done
-
-            if [[ "$excluded" -eq 0 ]]; then
-              for file_p in "${exclude_file_patterns[@]}"; do
-                if [[ "$norm_file" == "$file_p" ]]; then
-                  excluded=1
-                  break
-                fi
-              done
-            fi
-
-            if [[ "$excluded" -eq 1 ]]; then
-              echo "Skipping all checks (excluded via list): $file"
+            # Check O(1) exact-file exclusion hash map
+            if [[ -n "${exclude_file_map[$norm_file]+_}" ]]; then
+              # Record exact-file exclusion in both audit_log and excluded_lst_log
+              log_audit "SKIPPED_FILE: ${norm_file} | REASON: Matched exact rule ./${norm_file} in ${EXCLUDE_FILE}"
+              printf 'MATCHED_FILE: %s (pattern: ./%s)\n' "$norm_file" "$norm_file" >> "${excluded_lst_log}"
               continue
             fi
 
-            # If not excluded, add to valid files for stage 4
-            valid_shell_files+=("$file")
+            # Determine if file matches target directory/extension patterns (including ./ush, ./modulefiles, ./versions, ./version, ./sorc, ./parm)
+            matches_pattern=0
+            case "$norm_file" in
+              jobs/*|scripts/*|dev/jobs/*|dev/scripts/*|ush/*|modulefiles/*|versions/*|version/*|sorc/*|parm/*|*/config.*|config.*|*/JG*|JG*|*.env|*.sh|*.SH|*.bash|*.BASH)
+                # Mark file as matching path/name rules
+                matches_pattern=1
+                ;;
+            esac
 
-            # Filter specifically for shellcheck inline ignores
-            if grep -iq '^[[:space:]]*#[[:space:]]*ci-ignore:.*bash_shellcheck' "$file"; then
-              echo "Skipping bash_shellcheck for $file (inline ci-ignore found)"
-            else
+            # Skip NUL-containing binary files quickly before awk text inspection
+            if ! grep -Iq . "$file" 2>/dev/null && [[ -s "$file" ]]; then
+              # Log binary file skip in audit log
+              log_audit "SKIPPED_FILE: ${norm_file} | REASON: Binary non-text file"
+              continue
+            fi
+
+            # Single-pass awk inspection extracts: line 1 shebang, inline skip directives with line numbers, set -x presence, and last non-empty line
+            awk_meta=$(
+              awk -v matches_pat="$matches_pattern" '
+                # Strip trailing CR for CRLF safety on every line
+                { gsub(/\r$/, "") }
+                # Capture first line to check shebang
+                NR == 1 {
+                  first = $0
+                  sub(/[[:space:]]+$/, "", first)
+                  # If file did not match path/name pattern, require line-1 shell shebang (#!...sh)
+                  if (matches_pat == 0 && first !~ /^#!.*sh([[:space:]]|$)/) {
+                    print "NOT_SHELL"
+                    exit 0
+                  }
+                }
+                # Detect inline skip directives (# ci-skip, # ci-ignore, # shellcheck disable) and emit exact line number
+                /^[[:space:]]*#[[:space:]]*(ci-ignore|ci-skip|shellcheck[[:space:]]+disable)[[:space:]:=]/ {
+                  dir = $0
+                  sub(/^[[:space:]]+/, "", dir)
+                  printf "SKIP_LINE\t%d\t%s\n", NR, dir
+                }
+                # Strip comments to inspect active executable shell statements
+                {
+                  code = $0
+                  sub(/#.*/, "", code)
+                  # Check for active set -x or set -o xtrace
+                  if (code ~ /(^|[;[:space:]])set([[:space:]]+|$)/) {
+                    if (code ~ /(-[a-zA-Z0-9]*x[a-zA-Z0-9]*|-o[[:space:]]+xtrace)/) {
+                      has_setx = 1
+                    }
+                  }
+                  # Track final non-empty code line for trailing exit 0 validation
+                  if (code !~ /^[[:space:]]*$/) {
+                    last_code = code
+                  }
+                }
+                END {
+                  if (matches_pat == 1 || first ~ /^#!.*sh([[:space:]]|$)/) {
+                    printf "FIRST_LINE\t%s\n", first
+                    printf "HAS_SETX\t%d\n", has_setx + 0
+                    printf "LAST_LINE\t%s\n", last_code
+                  }
+                }
+              ' "$file"
+            )
+
+            # Skip files outside target directories that do not start with a shell shebang
+            if [[ "$awk_meta" == "NOT_SHELL" || -z "$awk_meta" ]]; then
+              continue
+            fi
+
+            # Parse awk metadata fields in memory without spawning external subshells
+            first_line=""
+            has_setx=0
+            last_line=""
+            skip_all_inline=0
+            skip_sc_inline=0
+            skip_shebang_inline=0
+            skip_setx_inline=0
+            skip_exitzero_inline=0
+
+            # Read structured tab-delimited metadata emitted by single-pass awk
+            while IFS=$'\t' read -r tag col1 col2; do
+              case "$tag" in
+                FIRST_LINE)
+                  # Store trimmed line 1 string
+                  first_line="$col1"
+                  ;;
+                HAS_SETX)
+                  # Store boolean flag (1 if set -x / -o xtrace found)
+                  has_setx="$col1"
+                  ;;
+                LAST_LINE)
+                  # Store final non-empty executable line
+                  last_line="$col1"
+                  ;;
+                SKIP_LINE)
+                  # Record exact file:line:directive into both audit_log and inline_skips_log
+                  log_audit "SKIPPED_LINE: ${norm_file}:${col1} | DIRECTIVE: ${col2}"
+                  printf '%s:%s:%s\n' "$norm_file" "$col1" "$col2" >> "${inline_skips_log}"
+                  # Evaluate whether directive is a ci-ignore or ci-skip rule
+                  if [[ "$col2" =~ ^#[[:space:]]*(ci-ignore|ci-skip): ]]; then
+                    # Check for file-wide 'all' skip keyword
+                    if [[ "$col2" =~ (^|[^a-zA-Z0-9_])all([^a-zA-Z0-9_]|$) ]]; then
+                      skip_all_inline=1
+                    fi
+                    # Check for bash_shellcheck skip keyword
+                    if [[ "$col2" =~ bash_shellcheck ]]; then
+                      skip_sc_inline=1
+                    fi
+                    # Check for shebang_script skip keyword
+                    if [[ "$col2" =~ shebang_script ]]; then
+                      skip_shebang_inline=1
+                    fi
+                    # Check for bash_setx skip keyword
+                    if [[ "$col2" =~ bash_setx ]]; then
+                      skip_setx_inline=1
+                    fi
+                    # Check for bash_exitzero skip keyword
+                    if [[ "$col2" =~ bash_exitzero ]]; then
+                      skip_exitzero_inline=1
+                    fi
+                  fi
+                  ;;
+              esac
+            done <<< "$awk_meta"
+
+            # Skip all checks if file declared inline # ci-ignore: all or # ci-skip: all
+            if (( skip_all_inline == 1 )); then
+              log_audit "SKIPPED_FILE: ${norm_file} | REASON: Inline ci-ignore/ci-skip: all directive"
+              continue
+            fi
+
+            # Determine which checks apply to this file
+            checked_list=()
+            if (( run_bash_shellcheck == 1 && skip_sc_inline == 0 )); then
               shellcheck_files+=("$file")
+              checked_list+=("bash_shellcheck")
+            else
+              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_shellcheck"
+            fi
+
+            # Evaluate NCO convention checks using already-parsed in-memory metadata (zero extra file reads)
+            if (( run_shebang_script == 1 && skip_shebang_inline == 0 )); then
+              checked_list+=("shebang_script")
+              if [[ "$first_line" != '#!/bin/bash' ]]; then
+                log_audit "FAIL (shebang_script): ${norm_file}:1 -> Expected '#!/bin/bash' (found: '${first_line}')"
+                failed=1
+              fi
+            else
+              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: shebang_script"
+            fi
+
+            if (( run_bash_setx == 1 && skip_setx_inline == 0 )); then
+              checked_list+=("bash_setx")
+              if (( has_setx == 0 )); then
+                log_audit "FAIL (bash_setx): ${norm_file} -> Missing 'set -x' or 'set -o xtrace'"
+                failed=1
+              fi
+            else
+              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_setx"
+            fi
+
+            if (( run_bash_exitzero == 1 && skip_exitzero_inline == 0 )); then
+              checked_list+=("bash_exitzero")
+              if [[ "$last_line" =~ ^[[:space:]]*exit[[:space:]]+0([[:space:]]*|;.*)?$ ]]; then
+                log_audit "FAIL (bash_exitzero): ${norm_file} -> Unconditional 'exit 0' on last line is not allowed"
+                failed=1
+              fi
+            else
+              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_exitzero"
+            fi
+
+            # Log explicit CHECKED_FILE summary line showing exact checks executed on this file
+            if (( ${#checked_list[@]} > 0 )); then
+              log_audit "CHECKED_FILE: ${norm_file} | CHECKS: ${checked_list[*]}"
             fi
           done
 
-          # 3. RUN: bash_shellcheck (Now only runs on non-excluded files)
+          # Initialize empty ShellCheck diagnostic output file
+          : > "${outdir}/shellcheck.checkstyle.xml"
+
+          # Define NCO ShellCheck exclusion codes
           SC_EXC="SC2321,SC2317,SC2292,SC2249,SC2248,SC2236,SC2207,SC2181,SC2178,SC2164"
           SC_EXC+=",SC2155,SC2154,SC2153,SC2140,SC2129,SC2128,SC2119,SC2116,SC2103"
           SC_EXC+=",SC2059,SC2045,SC2034,SC2016,SC2012,SC2006,SC2003,SC2001,SC1091"
           SC_EXC+=",SC1090,SC1017"
 
+          # Execute single-pass ShellCheck in Checkstyle XML format and format console output via reviewdog
           if (( run_bash_shellcheck == 1 )) && (( ${#shellcheck_files[@]} > 0 )); then
-            echo "==> Running Check: bash_shellcheck"
-            if ! shellcheck --shell=bash --enable=all \
-              --exclude="$SC_EXC" \
-              -P "$source_path" -x "${shellcheck_files[@]}"; then
+            log_audit "==> Running single-pass ShellCheck across ${#shellcheck_files[@]} file(s)"
+            if ! shellcheck --shell=bash --enable=all --exclude="$SC_EXC" \
+              -P "$source_path" -x -f checkstyle "${shellcheck_files[@]}" \
+              > "${outdir}/shellcheck.checkstyle.xml"; then
               failed=1
+            fi
+            if [[ -s "${outdir}/shellcheck.checkstyle.xml" ]]; then
+              reviewdog -f=checkstyle -name=shellcheck -reporter=local \
+                -filter-mode=nofilter -level=any -fail-level=none \
+                < "${outdir}/shellcheck.checkstyle.xml" >> "${audit_log}" 2>&1 || true
             fi
           fi
 
-          # 4. RUN: repository conventions
-          for file in "${valid_shell_files[@]}"; do
-            file_run_shebang_script=$run_shebang_script
-            file_run_setx=$run_bash_setx
-            file_run_exitzero=$run_bash_exitzero
-
-            if grep -iq '^[[:space:]]*#[[:space:]]*ci-ignore:.*shebang_script' "$file"; then
-              file_run_shebang_script=0
-              echo "Skipping shebang_script for $file (inline ci-ignore found)"
-            fi
-
-            if grep -iq '^[[:space:]]*#[[:space:]]*ci-ignore:.*bash_setx' "$file"; then
-              file_run_setx=0
-              echo "Skipping bash_setx for $file (inline ci-ignore found)"
-            fi
-
-            if grep -iq '^[[:space:]]*#[[:space:]]*ci-ignore:.*bash_exitzero' "$file"; then
-              file_run_exitzero=0
-              echo "Skipping bash_exitzero for $file (inline ci-ignore found)"
-            fi
-
-            # RUN: shebang_script
-            if (( file_run_shebang_script == 1 )); then
-              first_line=$(head -n 1 "$file" | tr -d '\r' | sed -e 's/[[:space:]]*$//')
-              if [[ "$first_line" != '#!/bin/bash' ]]; then
-                printf 'FAIL (shebang_script): %s\n' "$file"
-                printf '  -> Expected "#!/bin/bash" on line 1 (found: "%s")\n' "$first_line"
-                failed=1
-              fi
-            fi
-
-            # RUN: bash_setx
-            if (( file_run_setx == 1 )); then
-              clean_content=$(sed -e 's/#.*//' "$file" | tr -d '\r')
-              set_lines=$(
-                printf '%s\n' "$clean_content" | grep -E '(^|[;[:space:]])set([[:space:]]+|$)'
-              )
-              has_x=0
-
-              if printf '%s\n' "$set_lines" | grep -Eq '(-[a-zA-Z0-9]*x[a-zA-Z0-9]*|-o[[:space:]]+xtrace)'; then
-                has_x=1
-              fi
-
-              if [[ "$has_x" -eq 0 ]]; then
-                printf 'FAIL (bash_setx): %s\n' "$file"
-                printf '  -> Missing "set -x" (or equivalent flag group) in file\n'
-                failed=1
-              fi
-            fi
-
-            # RUN: bash_exitzero
-            if (( file_run_exitzero == 1 )); then
-              last_line=$(sed -e 's/#.*//' "$file" | tr -d '\r' | grep -v '^[[:space:]]*$' | tail -n 1)
-              if [[ "$last_line" =~ ^[[:space:]]*exit[[:space:]]+0([[:space:]]*|;.*)?$ ]]; then
-                printf 'FAIL (bash_exitzero): %s\n' "$file"
-                printf '  -> unconditional exit 0 on last line is not allowed\n'
-                failed=1
-              fi
-            fi
-          done
-
+          # Record final exit status in audit log
+          log_audit "=== Completed NCO_Consistency_Bash with exit status: ${failed} ==="
           exit "$failed"
+
+      - name: Write GitHub Step Summary
+        # Render audit log directly into the GitHub Actions job summary page
+        if: always()
+        shell: bash
+        run: |
+          # Check if audit log file exists before rendering
+          if [[ -f "${RUNNER_TEMP}/reviewdog/nco_bash_ci_audit.log" ]]; then
+            {
+              echo "### NCO_Consistency_Bash Execution & Skip Audit Log"
+              echo '```text'
+              cat "${RUNNER_TEMP}/reviewdog/nco_bash_ci_audit.log"
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload reviewdog and skip-audit diagnostics
+        # Always upload diagnostics and audit logs so checked files, skipped files, and skipped lines are preserved
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bash-code-analysis-reviewdog
+          path: ${{ runner.temp }}/reviewdog
+          retention-days: 14
+          if-no-files-found: warn

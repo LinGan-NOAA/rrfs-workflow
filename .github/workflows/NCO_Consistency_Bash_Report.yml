@@ -1,0 +1,134 @@
+---
+# Workflow: NCO_Consistency_Bash_Report (Trusted Companion Reporter for NCO_Consistency_Bash design v1)
+# Purpose: Safely posts inline PR review comments and updates a single sticky summary comment using .github/workflows/tools/bash_analysis_summary.py.
+name: NCO_Consistency_Bash_Report
+
+"on":
+  workflow_run:
+    # Trigger automatically when NCO_Consistency_Bash finishes
+    workflows: ["NCO_Consistency_Bash"]
+    types:
+      - completed
+
+permissions:
+  # Allow reading base repository summary tool
+  contents: read
+  # Allow posting GitHub check annotations
+  checks: write
+  # Allow posting inline PR review comments and sticky issue comments
+  pull-requests: write
+
+jobs:
+  report:
+    # Execute only when upstream workflow was triggered by a pull_request
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-latest
+    env:
+      # Pin reviewdog release version for deterministic comment formatting
+      REVIEWDOG_VERSION: "0.20.2"
+
+    steps:
+      - name: Checkout base repo
+        # Check out trusted default branch only (never untrusted fork PR code)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Download diagnostics from the analysis run
+        # Fetch diagnostic and audit log artifact produced by NCO_Consistency_Bash
+        uses: actions/download-artifact@v4
+        with:
+          name: bash-code-analysis-reviewdog
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: reviewdog-artifacts
+
+      - name: Cache reviewdog binary
+        # Cache pinned reviewdog binary across reporting runs
+        id: cache-rd
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin
+          key: ${{ runner.os }}-nco-bash-reporter-rd-${{ env.REVIEWDOG_VERSION }}
+
+      - name: Install reviewdog
+        # Install reviewdog only on cache miss
+        if: steps.cache-rd.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          # Exit immediately on failure
+          set -euo pipefail
+          # Create local binary directory
+          mkdir -p "${HOME}/.local/bin"
+          # Download pinned reviewdog archive
+          curl -sSfL "https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}/reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xzf - -C "${RUNNER_TEMP}" reviewdog
+          # Install binary into ~/.local/bin
+          install "${RUNNER_TEMP}/reviewdog" "${HOME}/.local/bin/reviewdog"
+
+      - name: Add local bin to PATH
+        # Expose ~/.local/bin to reviewdog step
+        shell: bash
+        run: echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Post reviewdog results as PR review comments
+        shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_REPO_OWNER: ${{ github.repository_owner }}
+          CI_REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          # Abort on any command or pipeline failure
+          set -euo pipefail
+          # Set artifact directory path
+          d=reviewdog-artifacts
+
+          # Strictly validate untrusted PR number and commit SHA with regexes before exporting
+          pr_number="$(cat "${d}/pr-number")"
+          pr_head_sha="$(cat "${d}/pr-head-sha")"
+          [[ "${pr_number}" =~ ^[0-9]+$ ]] || { echo "Invalid PR number: '${pr_number}'"; exit 1; }
+          [[ "${pr_head_sha}" =~ ^[0-9a-fA-F]{7,64}$ ]] || { echo "Invalid head SHA: '${pr_head_sha}'"; exit 1; }
+          # Export validated PR metadata for reviewdog
+          export CI_PULL_REQUEST="${pr_number}"
+          export CI_COMMIT="${pr_head_sha}"
+
+          # Unset GITHUB_ACTIONS so reviewdog derives PR context from explicit CI_* variables on fork PRs
+          run_rd() { env -u GITHUB_ACTIONS reviewdog "$@"; }
+
+          # Post ShellCheck findings as inline PR review comments
+          if [ -s "${d}/shellcheck.checkstyle.xml" ]; then
+            run_rd -f=checkstyle -name=shellcheck -reporter=github-pr-review \
+              -filter-mode=nofilter -level=any -fail-level=none \
+              < "${d}/shellcheck.checkstyle.xml"
+          fi
+
+      - name: Post findings summary as a PR comment
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          # Abort on any error and re-validate PR number
+          set -euo pipefail
+          d=reviewdog-artifacts
+          pr_number="$(cat "${d}/pr-number")"
+          [[ "${pr_number}" =~ ^[0-9]+$ ]] || { echo "Invalid PR number: '${pr_number}'"; exit 1; }
+
+          # Execute summary generator located at .github/workflows/tools/bash_analysis_summary.py
+          python3 .github/workflows/tools/bash_analysis_summary.py "${d}" "${RUNNER_TEMP}/comment.md"
+
+          # Query existing sticky PR comment via hidden marker and update in place (or create new)
+          marker='<!-- bash-code-analysis-summary -->'
+          existing="$(gh api --paginate "repos/${OWNER}/${REPO}/issues/${pr_number}/comments" \
+            --jq "[.[] | select(.body | contains(\"${marker}\")) | .id] | first // empty")"
+          if [ -n "${existing}" ]; then
+            gh api -X PATCH "repos/${OWNER}/${REPO}/issues/comments/${existing}" \
+              -F body=@"${RUNNER_TEMP}/comment.md" >/dev/null
+            echo "Updated existing comment ${existing}."
+          else
+            gh api -X POST "repos/${OWNER}/${REPO}/issues/${pr_number}/comments" \
+              -F body=@"${RUNNER_TEMP}/comment.md" >/dev/null
+            echo "Created a new summary comment."
+          fi
