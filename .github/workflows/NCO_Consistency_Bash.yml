@@ -217,7 +217,7 @@ jobs:
             log_audit "EXCLUDE_RULE_DIR: ./${dir_p}/*"
           done
 
-          # Execute single-pass find that prunes .git and excluded directories, and skips non-shell formats (*.lua, *.yml, *.yaml, *.j2, *.py, *.md)
+          # Single-pass find pruning .git and excluded dirs while skipping non-shell file formats
           mapfile -d '' candidate_files < <(
             find -L . \( "${prune_dirs[@]}" \) -prune -o -type f \
               -not -iname '*.lua' \
@@ -251,9 +251,8 @@ jobs:
 
             # Match only Bash/shell script extensions and naming patterns from NCO CI and GFS CI:
             # - NCO CI: jobs/*, scripts/*, *.sh, *.bash
-            # - GFS CI: dev/jobs/*, dev/scripts/*, config.*, JG*, *.env, *.sh, *.bash (plus line-1 #!...sh shebang files)
-            # Non-shell files in modulefiles/* (e.g., modulefiles/*.lua), sorc/*, parm/*, versions/* are NOT matched by directory alone;
-            # they are checked ONLY if they have a GFS/NCO bash extension/name OR start with a shell shebang (#!...sh) on line 1.
+            # - GFS CI: dev/jobs/*, dev/scripts/*, config.*, JG*, *.env, *.sh, *.bash
+            # Non-shell files (e.g. modulefiles/*.lua) are checked only if they have a shell shebang.
             matches_pattern=0
             case "$norm_file" in
               jobs/*|scripts/*|dev/jobs/*|dev/scripts/*|*/config.*|config.*|*/JG*|JG*|*.env|*.sh|*.SH|*.bash|*.BASH)
@@ -278,7 +277,7 @@ jobs:
                 NR == 1 {
                   first = $0
                   sub(/[[:space:]]+$/, "", first)
-                  # If file did not match NCO/GFS bash extension/name pattern, require line-1 shell shebang (#!...sh)
+                  # If file did not match NCO/GFS bash extension/name pattern, require line-1 shell shebang
                   if (matches_pat == 0 && first !~ /^#!.*sh([[:space:]]|$)/) {
                     print "NOT_SHELL"
                     exit 0
@@ -315,7 +314,7 @@ jobs:
               ' "$file"
             )
 
-            # Skip files that neither match bash extensions/patterns nor start with a shell shebang (e.g. modulefiles/*.lua)
+            # Skip files without matching bash extensions/patterns or a line-1 shell shebang
             if [[ "$awk_meta" == "NOT_SHELL" || -z "$awk_meta" ]]; then
               continue
             fi
