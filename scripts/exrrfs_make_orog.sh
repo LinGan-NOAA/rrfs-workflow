@@ -78,10 +78,10 @@ APRUN="time"
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s "${firewx_loc}" ]; then
+  if [[ -s "${firewx_loc}" ]]; then
     LAT_CTR=""
     LON_CTR=""
     if [[ -s "${firewx_loc}" ]]; then
@@ -222,18 +222,18 @@ mv "${raw_orog_fp_orig}" "${raw_orog_fp}"
 suites=( "FV3_RAP" "FV3_HRRR" "FV3_HRRR_gf" "FV3_GFS_v15_thompson_mynn_lam3km" "FV3_GFS_v17_p8" )
 suite_has_gwd=0
 for suite in "${suites[@]}"; do
-  if [ "${CCPP_PHYS_SUITE}" = "${suite}" ]; then
+  if [[ "${CCPP_PHYS_SUITE}" = "${suite}" ]]; then
     suite_has_gwd=1
     break
   fi
 done
-if [ "${suite_has_gwd}" -eq 1 ]; then
+if [[ "${suite_has_gwd}" -eq 1 ]]; then
   cd "${DATA}"/temp_orog_data || err_exit "Failed to cd into ${DATA}/temp_orog_data"
   mosaic_fn_gwd="${CRES}${DOT_OR_USCORE}mosaic.halo${NH4}.nc"
   mosaic_fp_gwd="${COMrrfs}/${RUN}.${PDY}/${cyc}/input/${mosaic_fn_gwd}"
   grid_fn_gwd=$( get_charvar_from_netcdf "${mosaic_fp_gwd}" "gridfiles" )
   export err=$?
-  if [ ${err} -ne 0 ]; then
+  if [[ ${err} -ne 0 ]]; then
     err_exit "get_charvar_from_netcdf function failed."
   fi
   grid_fp_gwd="${COMrrfs}/${RUN}.${PDY}/${cyc}/input/${grid_fn_gwd}"
@@ -300,10 +300,10 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
   res="${GFDLgrid_RES}"
   refine_ratio="${GFDLgrid_REFINE_RATIO}"
-elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
+elif [[ "${GRID_GEN_METHOD}" = "ESGgrid" ]]; then
   res="${CRES:1}"
   refine_ratio="1"
 fi

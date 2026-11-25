@@ -76,10 +76,10 @@ files corresponding to a specified forecast hour.
 # Define COM directories.
 #-----------------------------------------------------------------------
 
-if [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   DO_ENSFCST="TRUE"
-elif [ "${WGF}" = "det" ]; then
+elif [[ "${WGF}" = "det" ]]; then
   export ENSMEM_INDX=""
 fi
 export mem_num=m$(echo "${ENSMEM_INDX}")
@@ -92,7 +92,7 @@ export COMOUT=${COMOUT:-$(compath.py -o ${NET}/"${rrfs_ver}"/"${RUN}"."${PDY}"/"
 export umbrella_post_data=${DATAROOT}/rrfs_post_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 
 # Prdgen jobs do not run for spinup cycles
-if [ "${DO_ENSFCST}" = "TRUE" ]; then
+if [[ "${DO_ENSFCST}" = "TRUE" ]]; then
   export COMOUT=${COMOUT}/${mem_num}
 fi
 mkdir -p "${COMOUT}" "${COMOUT}/wmo"
@@ -107,7 +107,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_prdgen.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -124,7 +124,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

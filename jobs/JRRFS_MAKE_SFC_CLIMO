@@ -86,7 +86,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_make_sfc_climo.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -103,7 +103,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

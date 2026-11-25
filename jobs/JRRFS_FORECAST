@@ -34,7 +34,7 @@ case "${WGF}" in
     export RUN="firewx"
     ;;
 esac
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   export mem_num=m$(echo "${ENSMEM_INDX}")
   export DO_ENSEMBLE="TRUE"
@@ -69,10 +69,10 @@ export umbrella_ics_data="${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${
 export umbrella_post_data=${DATAROOT}/rrfs_post_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 spinup_prefix=""
 spinup_postfix=""
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   spinup_prefix="_spinup"
 fi
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   spinup_postfix="/${mem_num}"
   export umbrella_ics_data="${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}/ics"
 fi
@@ -94,13 +94,13 @@ export CDATE="${PDY}${cyc}"
 
 export COMrrfs=${COMrrfs:-$(compath.py -o rrfs/"${rrfs_ver}")}
 export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}_spinup
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}_spinup/${mem_num}
   fi
 else
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}/${mem_num}
   fi
 fi
@@ -145,7 +145,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_forecast.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -162,7 +162,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

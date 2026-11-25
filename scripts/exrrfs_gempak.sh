@@ -18,7 +18,7 @@ FHR=$(echo "${FHR}" | cut -c1-3)
 mkdir -p "${DATA}"/rrfs_conus
 cd "${DATA}"/rrfs_conus
 
-if [ -e "${DATA}"/poescript ]
+if [[ -e "${DATA}"/poescript ]]
 then
 rm -f "${DATA}"/poescript
 fi
@@ -40,7 +40,7 @@ echo "${USHrrfs}/prdgen_gempak.sh ${type} ${GRIB} ${FHR} ${DBN_ALERT_TYPE}" > "$
 #################################################################
 #
 
-if [ "${FHR}" -ge 1 ] && [ "${FHR}" -le 18 ]
+if [[ "${FHR}" -ge 1 ]] && [[ "${FHR}" -le 18 ]]
 then
 mkdir -p "${DATA}"/rrfs_conus_subh
 cd "${DATA}"/rrfs_conus_subh

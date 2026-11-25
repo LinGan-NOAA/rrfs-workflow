@@ -141,14 +141,14 @@ YYYYMMDD=${YYYYMMDDHH:0:8}
 fixgriddir=${FIX_GSI}/${PREDEF_GRID_NAME}
 bkpath=${FORECAST_INPUT_PRODUCT}
 # decide background type
-if [ -r "${bkpath}/coupler.res" ]; then
+if [[ -r "${bkpath}/coupler.res" ]]; then
   BKTYPE=0              # warm start
 else
   BKTYPE=1              # cold start
   regional_ensemble_option=1
 fi
 
-if  [ "${ob_type}" != "conv" ] || [ ${BKTYPE} -eq 1 ]; then #not using GDAS
+if  [[ "${ob_type}" != "conv" ]] || [[ ${BKTYPE} -eq 1 ]]; then #not using GDAS
   l_both_fv3sar_gfs_ens=.false.
 fi
 #
@@ -172,7 +172,7 @@ if  [[ ${regional_ensemble_option:-1} -eq 5 ]]; then
   imem=1
   ifound=0
   for hrs in "${CYCL_HRS_HYB_FV3LAM_ENS[@]}"; do
-  if [ "${HH}" == "${hrs}" ]; then
+  if [[ "${HH}" == "${hrs}" ]]; then
 
   while [[ ${imem} -le ${NUM_ENS_MEMBERS} ]];do
     memcharv0=$( printf "%03d" ${imem} )
@@ -187,7 +187,7 @@ if  [[ ${regional_ensemble_option:-1} -eq 5 ]]; then
     dynvarfile=${bkpathmem}/${restart_prefix}fv_core.res.tile1.nc
     tracerfile=${bkpathmem}/${restart_prefix}fv_tracer.res.tile1.nc
     phyvarfile=${bkpathmem}/${restart_prefix}phy_data.nc
-    if [ -r "${dynvarfile}" ] && [ -r "${tracerfile}" ] && [ -r "${phyvarfile}" ] ; then
+    if [[ -r "${dynvarfile}" ]] && [[ -r "${tracerfile}" ]] && [[ -r "${phyvarfile}" ]] ; then
       ln -snf "${bkpathmem}"/"${restart_prefix}"fv_core.res.tile1.nc       data/inputs/mem"${memcharv0}"/fv3_dynvars
       ln -snf "${bkpathmem}"/"${restart_prefix}"fv_tracer.res.tile1.nc     data/inputs/mem"${memcharv0}"/fv3_tracer
       ln -snf "${bkpathmem}"/"${restart_prefix}"phy_data.nc                data/inputs/mem"${memcharv0}"/fv3_phyvars
@@ -224,7 +224,7 @@ if  [[ ${regional_ensemble_option:-1} -eq 1 || ${l_both_fv3sar_gfs_ens} = ".true
 
   for loop in ${loops}; do
     for timelist in "${ENKF_FCST}"/enkfgdas.*/*/atmos/mem080/gdas*.atmf"${loop}"."${ftype}"; do
-      [ -f "${timelist}" ] || continue
+      [[ -f "${timelist}" ]] || continue
       availtime_parts=$(awk -F/ '{ print substr($9, 10, 8), $10 }' <<< "${timelist}") || \
         err_exit "Unable to parse forecast path: ${timelist}"
       read -r availtimeyyyymmdd availtimehh <<< "${availtime_parts}"
@@ -250,7 +250,7 @@ if  [[ ${regional_ensemble_option:-1} -eq 1 || ${l_both_fv3sar_gfs_ens} = ".true
     done
   done
 
-  if [ ${foundgdasens} = "true" ]; then
+  if [[ ${foundgdasens} = "true" ]]; then
     ls "${ENKF_FCST}"/enkfgdas."${eyyyymmdd}"/"${ehh}"/atmos/mem???/"${enkfcstname}".nc > filelist03
   fi
 fi
@@ -316,7 +316,7 @@ fi
 n_iolayouty=$((IO_LAYOUT_Y-1))
 list_iolayout=$(seq 0 ${n_iolayouty})
 
-if [ ${BKTYPE} -eq 1 ]; then  # cold start uses background from INPUT
+if [[ ${BKTYPE} -eq 1 ]]; then  # cold start uses background from INPUT
   ln -snf "${fixgriddir}"/phis.nc  phis.nc
   ncks -A -v  phis  phis.nc  "${bkpath}"/gfs_data.tile7.halo0.nc
 
@@ -326,7 +326,7 @@ if [ ${BKTYPE} -eq 1 ]; then  # cold start uses background from INPUT
 
   fv3lam_bg_type=1
 else                          # cycle uses background from restart
-  if [ "${IO_LAYOUT_Y}" == "1" ]; then
+  if [[ "${IO_LAYOUT_Y}" == "1" ]]; then
     ln -snf "${bkpath}"/fv_core.res.tile1.nc  fv3_dynvars
     ln -snf "${bkpath}"/fv_srf_wnd.res.tile1.nc fv_srf_wnd.res.tile1.nc
     ln -snf "${bkpath}"/fv_tracer.res.tile1.nc  fv3_tracer
@@ -378,7 +378,7 @@ if [[ ${DO_RADDA} == "TRUE" ]]; then # copy bias from previous cycle
   maxcounter=240
   echo 'COMOUT =', "${COMOUT}"
   cur_comout=${COMOUT}
-  while [ ${satcounter} -lt ${maxcounter} ]; do
+  while [[ ${satcounter} -lt ${maxcounter} ]]; do
     # COMOUT ends in <RUN>.YYYYMMDD/HH/analysis, so step back two levels to reach the cycle
     # hour and one more for the day, then rebuild the same path an hour earlier.
     cur_hour=$(basename "$(dirname "${cur_comout}")")   # HH
@@ -397,7 +397,7 @@ if [[ ${DO_RADDA} == "TRUE" ]]; then # copy bias from previous cycle
     prev_comout=$(dirname "$(dirname "$(dirname "${cur_comout}")")")/${run_dir_name%.*}.${prev_date}/${prev_hour}/analysis
 
     # Check if previous cycle exists
-    if [ -d "${prev_comout}/satbias_out" ]; then
+    if [[ -d "${prev_comout}/satbias_out" ]]; then
         echo "[${satcounter}] Previous cycle exists: ${prev_comout}/satbias_out"
         ls  -l "${prev_comout}"/satbias_out
         # Copy satbias_out files from current COMOUT to your target directory
@@ -415,7 +415,7 @@ if [[ ${DO_RADDA} == "TRUE" ]]; then # copy bias from previous cycle
 
   done
 # If not find satbias from previous 10 days, copy it from satbias_init
-  if [ ${satcounter} -eq ${maxcounter} ]; then
+  if [[ ${satcounter} -eq ${maxcounter} ]]; then
     echo "Not found satbias from previous 10 days, copy it from satbias_init"
     cp "${FIX_JEDI}/"satbias_init/*.nc data/satbias_in/.
   fi
@@ -442,7 +442,7 @@ cpreq -p "${FIX_JEDI}"/dynamics_lam_cmaq.yaml .
 cpreq -p "${FIX_JEDI}"/field_table .
 # dev-sci's shared FIX_RRFS keeps berror_stats with the 13 km grid, which it uses for every grid
 berror=${FIX_JEDI}/berror_stats
-[ -e "${berror}" ] || berror=${FIX_JEDI}/RRFS_CONUS_13km/berror_stats
+[[ -e "${berror}" ]] || berror=${FIX_JEDI}/RRFS_CONUS_13km/berror_stats
 cpreq -p "${berror}" berror_stats
 # the per-grid namelists live in parm beside the JCB templates that have to match them
 cpreq -p "${PARM_JCB}"/"${PREDEF_GRID_NAME}"/fmsmpp.nml .
@@ -450,7 +450,7 @@ cpreq -p "${PARM_JCB}"/"${PREDEF_GRID_NAME}"/gsiparm_regional.anl .
 cpreq -p "${PARM_JCB}"/"${PREDEF_GRID_NAME}"/input_lam* .
 # only the 13 km grid has the MGBF namelists, which the hybrid background error alone reads
 for f in "${PARM_JCB}/${PREDEF_GRID_NAME}"/mgbf*; do
-  [ -e "${f}" ] && cpreq -p "${f}" .
+  [[ -e "${f}" ]] && cpreq -p "${f}" .
 done
 ln -snf "${RDASAPP_DIR}"/fix/expr_data/fv3_2024052700/DataFix .
 #

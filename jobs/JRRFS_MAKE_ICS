@@ -33,7 +33,7 @@ case "${WGF}" in
     export RUN="firewx"
     ;;
 esac
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   export mem_num=m$(echo "${ENSMEM_INDX}")
   export DO_ENSEMBLE="TRUE"
@@ -42,9 +42,9 @@ else
   export mem_num=""
   export DO_ENSEMBLE="FALSE"
 fi
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}}
-elif [ "${WGF}" = "firewx" ]; then
+elif [[ "${WGF}" = "firewx" ]]; then
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
 else
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
@@ -110,11 +110,11 @@ env
 "${HOMErrfs}"/scripts/exrrfs_make_ics.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
-if [ -e "${pgmout_pre_blending}" ]; then
+if [[ -e "${pgmout_pre_blending}" ]]; then
   cat "${pgmout_pre_blending}"
 fi
 #-----------------------------------------------------------------------
@@ -130,7 +130,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

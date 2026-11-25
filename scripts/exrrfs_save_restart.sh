@@ -88,7 +88,7 @@ filelistcold="gfs_data.tile7.halo0.nc sfc_data.tile7.halo0.nc"
 n_iolayouty=$((IO_LAYOUT_Y-1))
 list_iolayout=$(seq 0 ${n_iolayouty})
 
-if [ "${CYCLE_SUBTYPE}" = "ensinit" ]; then
+if [[ "${CYCLE_SUBTYPE}" = "ensinit" ]]; then
   restart_prefix=${save_yyyy}${save_mm}${save_dd}.${save_hh}${dt_mmss}
 else
   restart_prefix=${save_yyyy}${save_mm}${save_dd}.${save_hh}0000
@@ -97,17 +97,17 @@ fi
 if_save_input=FALSE
 
 copy_gfs_ctrl=TRUE
-if [ "${WGF}" = "enkf" ]; then
-  if [[ $((10#${cyc} % 2)) -eq 0 ]] && [ "${FHR}" != "001" ]; then
+if [[ "${WGF}" = "enkf" ]]; then
+  if [[ $((10#${cyc} % 2)) -eq 0 ]] && [[ "${FHR}" != "001" ]]; then
     copy_gfs_ctrl=FALSE
   fi
-elif [ "${WGF}" = "det" ]; then
-  if [ "${FHR}" != "001" ]; then
+elif [[ "${WGF}" = "det" ]]; then
+  if [[ "${FHR}" != "001" ]]; then
     copy_gfs_ctrl=FALSE
   fi
 fi
 if [[ ${copy_gfs_ctrl} = TRUE ]]; then
-  if [ -s "${umbrella_forecast_data}"/INPUT/gfs_ctrl.nc ]; then
+  if [[ -s "${umbrella_forecast_data}"/INPUT/gfs_ctrl.nc ]]; then
     cpreq "${umbrella_forecast_data}"/INPUT/gfs_ctrl.nc "${COMOUT}"/INPUT
     if_save_input=TRUE
   fi
@@ -116,22 +116,22 @@ fi
 # Retros (strip when merging to the nco branch): the forecast writes this hour's restart files one at
 # a time, and a retro rerun can start this job before any of them land, so the check below would
 # miss a restart that is seconds away. Wait for the whole set when this hour is due one.
-if [ "${RETRO:-NO}" = "YES" ] && [[ " ${RESTART_HRS:-} " == *" $((10#${fhr})) "* ]]; then
+if [[ "${RETRO:-NO}" = "YES" ]] && [[ " ${RESTART_HRS:-} " == *" $((10#${fhr})) "* ]]; then
   restart_source_files="phy_data.nc fv_tracer.res.tile1.nc fv_core.res.tile1.nc fv_diag.res.tile1.nc sfc_data.nc fv_srf_wnd.res.tile1.nc fv_core.res.nc coupler.res"
   ic=0
-  while [ ${ic} -lt 60 ]; do
+  while [[ ${ic} -lt 60 ]]; do
     missing=""
     for restart_source_file in ${restart_source_files}; do
-      [ -s "${shared_forecast_restart_data}/${restart_prefix}.${restart_source_file}" ] || missing="${missing} ${restart_source_file}"
+      [[ -s "${shared_forecast_restart_data}/${restart_prefix}.${restart_source_file}" ]] || missing="${missing} ${restart_source_file}"
     done
-    [ -z "${missing}" ] && break
+    [[ -z "${missing}" ]] && break
     print_info_msg "${VERBOSE}" "waiting for restart files:${missing}"
     ic=$((ic + 1))
     sleep 15
   done
 fi
 
-if [ -r "${shared_forecast_restart_data}/${restart_prefix}.coupler.res" ]; then
+if [[ -r "${shared_forecast_restart_data}/${restart_prefix}.coupler.res" ]]; then
   #
   #-----------------------------------------------------------------------
   #
@@ -182,8 +182,8 @@ fi
 # save surface data
 #-----------------------------------------------------------------------
 #
-if [ "${CYCLE_TYPE}" = "prod" ] && [ "${CYCLE_SUBTYPE}" = "control" ]; then
-  if [ "${IO_LAYOUT_Y}" = "1" ]; then
+if [[ "${CYCLE_TYPE}" = "prod" ]] && [[ "${CYCLE_SUBTYPE}" = "control" ]]; then
+  if [[ "${IO_LAYOUT_Y}" = "1" ]]; then
     cpreq "${COMOUT}"/RESTART/"${restart_prefix}".sfc_data.nc "${SURFACE_DIR}"/surface."${PDY}"/"${restart_prefix}".sfc_data.nc."${CDATE}"
   else
     for ii in ${list_iolayout}
@@ -198,10 +198,10 @@ fi
 # save input
 #-----------------------------------------------------------------------
 #
-if [ "${if_save_input}" = TRUE ]; then
-  if [ "${DO_SAVE_INPUT}" = TRUE ]; then
-    if [ -r "${umbrella_forecast_data}"/INPUT/coupler.res ]; then  # warm start
-      if [ "${IO_LAYOUT_Y}" = "1" ]; then
+if [[ "${if_save_input}" = TRUE ]]; then
+  if [[ "${DO_SAVE_INPUT}" = TRUE ]]; then
+    if [[ -r "${umbrella_forecast_data}"/INPUT/coupler.res ]]; then  # warm start
+      if [[ "${IO_LAYOUT_Y}" = "1" ]]; then
         [[ -f ${umbrella_forecast_data}/INPUT/fv_diag.res.tile1.nc ]]&& cpreq "${umbrella_forecast_data}"/INPUT/fv_diag.res.tile1.nc "${COMOUT}"/INPUT
         for file in ${filelistn}; do
           cpreq "${umbrella_forecast_data}"/INPUT/"${file}" "${COMOUT}"/INPUT/"${file}"

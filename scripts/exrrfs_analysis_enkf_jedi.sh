@@ -151,7 +151,7 @@ for imem in $(seq 1 "${NUM_ENS_MEMBERS}"); do
   bkpath=${FORECAST_INPUT_PRODUCT}/${memchar}/INPUT
 
   # a member without a restart coupler.res is a cold start, which GETKF cannot read
-  if [ ! -r "${bkpath}/coupler.res" ]; then
+  if [[ ! -r "${bkpath}/coupler.res" ]]; then
     ncold=$(( ncold + 1 ))
   fi
 
@@ -257,7 +257,7 @@ ln -snf "${RDASAPP_DIR}"/fix/expr_data/fv3_2024052700/DataFix .
 #
 #-----------------------------------------------------------------------
 #
-if [ ${ncold} -gt 0 ]; then
+if [[ ${ncold} -gt 0 ]]; then
   echo "${ncold} member(s) have no restart files (cold start) - no EnKF update this cycle"
   exit 0
 fi

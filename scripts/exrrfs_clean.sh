@@ -30,7 +30,7 @@ target_cleanup_cyc=${cleanup_target:8:2}
 [[ -z ${COMrrfs} ]]&& exit 0
 cd "${COMrrfs}"
 for wgf_run in rrfs enkfrrfs; do
-  if [ -d "${COMrrfs}"/${wgf_run}."${target_cleanup_pdy}" ]; then
+  if [[ -d "${COMrrfs}"/${wgf_run}."${target_cleanup_pdy}" ]]; then
     cd "${COMrrfs}"/${wgf_run}."${target_cleanup_pdy}"
     for directory_path in "${COMrrfs}/${wgf_run}.${target_cleanup_pdy}"/*"${target_cleanup_cyc}"*; do
       [[ -e ${directory_path} ]] || continue
@@ -56,7 +56,7 @@ cleanup_line_count=$(wc -l < "${DATA}"/data_clean_com.sh) || err_exit "Unable to
 #-----------------------------------------------------------------------
 
 cd "${DATAROOT}"
-if [ "${KEEPDATA}" == "YES" ]; then
+if [[ "${KEEPDATA}" == "YES" ]]; then
   # Keep all unique id DATA and rename the Umbrella Data directory to ensure new job will not run on the same directory
   for dir_remove in rrfs_analysis_gsi rrfs_analysis_gsi_spinup rrfs_calc_ensmean rrfs_forecast_spinup rrfs_forecast rrfs_init rrfs_init_spinup rrfs_ics rrfs_lbcops; do
     [[ -d ${dir_remove}_${cyc}_v1.0 ]]&& mv ${dir_remove}_"${cyc}"_v1.0 ${dir_remove}_$$_"${cyc}"_v1.0
@@ -90,7 +90,7 @@ fi
 # Remove this session after turn on the KEEPDATA function
 #-----------------------------------------------------------------------
 cd "${DATAROOT}"
-if [ "${KEEPDATA}" == "YES" ]; then
+if [[ "${KEEPDATA}" == "YES" ]]; then
   [[ -f ${DATA}/post_prdgen_data_clean1.sh ]]&& rm -f "${DATA}"/post_prdgen_data_clean1.sh
   echo "set -x" &> "${DATA}"/post_prdgen_data_clean1.sh
   idx_cyc2d=${cyc}
@@ -139,7 +139,7 @@ for search_cycle in "${search_cycles[@]}"; do
   #   fcst_state="reserved"
   # fi
 
-  if [ "${fcst_state}" == "complete" ]; then
+  if [[ "${fcst_state}" == "complete" ]]; then
     echo "Cycle ${idx_cyc2d} is completed - proceed with cleanup"
     find . -maxdepth 1 -type d -name "rrfs_*_${idx_cyc2d}.*" \
       -exec bash -c 'printf "rm -rf -- %q\n" "$1"' _ '{}' \; \

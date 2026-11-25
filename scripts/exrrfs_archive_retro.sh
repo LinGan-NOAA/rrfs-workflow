@@ -30,7 +30,7 @@ This ex-script archives one completed deterministic cycle to HPSS.
 : "${cyc:?cyc must be set by the ecFlow task}"
 
 cycle_root="${COMrrfs}/rrfs.${PDY}"
-if [ ! -d "${cycle_root}/${cyc}" ]; then
+if [[ ! -d "${cycle_root}/${cyc}" ]]; then
   # A retro definition can complete a cycle family even when its forecast task
   # was never run. Skip that archive only when ecFlow confirms try number zero.
   forecast_dir="${ECF_NAME%/archive/jrrfs_archive_retro}/det/forecast"
@@ -48,7 +48,7 @@ if [ ! -d "${cycle_root}/${cyc}" ]; then
         fi
       done <<< "${forecast_output}"
       # Some ecFlow client versions return only the queried value.
-      if [ -z "${try_no}" ]; then
+      if [[ -z "${try_no}" ]]; then
         while IFS= read -r forecast_line; do
           if [[ "${forecast_line}" =~ ^[[:space:]]*([0-9]+)[[:space:]]*$ ]]; then
             try_no="${BASH_REMATCH[1]}"
@@ -57,7 +57,7 @@ if [ ! -d "${cycle_root}/${cyc}" ]; then
       fi
       if [[ "${try_no}" =~ ^[0-9]+$ ]]; then
         forecast_query_ok=YES
-        if [ "${try_no}" -gt 0 ]; then
+        if [[ "${try_no}" -gt 0 ]]; then
           forecast_attempted=YES
         fi
       else
@@ -68,10 +68,10 @@ if [ ! -d "${cycle_root}/${cyc}" ]; then
     fi
   done
 
-  if [ "${forecast_query_ok}" != YES ]; then
+  if [[ "${forecast_query_ok}" != YES ]]; then
     err_exit "Cycle COM directory is missing and forecast execution could not be verified: ${cycle_root}/${cyc}. ${forecast_query_error}"
   fi
-  if [ "${forecast_attempted}" = YES ]; then
+  if [[ "${forecast_attempted}" = YES ]]; then
     err_exit "Cycle COM directory is missing although a forecast task was attempted: ${cycle_root}/${cyc}"
   fi
 

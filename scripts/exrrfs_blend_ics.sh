@@ -117,7 +117,7 @@ if [[ ${DO_ENS_BLENDING} == "FALSE" ]]; then
   # start, so ask for it every time rather than only when no previous restart exists.
   mkdir -p "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/"${mem_num}"
   touch "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/"${mem_num}"/run_ensinit
-  if [ "${mem_num}" == "m001" ]; then
+  if [[ "${mem_num}" == "m001" ]]; then
     mkdir -p "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/ensmean
     touch "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/ensmean/run_ensinit
   fi
@@ -130,7 +130,7 @@ if [[ ${DO_ENS_BLENDING} == "TRUE" ]]; then
   run_blending=${COMrrfs}/${RUN}.${yyyymmdd}/${hh}_spinup/${mem_num}/run_blending
   run_ensinit=${COMrrfs}/${RUN}.${yyyymmdd}/${hh}_spinup/${mem_num}/run_ensinit
   mkdir -p "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/"${mem_num}"
-  if [ "${mem_num}" == "m001" ]; then
+  if [[ "${mem_num}" == "m001" ]]; then
     run_blending_mean=${COMrrfs}/${RUN}.${yyyymmdd}/${hh}_spinup/ensmean/run_blending
     run_ensinit_mean=${COMrrfs}/${RUN}.${yyyymmdd}/${hh}_spinup/ensmean/run_ensinit
     mkdir -p "${COMrrfs}"/"${RUN}"."${yyyymmdd}"/"${hh}"_spinup/ensmean
@@ -203,15 +203,15 @@ if [[ ${DO_ENS_BLENDING} == "TRUE" ]]; then
   date
   echo "Blending check: ${blendmsg}"
 
-  if [ -f "${run_blending}" ] &&
-     [ ! -f "${run_ensinit}" ] &&
-     [ "${EXTRN_MDL_NAME_ICS}" = "GDASENKF" ]; then
+  if [[ -f "${run_blending}" ]] &&
+     [[ ! -f "${run_ensinit}" ]] &&
+     [[ "${EXTRN_MDL_NAME_ICS}" = "GDASENKF" ]]; then
 
      echo "Blending Starting."
 
-     if [ "${cyc}" == "07" ] || [ "${cyc}" == "19" ]; then
+     if [[ "${cyc}" == "07" ]] || [[ "${cyc}" == "19" ]]; then
        echo "Currently running ENKF 07Z or 19Z Blending - will set enkf ensinit forecast and save restart job to complete"
-       if [ "${cyc}" == "07" ]; then
+       if [[ "${cyc}" == "07" ]]; then
          cycmaj=06
        else
          cycmaj=18
@@ -229,7 +229,7 @@ if [[ ${DO_ENS_BLENDING} == "TRUE" ]]; then
      # Shortcut the file names/arguments.
      Lx=${ENS_BLENDING_LENGTHSCALE}
      # Using gfs_data.tile7.halo0.nc from umberlla ics directory as out.atm.tile${TILE_RGNL}.nc
-     if [ -s "${shared_output_data}"/cold2warm_all.nc ]; then
+     if [[ -s "${shared_output_data}"/cold2warm_all.nc ]]; then
        ln -s "${shared_output_data}"/cold2warm_all.nc cold2warm_all.nc
      else
        err_exit "FATAL: gfs_data.tile${TILE_RGNL}.halo0.nc not found in ${shared_output_data} - check make ics step"
@@ -247,11 +247,11 @@ if [[ ${DO_ENS_BLENDING} == "TRUE" ]]; then
      python "${USHrrfs}"/blending_fv3.py "${Lx}" ${glb} ${reg} ${trcr} "${blend}" "${use_host_enkf}"
      [[ ! -s fv_core.res.tile1.nc ]]&& err_exit "FATAL: fv_core.res.tile1.nc not found in ${DATA}"
      [[ ! -s fv_tracer.res.tile1.nc ]]&& err_exit "FATAL: fv_tracer.res.tile1.nc not found in ${DATA}"
-     if [ -f "${shared_output_data}"/fv_core.res.tile1.nc ]; then
+     if [[ -f "${shared_output_data}"/fv_core.res.tile1.nc ]]; then
        rm -f "${shared_output_data}"/fv_core.res.tile1.nc
      fi
      cpreq "${DATA}"/fv_core.res.tile1.nc "${shared_output_data}"/fv_core.res.tile1.nc
-     if [ -f "${shared_output_data}"/fv_tracer.res.tile1.nc ]; then
+     if [[ -f "${shared_output_data}"/fv_tracer.res.tile1.nc ]]; then
        rm -f "${shared_output_data}"/fv_tracer.res.tile1.nc
      fi
      cpreq "${DATA}"/fv_tracer.res.tile1.nc "${shared_output_data}"/fv_tracer.res.tile1.nc

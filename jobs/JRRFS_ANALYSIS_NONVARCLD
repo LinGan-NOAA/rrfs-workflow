@@ -34,7 +34,7 @@ case "${WGF}" in
     export RUN="firewx"
     ;;
 esac
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   export mem_num=m$(echo "${ENSMEM_INDX}")
   export DO_ENSEMBLE="TRUE"
@@ -61,7 +61,7 @@ esac
 
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
 export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export umbrella_analysis_data=${umbrella_analysis_data:-${DATAROOT}/rrfs_analysis_gsi_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
   export umbrella_init_data=${umbrella_init_data:-${DATAROOT}/rrfs_init_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
@@ -70,7 +70,7 @@ else
   export umbrella_init_data=${umbrella_init_data:-${DATAROOT}/rrfs_init_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 fi
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export umbrella_forecast_data=${umbrella_forecast_data}/${mem_num}
 fi
 
@@ -96,12 +96,12 @@ setpdy.sh
 . ./PDY
 export CDATE="${PDY}${cyc}"
 
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}_spinup
 else
   export COMOUT=${COMrrfs}/${COM_WGF}.${PDY}/${cyc}
 fi
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export COMOUT=${COMOUT}/${mem_num}
   export umbrella_forecast_data=${umbrella_forecast_data}/${mem_num}
 fi
@@ -147,7 +147,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_analysis_nonvarcld.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -166,7 +166,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

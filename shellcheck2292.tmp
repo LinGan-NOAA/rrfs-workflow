@@ -1,0 +1,2 @@
+#!/bin/bash
+if [ "$x" = "y" ]; then echo y; fi

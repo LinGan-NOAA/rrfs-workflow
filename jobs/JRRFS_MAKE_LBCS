@@ -83,7 +83,7 @@ export COMINgefs=${COMINgefs:-$(compath.py gefs/"${gefs_ver}")}
 export COMrrfs=${COMrrfs:-$(compath.py rrfs/"${rrfs_ver}")}
 export COMIN=${COMIN:-$(compath.py rrfs/"${rrfs_ver}")}
 
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   export mem_num=m$(echo "${ENSMEM_INDX}")
   export COMOUT="${COMOUT:-$(compath.py -o ${NET}/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/"${mem_num}"/lbcs)}"
@@ -91,7 +91,7 @@ else
   export ENSMEM_INDX=""
   export COMOUT="${COMOUT:-$(compath.py -o ${NET}/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/lbcs)}"
   export umbrella_lbcops_data=${umbrella_ops_data:-${DATAROOT}/rrfs_lbcops_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
-  if [ -d "${umbrella_lbcops_data}" ] && [ "${BCGRP}" = "00" ]; then
+  if [[ -d "${umbrella_lbcops_data}" ]] && [[ "${BCGRP}" = "00" ]]; then
     mv "${umbrella_lbcops_data}" "${umbrella_lbcops_data}"_$$
   fi
   mkdir -p "${umbrella_lbcops_data}"
@@ -108,7 +108,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_make_lbcs.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -125,7 +125,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

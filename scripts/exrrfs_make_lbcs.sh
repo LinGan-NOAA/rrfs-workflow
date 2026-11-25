@@ -6,7 +6,7 @@ source "${FIXrrfs}"/workflow/"${WGF}"/workflow.conf
 export FIXam=${FIXam:-${HOMErrfs}/fix/am}
 export FIXLAM=${FIXLAM:-${HOMErrfs}/fix/lam/RRFS_NA_3km}
 export THOMPSON_MP_CLIMO_FP="${FIXam}/Thompson_MP_MONTHLY_CLIMO.nc"
-if [ "${WGF}" == "firewx" ]; then
+if [[ "${WGF}" == "firewx" ]]; then
 #notused?  export CCPP_PHYS_SUITE_FP="${PARMrrfs}/config/${WGF}/suite_RRFS_sas_nogwd.xml"
   export CCPP_PHYS_SUITE='RRFS_sas_nogwd'
 fi
@@ -56,10 +56,10 @@ hour zero).
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s "${firewx_loc}" ]; then
+  if [[ -s "${firewx_loc}" ]]; then
     LAT_CTR=""
     LON_CTR=""
     if [[ -s "${firewx_loc}" ]]; then
@@ -89,7 +89,7 @@ fi
 #
 export extrn_mdl_name="${EXTRN_MDL_NAME_LBCS}"
 gfs_file_fmt="${GFS_FILE_FMT_LBCS}"
-if [ "${extrn_mdl_name}" == GEFS ]; then
+if [[ "${extrn_mdl_name}" == GEFS ]]; then
   idx_member_name_2d=$( printf "%02d" "$((10#${MEMBER_NAME}))" )
   extrn_mdl_memhead=/gep${idx_member_name_2d}
 else
@@ -116,10 +116,10 @@ yyyymmdd=${OFFSETDATE:0:8}
 # offset is to go back to a previous cycle (for example 3-h) and
 # use the forecast (3-h) from that cycle valid at this cycle.
 # Here calculates the forecast and it is adding.
-if [ "${boundary_len_hrs}" = "0" ]; then
+if [[ "${boundary_len_hrs}" = "0" ]]; then
   boundary_len_hrs=${FCST_LEN_HRS}
 fi
-if [ "${DO_NON_DA_RUN}" = "TRUE" ]; then
+if [[ "${DO_NON_DA_RUN}" = "TRUE" ]]; then
   lbc_spec_fcst_hrs=($( seq "${lbs_spec_intvl_hrs}" "${lbs_spec_intvl_hrs}" "${boundary_len_hrs}" ))
 else
   lbc_spec_fcst_hrs=($( seq 0 "${lbs_spec_intvl_hrs}" "${boundary_len_hrs}" ))
@@ -146,10 +146,10 @@ case "${extrn_mdl_name}" in
     sysdir2=""
     fcst_hhh=( $( printf "%03d " "${lbc_spec_fhrs[@]}" ) )
 
-    if [ "${gfs_file_fmt}" = "grib2" ]; then
+    if [[ "${gfs_file_fmt}" = "grib2" ]]; then
       prefix="gfs.t${hh}z.pgrb2.0p25.f"
       fns_on_disk=( "${fcst_hhh[@]/#/${prefix}}" )
-    elif [ "${gfs_file_fmt}" = "netcdf" ]; then
+    elif [[ "${gfs_file_fmt}" = "netcdf" ]]; then
       prefix="gfs.t${hh}z.atmf"
       suffix=".nc"
       fns_on_disk_tmp=( "${fcst_hhh[@]/#/${prefix}}" )
@@ -177,7 +177,7 @@ case "${extrn_mdl_name}" in
     # from the parent deterministic post, whose products carry that domain's own grid spacing and
     # name rather than the NA ones. This task runs as the 1.5 km fire weather grid, so the parent
     # domain is not in its environment; read the spacing and name off a file the parent wrote.
-    if [ "${RETRO:-NO}" = "YES" ] && [ ! -e "${sysdir}/${prefix}${fcst_hhh[0]}${suffix}" ]; then
+    if [[ "${RETRO:-NO}" = "YES" ]] && [[ ! -e "${sysdir}/${prefix}${fcst_hhh[0]}${suffix}" ]]; then
       fn_parent=""
 
       # Enable nullglob so unmatched globs disappear instead of returning literal asterisks
@@ -189,7 +189,7 @@ case "${extrn_mdl_name}" in
       if [[ ${#parent_files[@]} -gt 0 ]]; then
         fn_parent="${parent_files[0]}"
       fi
-      if [ -n "${fn_parent}" ]; then
+      if [[ -n "${fn_parent}" ]]; then
         fn_parent=$( basename "${fn_parent}" )
         prefix="${fn_parent%%.f[0-9][0-9][0-9].*}.f"
         suffix=".${fn_parent##*.f[0-9][0-9][0-9].}"
@@ -256,7 +256,7 @@ case "${MACHINE}" in
 
 esac
 
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   export FIXLAM=${COMIN}/${RUN}.${PDY}/${cyc}/input
 else
   export FIXLAM=${FIXLAM:-${FIXrrfs}/lam/${PREDEF_GRID_NAME}}
@@ -303,7 +303,7 @@ for fp in "${extrn_mdl_fps_on_disk[@]}"; do
   #
   # If the external model file exists, then...
   #
-  if [ -f "${fp}" ]; then
+  if [[ -f "${fp}" ]]; then
     #
     # Increment the counter that keeps track of the number of external
     # model files found on disk and print out an informational message.
@@ -316,11 +316,11 @@ File fp exists on disk:
     # If we are NOT searching for user-staged external model files, then
     # we also check that the current file is at least min_age minutes old.
     #
-    if [ "${use_user_staged_extrn_files}" != "TRUE" ]; then
+    if [[ "${use_user_staged_extrn_files}" != "TRUE" ]]; then
 
       old_file=$(find "${fp}" -mmin "+${min_age}" -print -quit) || \
         err_exit "Failed checking file age for ${fp}"
-      if [ -n "${old_file}" ]; then
+      if [[ -n "${old_file}" ]]; then
         print_info_msg "
 File fp is older than the minimum required age of min_age minutes:
   fp = \"${fp}\"
@@ -343,7 +343,7 @@ Not checking presence and age of remaining external model files on disk."
     # If an external model file is not found and we are searching for it
     # in a user-specified directory, print out an error message and exit.
     #
-    if [ "${use_user_staged_extrn_files}" = "TRUE" ]; then
+    if [[ "${use_user_staged_extrn_files}" = "TRUE" ]]; then
       fns_on_disk_display=$(printf '"%s" ' "${fns_on_disk[@]}")
       err_exit "\
 File fp does NOT exist on disk:
@@ -384,20 +384,20 @@ extrn_mdl_staging_dir = \"${extrn_mdl_staging_dir}\"
 extrn_mdl_source_dir = \"${extrn_mdl_source_dir}\"
 extrn_mdl_fns_on_disk = ${extrn_mdl_fns_on_disk_str}"
 
-if [ "${extrn_mdl_name}" != GEFS ] ; then
+if [[ "${extrn_mdl_name}" != GEFS ]] ; then
  # Wait for files to become available in umbrella_lbcops_data location
  #   Only do parallel copy if BCGRP=00 and (WGF=det or WGF=firewx)
- if [ "${BCGRP}" = "00" ] && [[ ${WGF} = det || ${WGF} = firewx ]]; then
+ if [[ "${BCGRP}" = "00" ]] && [[ ${WGF} = det || ${WGF} = firewx ]]; then
    touch "${DATA}"/parallel_copy.sh
    for file_to_copy in "${extrn_mdl_fps_on_disk[@]}"; do
      echo "Add file - ${file_to_copy} to parallel transfer job list"
      echo "cpfs ${file_to_copy} ${umbrella_lbcops_data}" >> "${DATA}"/parallel_copy.sh
    done
-   if [ -s "${DATA}"/parallel_copy.sh ]; then
+   if [[ -s "${DATA}"/parallel_copy.sh ]]; then
       poe_script=parallel_copy.sh
       export MP_CMDFILE=${poe_script}
       # cfp only exists on WCOSS2, so run the copies serially on other machines
-      if [ "${MACHINE}" = "WCOSS2" ]; then
+      if [[ "${MACHINE}" = "WCOSS2" ]]; then
         launcher="mpiexec -np ${ncores} --cpu-bind core cfp"
       else
         launcher="bash"
@@ -407,7 +407,7 @@ if [ "${extrn_mdl_name}" != GEFS ] ; then
       ecflow_client --event release_"${WGF}"_make_lbcs
    fi
  else
-   if [ "${WGF}" = firewx ]; then
+   if [[ "${WGF}" = firewx ]]; then
      # case for firewx
      t_file_ct=36
    else
@@ -444,7 +444,7 @@ The list of all external model files is: ${extrn_mdl_fps_on_disk[*]}"
    [[ -e ${file_to_link} ]] || continue
    ln -sf -t "${DATA}" "${file_to_link}"
  done
-elif [ "${extrn_mdl_name}" = GEFS ] ; then
+elif [[ "${extrn_mdl_name}" = GEFS ]] ; then
 # Get GEFS files and do time interpolation using wgrib2
   length=${#extrn_mdl_fps_on_disk[@]}
   for (( j=0; j<length; j++ ));
@@ -452,13 +452,13 @@ elif [ "${extrn_mdl_name}" = GEFS ] ; then
     fps=${extrn_mdl_fps_on_disk[${j}]}
     fps2=${extrn_mdl_fps_on_disk2[${j}]}
     fps_name=${fns_on_disk[${j}]}
-    if [ -f "${fps}" ]; then
+    if [[ -f "${fps}" ]]; then
       #
       # Increment the counter that keeps track of the number of external
       # model files found on disk and print out an informational message.
       #
       cpreq "${fps}" "${extrn_mdl_staging_dir}"/"${fps_name}"
-      if [ -f "${fps2}" ]; then
+      if [[ -f "${fps2}" ]]; then
         cat "${fps2}" >>  "${extrn_mdl_staging_dir}"/"${fps_name}"
       fi
 
@@ -482,7 +482,7 @@ File fps exists on disk:
     else
       fcsthr="${file: -3}"
       fcsthr="${fcsthr#"${fcsthr%%[!0]*}"}"
-      if [ $((fcsthr % 3)) -eq 0 ]; then
+      if [[ $((fcsthr % 3)) -eq 0 ]]; then
         echo "FATAL ERROR: Required ${files} is missing"
         export err=7; err_chk
       else
@@ -579,9 +579,9 @@ case "${CCPP_PHYS_SUITE}" in
     ;;
 #
   FV3_RRFS_v1beta|FV3_GFS_v15_thompson_mynn_lam3km|FV3_HRRR|FV3_HRRR_gf|FV3_HRRR_gf_nogwd|FV3_RAP|RRFS_sas|RRFS_sas_nogwd)
-    if [ "${EXTRN_MDL_NAME_LBCS}" = "RRFS" ] || \
-       [ "${EXTRN_MDL_NAME_LBCS}" = "GFS" ] || \
-       [ "${EXTRN_MDL_NAME_LBCS}" = "GEFS" ]; then
+    if [[ "${EXTRN_MDL_NAME_LBCS}" = "RRFS" ]] || \
+       [[ "${EXTRN_MDL_NAME_LBCS}" = "GFS" ]] || \
+       [[ "${EXTRN_MDL_NAME_LBCS}" = "GEFS" ]]; then
       varmap_file="GFSphys_var_map.txt"
     fi
     ;;
@@ -660,7 +660,7 @@ tracers="\"\""
 #-----------------------------------------------------------------------
 #
 thomp_mp_climo_file=""
-if [ "${SDF_USES_THOMPSON_MP}" = "TRUE" ]; then
+if [[ "${SDF_USES_THOMPSON_MP}" = "TRUE" ]]; then
   thomp_mp_climo_file="${THOMPSON_MP_CLIMO_FP}"
 fi
 #
@@ -674,11 +674,11 @@ fi
 case "${EXTRN_MDL_NAME_LBCS}" in
 
 "GFS")
-  if [ "${GFS_FILE_FMT_LBCS}" = "grib2" ]; then
+  if [[ "${GFS_FILE_FMT_LBCS}" = "grib2" ]]; then
     external_model="GFS"
     fn_grib2="${EXTRN_MDL_FNS[0]}"
     input_type="grib2"
-  elif [ "${GFS_FILE_FMT_LBCS}" = "netcdf" ]; then
+  elif [[ "${GFS_FILE_FMT_LBCS}" = "netcdf" ]]; then
     tracers_input="[\"spfh\",\"clwmr\",\"o3mr\",\"icmr\",\"rwmr\",\"snmr\",\"grle\"]"
     tracers="[\"sphum\",\"liq_wat\",\"o3mr\",\"ice_wat\",\"rainwat\",\"snowwat\",\"graupel\"]"
     external_model="FV3GFS"
@@ -720,7 +720,7 @@ bcgrp10=${bcgrp#0}
 bcgrpnum10=${bcgrpnum#0}
 for (( ii=0; ii<num_fhrs; ii=ii+bcgrpnum10 )); do
   i=$(( ii + bcgrp10 ))
-  if [ ${i} -lt "${num_fhrs}" ]; then
+  if [[ ${i} -lt "${num_fhrs}" ]]; then
     echo " group ${bcgrp10} processes FHR ${i}"
 #
 # Get the forecast hour of the external model.
@@ -735,9 +735,9 @@ for (( ii=0; ii<num_fhrs; ii=ii+bcgrpnum10 )); do
 
   case "${EXTRN_MDL_NAME_LBCS}" in
   "GFS")
-    if [ "${GFS_FILE_FMT_LBCS}" = "grib2" ]; then
+    if [[ "${GFS_FILE_FMT_LBCS}" = "grib2" ]]; then
       fn_grib2="${EXTRN_MDL_FNS[${i}]}"
-    elif [ "${GFS_FILE_FMT_LBCS}" = "netcdf" ]; then
+    elif [[ "${GFS_FILE_FMT_LBCS}" = "netcdf" ]]; then
       fn_atm="${EXTRN_MDL_FNS[${i}]}"
     fi
     ;;
@@ -841,7 +841,7 @@ ${settings}"
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+  if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
     sp_lon=$(echo "${LON_CTR} + 360" | bc -l)
     sp_lat=$(echo "(90 - ${LAT_CTR}) * -1" | bc -l)
     gridspecs="rot-ll:${sp_lon}:${sp_lat}:0 -10:801:0.025 -10:801:0.025"
@@ -850,7 +850,7 @@ ${settings}"
     fcst_hhh_FV3LAM=`printf %3.3i ${fcst_hhh}`
     fn_grib2_subset=rrfs.t${hh}z.natlev.f${fcst_hhh_FV3LAM}.subset.grib2
 
-    if [ ! -s "${extrn_mdl_staging_dir}"/"${fn_grib2}" ]; then
+    if [[ ! -s "${extrn_mdl_staging_dir}"/"${fn_grib2}" ]]; then
       echo "FATAL ERROR: FIREWX LBCS file not found ${extrn_mdl_staging_dir}/${fn_grib2}"
     fi
     wgrib2 "${extrn_mdl_staging_dir}"/"${fn_grib2}" -set_grib_type c3b \

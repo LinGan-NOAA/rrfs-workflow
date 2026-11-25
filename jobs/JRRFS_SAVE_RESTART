@@ -33,7 +33,7 @@ case "${WGF}" in
     export RUN="firewx"
     ;;
 esac
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   export mem_num=m$(echo "${ENSMEM_INDX}")
   export DO_ENSEMBLE="TRUE"
@@ -53,13 +53,13 @@ export COMrrfs=${COMrrfs:-$(compath.py -o rrfs/"${rrfs_ver}")}
 export SURFACE_DIR=${SURFACE_DIR:-${COMrrfs}/surface}
 export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}
   fi
 else
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}
   fi
 fi
@@ -81,13 +81,13 @@ export CDATE="${PDY}${cyc}"
 
 export COMOUT=${COMOUT:-$(compath.py -o rrfs/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}")}
 
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT=${COMrrfs}/rrfs.${PDY}/${cyc}_spinup
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export COMOUT=${COMrrfs}/enkfrrfs.${PDY}/${cyc}_spinup/${mem_num}
   fi
 else
-  if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+  if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
     export COMOUT=${COMrrfs}/enkfrrfs.${PDY}/${cyc}/${mem_num}
   fi
 fi
@@ -125,7 +125,7 @@ This is the J-job script for the task that saves restart files to COM.
 ========================================================================"
 SLASH_ENSMEM_SUBDIR=${SLASH_ENSMEM_SUBDIR:-""}
 len_ensmem=${#SLASH_ENSMEM_SUBDIR}
-if [ "${len_ensmem}" -eq 0 ] && [ "${DO_ENSEMBLE}" != "TRUE" ]; then
+if [[ "${len_ensmem}" -eq 0 ]] && [[ "${DO_ENSEMBLE}" != "TRUE" ]]; then
   export CYCLE_SUBTYPE="control"
 fi
 
@@ -139,7 +139,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_save_restart.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -156,7 +156,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

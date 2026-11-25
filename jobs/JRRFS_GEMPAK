@@ -52,7 +52,7 @@ export CDATE="${PDY}${cyc}"
 export COMrrfs=${COMrrfs:-$(compath.py -o rrfs/"${rrfs_ver}")}
 export COMIN=${COMrrfs}/${RUN}.${PDY}/${cyc}
 export COMOUT=${COMOUT:-$(compath.py -o rrfs/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/gempak)}
-if [ ! -f "${COMOUT}" ] ; then
+if [[ ! -f "${COMOUT}" ]] ; then
 	mkdir -p "${COMOUT}"
 	chmod 775 "${COMOUT}"
 fi
@@ -67,14 +67,14 @@ env
 "${HOMErrfs}"/scripts/exrrfs_gempak.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

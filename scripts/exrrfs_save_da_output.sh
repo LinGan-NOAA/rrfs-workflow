@@ -63,11 +63,11 @@ filelistcold="gfs_data.tile7.halo0.nc sfc_data.tile7.halo0.nc"
 n_iolayouty=$((IO_LAYOUT_Y-1))
 list_iolayout=$(seq 0 ${n_iolayouty})
 
-if [ ! -r "${COMOUT}"/DA_OUTPUT/gfs_ctrl.nc ]; then
+if [[ ! -r "${COMOUT}"/DA_OUTPUT/gfs_ctrl.nc ]]; then
   cpreq "${umbrella_forecast_data}"/gfs_ctrl.nc "${COMOUT}"/DA_OUTPUT/gfs_ctrl.nc
 fi
-if [ -r "${umbrella_forecast_data}"/coupler.res ]; then  # warm start
-    if [ "${IO_LAYOUT_Y}" = "1" ]; then
+if [[ -r "${umbrella_forecast_data}"/coupler.res ]]; then  # warm start
+    if [[ "${IO_LAYOUT_Y}" = "1" ]]; then
       for file in ${filelistn}; do
         cpreq "${umbrella_forecast_data}"/"${file}" "${COMOUT}"/DA_OUTPUT/"${file}"
       done

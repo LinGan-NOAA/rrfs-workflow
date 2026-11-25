@@ -38,8 +38,8 @@ case "${WGF}" in
     export RUN="firewx"
     ;;
 esac
-if [ "${WGF}" = "enkf" ] || [ "${WGF}" = "ensf" ]; then
-  if [ "${MEMBER_NAME}" = "ensmean" ] ; then
+if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
+  if [[ "${MEMBER_NAME}" = "ensmean" ]] ; then
     export ENSMEM_INDX='001'
   else
     export ENSMEM_INDX=${MEMBER_NAME}
@@ -51,7 +51,7 @@ else
   export mem_num=""
   export DO_ENSEMBLE="FALSE"
 fi
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}}
 else
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
@@ -108,27 +108,27 @@ export CYCLE_SUBTYPE=${CYCLE_SUBTYPE:-empty}
 #-----------------------------------------------------------------------
 export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
 export COMOUT=${COMOUT:-${COMrrfs}/${RUN}.${PDY}/${cyc}}
-if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT=${COMOUT}_spinup
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 else
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
 fi
 export umbrella_prep_cyc_fallback=${DATAROOT}/rrfs_prep_cyc_alert_email_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
-  if [ "${MEMBER_NAME}" = "ensmean" ] ; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
+  if [[ "${MEMBER_NAME}" = "ensmean" ]] ; then
     export COMOUT=${COMOUT}/${MEMBER_NAME}
   else
     export COMOUT=${COMOUT}/${mem_num}
   fi
-  if [ "${CYCLE_TYPE}" = "spinup" ]; then
-    if [ "${MEMBER_NAME}" = "ensmean" ] ; then
+  if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
+    if [[ "${MEMBER_NAME}" = "ensmean" ]] ; then
       export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${MEMBER_NAME}
     else
       export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}
     fi
   else
-    if [ "${MEMBER_NAME}" = "ensmean" ] ; then
+    if [[ "${MEMBER_NAME}" = "ensmean" ]] ; then
       export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${MEMBER_NAME}
     else
       export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}
@@ -136,7 +136,7 @@ if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
   fi
 fi
 export FORECAST_INPUT_PRODUCT=${umbrella_forecast_data}/INPUT
-if [ -d "${FORECAST_INPUT_PRODUCT}" ]; then
+if [[ -d "${FORECAST_INPUT_PRODUCT}" ]]; then
   echo "The forecast Umbrella INPUT directory exist. This is a rerun. Save the previous INPUT directory."
   mv "${FORECAST_INPUT_PRODUCT}" "${FORECAST_INPUT_PRODUCT}"_$$
 fi
@@ -152,7 +152,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_prep_cyc.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -169,7 +169,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

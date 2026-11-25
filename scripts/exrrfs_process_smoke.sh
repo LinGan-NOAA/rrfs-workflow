@@ -60,7 +60,7 @@ for i in $(seq 0 24); do
 
    intp_fname=${PREDEF_GRID_NAME}_intp_${timestr}00_${timestr}59.nc
    rave_day_dir="${rave_base_prefix}.${daystr}"
-   if  [ -f "${rave_day_dir}/${intp_fname}" ]; then
+   if  [[ -f "${rave_day_dir}/${intp_fname}" ]]; then
       "${LN}" -sf "${rave_day_dir}/${intp_fname}" "${DATA}/${intp_fname}"
       echo "${rave_day_dir}/${intp_fname} interpolated file available to reuse"
    else
@@ -74,7 +74,7 @@ done
 #
 #-----------------------------------------------------------------------
 
-if [ -d "${FIRE_RAVE_DIR}/${PDYm1}/rave" ]; then
+if [[ -d "${FIRE_RAVE_DIR}/${PDYm1}/rave" ]]; then
    fire_rave_dir_work=${DATA}
    "${LN}" -snf "${FIRE_RAVE_DIR}/${PDY}/rave"/RAVE-HrlyEmiss-3km_* "${fire_rave_dir_work}/."
    "${LN}" -snf "${FIRE_RAVE_DIR}/${PDYm1}/rave"/RAVE-HrlyEmiss-3km_* "${fire_rave_dir_work}/."
@@ -93,7 +93,7 @@ fi
 
 # Ursa: launch through srun; the script's ESMF regridding initializes MPI, which Intel MPI
 # refuses inside a Slurm job unless srun started the process (PMI2_Job_GetId returned 14)
-if [ "${MACHINE}" = "URSA" ]; then
+if [[ "${MACHINE}" = "URSA" ]]; then
   pyrun=(srun --export=ALL -n 1)
 else
   pyrun=()
@@ -108,7 +108,7 @@ export err=$?; err_chk
 #Copy the the hourly, interpolated RAVE data to $rave_dir so it
 # is maintained there for future cycles.
 dummy_smoke_file="${FIX_SMOKE_DUST}/${PREDEF_GRID_NAME}/dummy_24hr_smoke.nc"
-if [ "${CYCLE_TYPE}" != "spinup" ]; then
+if [[ "${CYCLE_TYPE}" != "spinup" ]]; then
   for file in "${DATA}"/RAVE-HrlyEmiss-* "${DATA}"/RRFS_NA_3km_intp_* "${DATA}"/SMOKE_RRFS_data_*
   do
     filename=$(basename "${file}")
@@ -123,7 +123,7 @@ if [ "${CYCLE_TYPE}" != "spinup" ]; then
     fi
 
     rave_day_dir="${rave_base_prefix}.${daystr}"
-    if [ ! -f "${rave_day_dir}/${filename}" ]; then
+    if [[ ! -f "${rave_day_dir}/${filename}" ]]; then
       cpreq -p "${file}" "${rave_day_dir}"
       echo "Copied file: ${filename} → ${rave_day_dir}/"
     fi

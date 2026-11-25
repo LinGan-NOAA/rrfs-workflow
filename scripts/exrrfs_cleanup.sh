@@ -4,10 +4,10 @@ set -x
 #####################################################
 # pre cycle cleanup
 #####################################################
-if [ "${CLEAN_MODE}" == "pre" ]; then
+if [[ "${CLEAN_MODE}" == "pre" ]]; then
   echo "Performing pre-cycle cleanup to rename any existing shared workding dir for cyc ${cyc}."
   for old_dir in "${DATAROOT}"/rrfs_*_"${cyc}"_"${rrfs_ver_2d}"_"${envir}"; do
-    if [ -d "${old_dir}" ]; then
+    if [[ -d "${old_dir}" ]]; then
       mv "${old_dir}" "${old_dir}"_$$
     fi
   done
@@ -18,21 +18,21 @@ fi
 # post cycle cleanup
 #####################################################
 
-if [ "${CLEAN_MODE}" == "post" ]; then
+if [[ "${CLEAN_MODE}" == "post" ]]; then
   echo "Performing post-cycle cleanup for cyc ${cyc}."
 
   # cleanup working directory
-  if [ "${KEEP_TMP^^}" != YES ]; then
+  if [[ "${KEEP_TMP^^}" != YES ]]; then
     echo "Cleaning up shared workding directories for cyc ${cyc} ."
     for old_dir in "${DATAROOT}"/rrfs_*_"${cyc}"_"${rrfs_ver_2d}"_"${envir}"; do
-      if [ -d "${old_dir}" ]; then
+      if [[ -d "${old_dir}" ]]; then
         rm -rf "${old_dir}"
       fi
     done
 
     echo "Cleaning up unique workding directories for cyc ${cyc} ."
     for old_dir in "${DATAROOT}"/rrfs_*_"${cyc}".*bqs*; do
-      if [ -d "${old_dir}" ]; then
+      if [[ -d "${old_dir}" ]]; then
         rm -rf "${old_dir}"
       fi
     done
@@ -42,7 +42,7 @@ if [ "${CLEAN_MODE}" == "post" ]; then
   fi
 
   # cleanup restart files for the current cycle
-  if [ "${KEEP_RESTART^^}" != YES ]; then
+  if [[ "${KEEP_RESTART^^}" != YES ]]; then
     # remove RESTART files for the current cycle only
     # 1h restart from CYCm1
     # 2h restart from CYCm2
@@ -52,7 +52,7 @@ if [ "${CLEAN_MODE}" == "post" ]; then
     Restart_3h=$(${NDATE} -03 "${PDY}""${cyc}")
 
     # rrfs
-    if [ "${KEEP_DET_RESTART^^}" != YES ]; then
+    if [[ "${KEEP_DET_RESTART^^}" != YES ]]; then
       echo "Cleaning up det RESTART files for cyc ${cyc} ."
 
       # for Restart_cyc in $Restart_1h $Restart_2h $Restart_3h; do
@@ -69,7 +69,7 @@ if [ "${CLEAN_MODE}" == "post" ]; then
     fi
 
     # enkf
-    if [ "${KEEP_ENKF_RESTART^^}" != YES ]; then
+    if [[ "${KEEP_ENKF_RESTART^^}" != YES ]]; then
       echo "Cleaning up enkf RESTART files for cyc ${cyc} ."
 
       # for Restart_cyc in $Restart_1h $Restart_2h $Restart_3h; do

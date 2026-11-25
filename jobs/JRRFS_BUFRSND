@@ -78,10 +78,10 @@ on the output files corresponding to a specified forecast hour.
 # Define the umbrella data and COM directories
 #-----------------------------------------------------------------------
 
-if [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
   DO_ENSFCST="TRUE"
-elif [ "${WGF}" = "det" ]; then
+elif [[ "${WGF}" = "det" ]]; then
   export ENSMEM_INDX=""
 fi
 export mem_num=m$(echo "${ENSMEM_INDX}")
@@ -91,7 +91,7 @@ export DO_ENSFCST=${DO_ENSFCST:-"FALSE"}
 export COMOUT=${COMOUT:-$(compath.py -o rrfs/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}")}
 export umbrella_forecast_data="${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}"
 
-if [ "${DO_ENSFCST}" = "TRUE" ]; then
+if [[ "${DO_ENSFCST}" = "TRUE" ]]; then
   export COMOUT=${COMOUT}/${mem_num}
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}
 fi
@@ -111,7 +111,7 @@ env
 "${HOMErrfs}"/scripts/exrrfs_bufrsnd.sh
 export err=$?; err_chk
 
-if [ -e "${pgmout}" ]; then
+if [[ -e "${pgmout}" ]]; then
   cat "${pgmout}"
 fi
 
@@ -128,7 +128,7 @@ In directory:    \"${scrfunc_dir}\"
 ##################################################
 # Remove the Temporary working directory
 ##################################################
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"
 fi

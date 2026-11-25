@@ -140,7 +140,7 @@ esac
 copy_obs_file() {       # copy_obs_file <dump type> <local name>
   local obs_type="$1" local_name="$2" obs_file
   obs_file=${obspath_tmp}/${obsfileprefix}.t${HH}z.${obs_type}.tm00.bufr_d
-  if [ -r "${obs_file}" ]; then
+  if [[ -r "${obs_file}" ]]; then
     cp -p "${obs_file}" "${local_name}"
   else
     print_info_msg "WARNING: ${obs_file} does not exist; skipping ${obs_type}"
@@ -149,7 +149,7 @@ copy_obs_file() {       # copy_obs_file <dump type> <local name>
 
 run_process_prepbufr=false
 obs_file=${obspath_tmp}/${obsfileprefix}.t${HH}z.prepbufr.tm00
-if [ -r "${obs_file}" ]; then
+if [[ -r "${obs_file}" ]]; then
   print_info_msg "${VERBOSE}" "Found ${obs_file}; Use it as observation "
   cp -p "${obs_file}" prepbufr
   run_process_prepbufr=true
@@ -203,7 +203,7 @@ for yamlfile in "${yaml_list[@]}"; do
   if [[ ${run_process_prepbufr} == true ]]; then
     "${EXECrrfs}"/${pgm} "${yamlfile}" >> "${pgmout}" 2>errfile
     export err=$?
-    if [ ${err} -ne 0 ]; then
+    if [[ ${err} -ne 0 ]]; then
       if grep -qF "No valid BUFR subsets were found" errfile; then
         echo "WARNING: ${message_type}: no valid BUFR subsets in input. Skipping this type." >> "${pgmout}"
         export err=0
@@ -378,7 +378,7 @@ fi
 is_empty_ioda() {
     local f="$1"
     # Return empty immediately if file is missing or zero-sized
-    if [ ! -s "${f}" ]; then
+    if [[ ! -s "${f}" ]]; then
         return 0
     fi
     # Robust check: look at Location dimension
@@ -390,10 +390,10 @@ is_empty_ioda() {
     if [[ "${header}" =~ Location[[:space:]]=[[:space:]]([^;[:space:]]+) ]]; then
       loc="${BASH_REMATCH[1]}"
     fi
-    if [ -z "${loc}" ]; then
+    if [[ -z "${loc}" ]]; then
         return 0
     fi
-    if [ "${loc}" -le 1 ]; then
+    if [[ "${loc}" -le 1 ]]; then
         return 0  # empty
     fi
     return 1  # not empty
@@ -456,7 +456,7 @@ fi
 #-----------------------------------------------------------------------
 #
 ioda_files=(ioda_*.nc)
-if [ ${#ioda_files[@]} -gt 0 ]; then
+if [[ ${#ioda_files[@]} -gt 0 ]]; then
   cp "${ioda_files[@]}" "${COMOUT_ANALYSIS}"/.
 else
   print_info_msg "WARNING: no IODA files were produced for ${CDATE}"

@@ -68,10 +68,10 @@ APRUN="time"
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s "${firewx_loc}" ]; then
+  if [[ -s "${firewx_loc}" ]]; then
     LAT_CTR=$(awk -v pattern="${hh}z" 'index($0, pattern) { print $2; exit }' "${firewx_loc}")
     LON_CTR=$(awk -v pattern="${hh}z" 'index($0, pattern) { print $3; exit }' "${firewx_loc}")
   else
@@ -81,7 +81,7 @@ if [ "${WGF}" = "firewx" ]; then
   fi
 
   python "${USHrrfs}"/rrfsfw_domain.py "${LAT_CTR}" "${LON_CTR}"
-  if [ $? -ne 0 ]; then
+  if [[ $? -ne 0 ]]; then
     err_exit "WARNING: Problem with the requested fire weather grid - ABORT"
   fi
 fi
@@ -93,7 +93,7 @@ fi
 #-----------------------------------------------------------------------
 #
 print_info_msg "${VERBOSE}" "Starting grid file generation..."
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
   #
   # Generate a GFDLgrid-type of grid.
   #
@@ -126,7 +126,7 @@ if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
   # Set the name of the regional grid file.
   grid_fn="${grid_name}.tile${TILE_RGNL}.nc"
 
-elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
+elif [[ "${GRID_GEN_METHOD}" = "ESGgrid" ]]; then
   #
   # Generate a ESGgrid-type of grid.
   #
@@ -151,7 +151,7 @@ elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
   # Call the python script to create the namelist file.
   "${USHrrfs}"/set_namelist.py -q -u "${settings}" -o "${rgnl_grid_nml_fp}"
   export err=$?
-  if [ ${err} -ne 0 ]; then
+  if [[ ${err} -ne 0 ]]; then
     err_exit "Call to python script set_namelist.py to set the variables
   in the regional_esg_grid namelist file failed. Parameters passed to this
   script are:
@@ -207,7 +207,7 @@ else
   err=1
   # Optional: err_exit "Could not find RES_equiv in ${grid_fp}"
 fi
-if [ ${err} -ne 0 ]; then
+if [[ ${err} -ne 0 ]]; then
   err_exit "Attempt to extract the equivalent global uniform cubed-sphere
   grid resolution from the grid file (grid_fp) failed:
   grid_fp = \"${grid_fp}\""
@@ -222,13 +222,13 @@ res_equiv=${res_equiv//$'\n'/}
 #
 #-----------------------------------------------------------------------
 #
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
-  if [ "${GFDLgrid_USE_GFDLgrid_RES_IN_FILENAMES}" = "TRUE" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
+  if [[ "${GFDLgrid_USE_GFDLgrid_RES_IN_FILENAMES}" = "TRUE" ]]; then
     CRES="C${GFDLgrid_RES}"
   else
     CRES="C${res_equiv}"
   fi
-elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
+elif [[ "${GRID_GEN_METHOD}" = "ESGgrid" ]]; then
   CRES="C${res_equiv}"
 fi
 #
@@ -256,9 +256,9 @@ cpreq -p "${grid_fn}" "${grid_fp}"
 #
 #-----------------------------------------------------------------------
 #
-if [ ! -z "${RES_IN_FIXLAM_FILENAMES}" ]; then
+if [[ ! -z "${RES_IN_FIXLAM_FILENAMES}" ]]; then
   res="${CRES:1}"
-  if [ "${res}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]; then
+  if [[ "${res}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]]; then
     err_exit "\
 The resolution (res) calculated for the grid does not match the resolution
 (RES_IN_FIXLAM_FILENAMES) appearing in the names of the orography and/or

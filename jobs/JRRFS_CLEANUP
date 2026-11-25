@@ -23,7 +23,7 @@ env
 export err=$?; err_chk
 
 # Remove the Temporary working directory
-if [ "${KEEPDATA^^}" != YES ]; then
+if [[ "${KEEPDATA^^}" != YES ]]; then
   rm -rf "${DATA}"
 fi
 
