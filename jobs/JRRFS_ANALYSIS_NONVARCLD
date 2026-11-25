@@ -60,7 +60,7 @@ case ${WGF} in
 esac
 
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export umbrella_analysis_data=${umbrella_analysis_data:-${DATAROOT}/rrfs_analysis_gsi_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
   export umbrella_init_data=${umbrella_init_data:-${DATAROOT}/rrfs_init_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}

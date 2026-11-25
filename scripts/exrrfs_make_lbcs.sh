@@ -402,7 +402,7 @@ if [[ "${extrn_mdl_name}" != GEFS ]] ; then
       else
         launcher="bash"
       fi
-      ${launcher} ${MP_CMDFILE}
+      ${launcher} $"{MP_CMDFILE}"
       export err=$?; err_chk
       ecflow_client --event release_"${WGF}"_make_lbcs
    fi
@@ -496,20 +496,20 @@ Need to do time interpolation!
       fi
 
       fcsthr_0=$(( fcsthr % 3 ))
-      echo fcsthr_0=${fcsthr_0}
+      echo fcsthr_0=$"{fcsthr_0}"
       fcsthr_m=$(( fcsthr - fcsthr_0 ))
-      echo fcsthr_m=${fcsthr_m}
+      echo fcsthr_m=$"{fcsthr_m}"
       fcsthr_p=$(( fcsthr - fcsthr_0 + 3 ))
-      echo fcsthr_p=${fcsthr_p}
-      fhrm=$( printf "%03d" ${fcsthr_m} )
+      echo fcsthr_p=$"{fcsthr_p}"
+      fhrm=$( printf "%03d" $"{fcsthr_m}" )
       echo fhrm="${fhrm}"
-      fhrp=$( printf "%03d" ${fcsthr_p} )
+      fhrp=$( printf "%03d" $"{fcsthr_p}" )
       echo fhrp="${fhrp}"
       in1=$( echo "${file}" | sed 's/...$/'"${fhrm}"'/g' )
       echo in1="${in1}"
       in2=$( echo "${file}" | sed 's/...$/'"${fhrp}"'/g' )
       echo in2="${in2}"
-      vtime=$(${NDATE} ${fcsthr_m} "${yyyymmdd}""${hh}")
+      vtime=$(${NDATE} $"{fcsthr_m}" "${yyyymmdd}""${hh}")
       echo vtime = "${vtime}"
       a="vt=${vtime}"
       d1="${fcsthr} hour forecast"
@@ -823,7 +823,7 @@ list file has not specified for this external LBC model (EXTRN_MDL_NAME_LBCS):
 # Call the python script to create the namelist file.
 #
   nml_fn="fort.41"
-  "${USHrrfs}"/set_namelist.py -u "${settings}" -o ${nml_fn} || \
+  "${USHrrfs}"/set_namelist.py -u "${settings}" -o $"{nml_fn}" || \
     err_exit "\
 Call to python script set_namelist.py to set the variables in the namelist
 file read in by the ${exec_fn} executable failed.  Parameters passed to
@@ -847,7 +847,7 @@ ${settings}"
     gridspecs="rot-ll:${sp_lon}:${sp_lat}:0 -10:801:0.025 -10:801:0.025"
     lbc_spec_fhrs=( "${EXTRN_MDL_LBC_SPEC_FHRS[${i}]}" )
     fcst_hhh=$(( lbc_spec_fhrs - EXTRN_MDL_LBCS_OFFSET_HRS ))
-    fcst_hhh_FV3LAM=`printf %3.3i ${fcst_hhh}`
+    fcst_hhh_FV3LAM=`printf %3.3i $"{fcst_hhh}"`
     fn_grib2_subset=rrfs.t${hh}z.natlev.f${fcst_hhh_FV3LAM}.subset.grib2
 
     if [[ ! -s "${extrn_mdl_staging_dir}"/"${fn_grib2}" ]]; then
@@ -868,7 +868,7 @@ ${settings}"
   export pgm="ufs_util_chgres_cube"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/$"{pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
 #
 # Move LBCs file for the current lateral boundary update time to the LBCs
@@ -878,7 +878,7 @@ ${settings}"
 #
   lbc_spec_fhrs=( "${EXTRN_MDL_LBC_SPEC_FHRS[${i}]}" )
   fcst_hhh=$(( lbc_spec_fhrs - EXTRN_MDL_LBCS_OFFSET_HRS ))
-  fcst_hhh_FV3LAM=`printf %3.3i ${fcst_hhh}`
+  fcst_hhh_FV3LAM=`printf %3.3i $"{fcst_hhh}"`
 
 # copy results to COMOUT for longer time disk storage.
   cpreq gfs.bndy.nc "${COMOUT}"/gfs_bndy.tile7."${fcst_hhh_FV3LAM}".nc

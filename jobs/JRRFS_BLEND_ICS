@@ -109,7 +109,7 @@ export shared_output_data=${umbrella_ics_data}/ics
 #-----------------------------------------------------------------------
 # Define COM directories
 #-----------------------------------------------------------------------
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 
 #-----------------------------------------------------------------------
 # Execute the script.

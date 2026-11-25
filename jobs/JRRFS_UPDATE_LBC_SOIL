@@ -43,7 +43,7 @@ else
   export DO_ENSEMBLE="FALSE"
 fi
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 
 #-----------------------------------------------------------------------
 # Define umbrella data directories

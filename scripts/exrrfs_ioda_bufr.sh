@@ -201,7 +201,7 @@ for yamlfile in "${yaml_list[@]}"; do
   cpreq -p "${FIX_JEDI}"/ioda_empty.nc ioda_"${message_type}".nc
 
   if [[ ${run_process_prepbufr} == true ]]; then
-    "${EXECrrfs}"/${pgm} "${yamlfile}" >> "${pgmout}" 2>errfile
+    "${EXECrrfs}"/$"{pgm}" "${yamlfile}" >> "${pgmout}" 2>errfile
     export err=$?
     if [[ ${err} -ne 0 ]]; then
       if grep -qF "No valid BUFR subsets were found" errfile; then
@@ -315,7 +315,7 @@ input_es="esamsuabufr"
 output_file="ioda_amsua_{splits/satId}.nc"
 if [[ -f "${input_1b}" && -f "${input_es}" ]]; then
   export pgm="bufr2ioda_amsua.py"
-  python bufr2ioda_amsua.py ${input_1b} ${input_es} ${yaml_es} ${yaml_1b} ${output_file}
+  python bufr2ioda_amsua.py $"{input_1b}" $"{input_es}" $"{yaml_es}" $"{yaml_1b}" $"{output_file}"
   export err=$?; err_chk
 else
   echo "Input files ${input_1b} and/or ${input_es} do not exist."

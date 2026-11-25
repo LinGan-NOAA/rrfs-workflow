@@ -86,7 +86,7 @@ filelist="fv_core.res.nc coupler.res"
 filelistn="fv_core.res.tile1.nc fv_srf_wnd.res.tile1.nc fv_tracer.res.tile1.nc phy_data.nc sfc_data.nc"
 filelistcold="gfs_data.tile7.halo0.nc sfc_data.tile7.halo0.nc"
 n_iolayouty=$((IO_LAYOUT_Y-1))
-list_iolayout=$(seq 0 ${n_iolayouty})
+list_iolayout=$(seq 0 $"{n_iolayouty}")
 
 if [[ "${CYCLE_SUBTYPE}" = "ensinit" ]]; then
   restart_prefix=${save_yyyy}${save_mm}${save_dd}.${save_hh}${dt_mmss}
@@ -171,7 +171,7 @@ if [[ -r "${shared_forecast_restart_data}/${restart_prefix}.coupler.res" ]]; the
   #-----------------------------------------------------------------------
   #
   for restart_source_file in phy_data.nc fv_tracer.res.tile1.nc fv_core.res.tile1.nc fv_diag.res.tile1.nc sfc_data.nc fv_srf_wnd.res.tile1.nc fv_core.res.nc coupler.res; do
-    cpreq "${shared_forecast_restart_data}"/"${restart_prefix}".${restart_source_file} "${COMOUT}"/RESTART
+    cpreq "${shared_forecast_restart_data}"/"${restart_prefix}".$"{restart_source_file}" "${COMOUT}"/RESTART
   done
   echo " ${fhr} forecast from ${yyyymmdd}${hh} is ready " #> ${COMOUT}/RESTART/restart_done_f${fhr}
 else

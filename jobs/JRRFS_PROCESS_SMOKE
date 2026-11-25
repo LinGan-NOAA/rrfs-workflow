@@ -74,7 +74,7 @@ for the specified cycle.
 # Define COM directories
 #-----------------------------------------------------------------------
 
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 
 export COMOUT_HWP=${COMrrfs}/HOURLY_HWP/hourly_hwp.${PDY}
 export COMOUT_HWP_1day=${COMrrfs}/HOURLY_HWP/hourly_hwp.${PDYm1}

@@ -271,15 +271,15 @@ fi
 #
 export OMP_NUM_THREADS=1
 export pgm="fv3jedi_letkf.x"
-cpreq -p "${EXECrrfs}"/${pgm} ./${pgm}
+cpreq -p "${EXECrrfs}"/$"{pgm}" ./$"{pgm}"
 
 . prep_step
 
-${APRUN} ./${pgm} ${jedi_yaml} >>"${pgmout}" 2>errfile
+${APRUN} ./$"{pgm}" $"{jedi_yaml}" >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 cp "${pgmout}" "${COMOUT}"/analysis/"${RUN}".t"${HH}"z.jediout_getkf.tm00
 cp "${JCB_CONFIG_ENKF}" "${COMOUT}"/analysis
-cp ${jedi_yaml} "${COMOUT}"/analysis/${jedi_yaml}
+cp $"{jedi_yaml}" "${COMOUT}"/analysis/$"{jedi_yaml}"
 mv errfile errfile_jedi_enkf
 
 print_info_msg "

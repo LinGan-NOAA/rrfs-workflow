@@ -37,7 +37,7 @@ else
   err_exit "FATAL ERROR: WGF is not set."
 fi
 
-SLEEP_LOOP_MAX=`expr ${SLEEP_TIME} / ${SLEEP_INT}`
+SLEEP_LOOP_MAX=`expr $"{SLEEP_TIME}" / $"{SLEEP_INT}"`
 #-----------------------------------------------------------------------
 # Process files and directories level dependency scan
 #-----------------------------------------------------------------------
@@ -92,6 +92,6 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
 
   if [[ ${proceed_trigger_scan} == "YES" ]]; then
     ic=`expr "${ic}" + 1`
-    sleep ${SLEEP_INT}
+    sleep $"{SLEEP_INT}"
   fi
 done                 # proceed_trigger_scan

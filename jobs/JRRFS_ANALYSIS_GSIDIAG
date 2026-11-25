@@ -13,7 +13,7 @@ export EXECrrfs=${EXECrrfs:-${HOMErrfs}/exec}
 export FIXrrfs=${FIXrrfs:-${HOMErrfs}/fix}
 export PARMrrfs=${PARMrrfs:-${HOMErrfs}/parm}
 export USHrrfs=${USHrrfs:-${HOMErrfs}/ush}
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 
 #-----------------------------------------------------------------------
 # RRFS GSIDIAG
@@ -85,15 +85,15 @@ the specified cycle.
 #-----------------------------------------------------------------------
 
 if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
-  export COMOUT=${COMOUT:-$(compath.py -o ${NET}/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"_spinup/analysis)}
+  export COMOUT=${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"_spinup/analysis)}
 else
-  export COMOUT=${COMOUT:-$(compath.py -o ${NET}/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/analysis)}
+  export COMOUT=${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/analysis)}
 fi
 mkdir -p "${COMOUT}"
 
 # SATBIAS_OUT directory for cycling bias correction files
 
-export SATBIAS_OUT=$(compath.py -o ${NET}/"${rrfs_ver}"/satbias/satbias."${PDY}")
+export SATBIAS_OUT=$(compath.py -o $"{NET}"/"${rrfs_ver}"/satbias/satbias."${PDY}")
 mkdir -p "${SATBIAS_OUT}"
 
 #-----------------------------------------------------------------------

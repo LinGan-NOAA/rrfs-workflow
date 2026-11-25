@@ -84,7 +84,7 @@ else
 fi
 export mem_num=m$(echo "${ENSMEM_INDX}")
 
-export COMrrfs=${COMrrfs:-$(compath.py -o ${NET}/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
 export COMOUT=${COMOUT:-${COMrrfs}/${RUN}.${PDY}/${cyc}}
 
 if [[ "${WGF}" == "ensf" ]]; then
@@ -108,7 +108,7 @@ env
 export err=$?; err_chk
 
 if [[ -e "${pgmout}" ]]; then
-  cat ${pgmout}
+  cat $"{pgmout}"
 fi
 
 #-----------------------------------------------------------------------
