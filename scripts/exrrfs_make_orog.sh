@@ -164,7 +164,7 @@ blat=0
 input_redirect_fn="INPS"
 orogfile="none"
 
-echo $"{mtnres}" $"{lonb}" $"{latb}" $"{jcap}" $"{NR}" $"{NF1}" $"{NF2}" $"{efac}" $"{blat}" > "${input_redirect_fn}"
+echo "${mtnres}" "${lonb}" "${latb}" "${jcap}" "${NR}" "${NF1}" "${NF2}" "${efac}" "${blat}" > "${input_redirect_fn}"
 #
 # The following two inputs are read in as strings, so they must be quoted
 # in the input file.
@@ -191,7 +191,7 @@ print_info_msg "Starting orography file generation..."
 export pgm="ufs_util_orog"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/$"{pgm}" < "${input_redirect_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" < "${input_redirect_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
 export err=$?; err_chk
 mv "${DATA}"/raw_topo/tmp/errfile "${DATA}"/raw_topo/tmp/errfile_orog
 
@@ -255,7 +255,7 @@ EOF
   export pgm="ufs_util_orog_gsl"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" < "${input_redirect_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" < "${input_redirect_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
   export err=$?; err_chk
   mv "${DATA}"/raw_topo/tmp/errfile "${DATA}"/raw_topo/tmp/errfile_orog_gsl
 
@@ -388,7 +388,7 @@ print_info_msg "Starting filtering of orography..."
 export pgm="ufs_util_filter_topo"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/$"{pgm}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
 export err=$?; err_chk
 mv "${DATA}"/raw_topo/tmp/errfile "${DATA}"/raw_topo/tmp/errfile_filter_topo
 #
@@ -445,7 +445,7 @@ for halo_num in "${halo_num_list[@]}"; do
 
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" < "${nml_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" < "${nml_fn}" >>"${pgmout}" 2>"${DATA}"/raw_topo/tmp/errfile
   export err=$?; err_chk
   mv "${DATA}"/raw_topo/tmp/errfile "${DATA}"/raw_topo/tmp/errfile_shave_"${halo_num}"
   cpreq -p "${shaved_fp}" "${COMrrfs}"/"${RUN}"."${PDY}"/"${cyc}"/input/

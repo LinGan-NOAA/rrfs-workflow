@@ -75,11 +75,11 @@ This is the J-job script for the task that generates grid files.
 # Define COM directories
 #-----------------------------------------------------------------------
 # Send cycle generated fix files to COM
-export COMOUT="${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/input)}"
+export COMOUT="${COMOUT:-$(compath.py -o "${NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/input)}"
 
 mkdir -p "${COMOUT}"
 
-export COMrrfs=$(compath.py $"{NET}"/"${rrfs_ver}")
+export COMrrfs=$(compath.py "${NET}"/"${rrfs_ver}")
 
 #-----------------------------------------------------------------------
 # Execute the script.

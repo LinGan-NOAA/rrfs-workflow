@@ -76,7 +76,7 @@ with RRFS for the specified cycle.
 #-----------------------------------------------------------------------
 
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
-export COMrrfs=$(compath.py -o $"{NET}"/"${rrfs_ver}")
+export COMrrfs=$(compath.py -o "${NET}"/"${rrfs_ver}")
 if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT="${COMrrfs}/enkfrrfs.${PDY}/${cyc}_spinup"
   export umbrella_forecast_data=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}

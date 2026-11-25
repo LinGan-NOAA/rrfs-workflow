@@ -103,9 +103,9 @@ if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
   export pgm="ufs_util_make_hgrid"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" \
+  ${APRUN} "${EXECrrfs}"/"${pgm}" \
     --grid_type gnomonic_ed \
-    --nlon $"{nx_t6sg}" \
+    --nlon "${nx_t6sg}" \
     --grid_name "${grid_name}" \
     --do_schmidt \
     --stretch_factor "${STRETCH_FAC}" \
@@ -166,7 +166,7 @@ ${settings}"
   export pgm="ufs_util_regional_esg_grid"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" "${rgnl_grid_nml_fp}" >>"${pgmout}" 2>"${DATA}"/errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" "${rgnl_grid_nml_fp}" >>"${pgmout}" 2>"${DATA}"/errfile
   export err=$?; err_chk
   mv "${DATA}"/errfile "${DATA}"/errfile_regional_esg_grid
 
@@ -190,7 +190,7 @@ print_info_msg "${VERBOSE}" "Grid file generation completed successfully."
 export pgm="ufs_util_global_equiv_resol"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/$"{pgm}" "${grid_fp}" >>"${pgmout}" 2>"${DATA}"/errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" "${grid_fp}" >>"${pgmout}" 2>"${DATA}"/errfile
 export err=$?; err_chk
 mv "${DATA}"/errfile "${DATA}"/errfile_global_equiv_resol
 
@@ -294,7 +294,7 @@ for halo_num in "${halo_num_list[@]}"; do
 
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" < "${nml_fn}" >>"${pgmout}" 2>"${DATA}"/errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" < "${nml_fn}" >>"${pgmout}" 2>"${DATA}"/errfile
   export err=$?; err_chk
   mv "${DATA}"/errfile "${DATA}"/errfile_shave_nh"${halo_num}"
   cpreq -p "${shaved_fp}" "${COMOUT}"/
@@ -319,7 +319,7 @@ for halo_num in "${halo_num_list[@]}"; do
 
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" \
+  ${APRUN} "${EXECrrfs}"/"${pgm}" \
       --num_tiles 1 \
       --dir "${DATA}" \
       --tile_file "${grid_fn}" \

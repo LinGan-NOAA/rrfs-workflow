@@ -419,7 +419,7 @@ diag_files=( diag*conv* )
 countdiag=${#diag_files[@]}
 shopt -u nullglob
 if [[ "${countdiag}" -gt "${nens}" ]]; then
-  ${APRUN} "${EXECrrfs}"/$"{pgm}" < enkf.nml >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" < enkf.nml >>"${pgmout}" 2>errfile
   export err=$?; err_chk
 else
   echo "WARNING: EnKF not running due to lack of ${OB_TYPE} obs for cycle ${vlddate} !!!"

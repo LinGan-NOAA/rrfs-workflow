@@ -140,7 +140,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
             if [[ "${array_element_scan_release_det_post_long[${fhr}${sub_fhr}00]}" == "NO" ]]; then
               if [[ -s "${umbrella_forecast_data}/log.atm.f${fhr_3d}-${sub_fhr}-00" ]]; then
                 array_element_scan_release_det_post_long[${fhr}${sub_fhr}00]="found"
-                ecflow_client --event release_det_post_f"${fhr_3d}"_$"{sub_fhr}"_00_long
+                ecflow_client --event release_det_post_f"${fhr_3d}"_"${sub_fhr}"_00_long
                 ic=1
                 continue
               else
@@ -198,7 +198,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
             if [[ "${array_element_scan_release_det_post[${fhr}${sub_fhr}00]}" == "NO" ]]; then
               if [[ -s "${umbrella_forecast_data}/log.atm.f${fhr_3d}-${sub_fhr}-00" ]]; then
                 array_element_scan_release_det_post[${fhr}${sub_fhr}00]="found"
-                ecflow_client --event release_det_post_f"${fhr_3d}"_$"{sub_fhr}"_00
+                ecflow_client --event release_det_post_f"${fhr_3d}"_"${sub_fhr}"_00
                 ic=1
                 continue
               else

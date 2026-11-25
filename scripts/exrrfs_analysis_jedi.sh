@@ -175,8 +175,8 @@ if  [[ ${regional_ensemble_option:-1} -eq 5 ]]; then
   if [[ "${HH}" == "${hrs}" ]]; then
 
   while [[ ${imem} -le ${NUM_ENS_MEMBERS} ]];do
-    memcharv0=$( printf "%03d" $"{imem}" )
-    memchar=m$( printf "%03d" $"{imem}" )
+    memcharv0=$( printf "%03d" "${imem}" )
+    memchar=m$( printf "%03d" "${imem}" )
     mkdir -p data/inputs/mem"${memcharv0}"
 
     YYYYMMDDHHmInterv=$( date +%Y%m%d%H -d "${START_DATE} ${DA_CYCLE_INTERV} hours ago" )
@@ -314,7 +314,7 @@ fi
 #-----------------------------------------------------------------------
 #
 n_iolayouty=$((IO_LAYOUT_Y-1))
-list_iolayout=$(seq 0 $"{n_iolayouty}")
+list_iolayout=$(seq 0 "${n_iolayouty}")
 
 if [[ ${BKTYPE} -eq 1 ]]; then  # cold start uses background from INPUT
   ln -snf "${fixgriddir}"/phis.nc  phis.nc
@@ -475,7 +475,7 @@ if [[ ${anav_type} == "radardbz" ]]; then
   if [[ -n ${regional_ensemble_option:-1} ]]; then
     imem=1
     while [[ ${imem} -le ${NUM_ENS_MEMBERS} ]];do
-      memcharv0=$( printf "%03d" $"{imem}" )
+      memcharv0=$( printf "%03d" "${imem}" )
       python prep_phydata_dbz.py data/inputs/mem"${memcharv0}"/fv3_phyvars
       imem=$((imem+1))
     done
@@ -524,15 +524,15 @@ fi
 #
 export OMP_NUM_THREADS=1
 export pgm="fv3jedi_var.x"
-cpreq -p "${EXECrrfs}"/$"{pgm}" ./$"{pgm}"
+cpreq -p "${EXECrrfs}"/"${pgm}" ./"${pgm}"
 
 . prep_step
 
-${APRUN} ./$"{pgm}" $"{jedi_yaml}" >>"${pgmout}" 2>errfile
+${APRUN} ./"${pgm}" "${jedi_yaml}" >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 cp "${pgmout}" "${COMOUT}"/"${RUN}".t"${HH}"z.jediout_"${anav_type}".tm00
 cp "${jcb_config}" "${COMOUT}"
-cp $"{jedi_yaml}" "${COMOUT}"/jedivar_"${anav_type}".yaml
+cp "${jedi_yaml}" "${COMOUT}"/jedivar_"${anav_type}".yaml
 mv errfile errfile_jedi
 #
 #-----------------------------------------------------------------------
@@ -553,9 +553,9 @@ mv errfile errfile_jedi
 # Disable HDF5's advisory file locking to avoid intermittent failures
 export HDF5_USE_FILE_LOCKING=FALSE
 export pgm="rdas_ua2u.x"
-cpreq -p "${EXECrrfs}"/$"{pgm}" ./$"{pgm}"
+cpreq -p "${EXECrrfs}"/"${pgm}" ./"${pgm}"
 
-${APRUN_UA} ./$"{pgm}" ua_update_u --in_grid=fv3_grid_spec --in_anl=fv3_dynvars --remove_anl_winds >>"${pgmout}" 2>errfile
+${APRUN_UA} ./"${pgm}" ua_update_u --in_grid=fv3_grid_spec --in_anl=fv3_dynvars --remove_anl_winds >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 mv errfile errfile_ua2u
 

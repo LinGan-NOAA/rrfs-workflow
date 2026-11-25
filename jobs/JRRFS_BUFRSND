@@ -84,7 +84,7 @@ if [[ "${WGF}" = "ensf" ]]; then
 elif [[ "${WGF}" = "det" ]]; then
   export ENSMEM_INDX=""
 fi
-export mem_num=m$(echo "${ENSMEM_INDX}")
+export mem_num=m"${ENSMEM_INDX}"
 
 CYCLE_TYPE=${CYCLE_TYPE:-prod}
 export DO_ENSFCST=${DO_ENSFCST:-"FALSE"}

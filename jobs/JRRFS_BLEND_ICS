@@ -25,7 +25,7 @@ if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
 else
   export ENSMEM_INDX=""
 fi
-export mem_num=m$(echo "${ENSMEM_INDX}")
+export mem_num=m"${ENSMEM_INDX}"
 
 if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export umbrella_ics_data=${umbrella_ics_data:-${DATAROOT}/rrfs_ics_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}/${mem_num}}
@@ -96,7 +96,7 @@ case "${WGF}" in
 esac
 if [[ "${WGF}" = "enkf" ]] && [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
-  export mem_num=m$(echo "${ENSMEM_INDX}")
+  export mem_num=m"${ENSMEM_INDX}"
   export DO_ENSEMBLE="TRUE"
 else
   echo "Blending can only run with enkf"
@@ -109,7 +109,7 @@ export shared_output_data=${umbrella_ics_data}/ics
 #-----------------------------------------------------------------------
 # Define COM directories
 #-----------------------------------------------------------------------
-export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o "${NET}"/"${rrfs_ver}")}
 
 #-----------------------------------------------------------------------
 # Execute the script.

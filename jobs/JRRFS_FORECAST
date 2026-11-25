@@ -36,7 +36,7 @@ case "${WGF}" in
 esac
 if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
-  export mem_num=m$(echo "${ENSMEM_INDX}")
+  export mem_num=m"${ENSMEM_INDX}"
   export DO_ENSEMBLE="TRUE"
 else
   export ENSMEM_INDX=""

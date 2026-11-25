@@ -36,7 +36,7 @@ esac
 #-----------------------------------------------------------------------
 # Define umbrella data directories
 #-----------------------------------------------------------------------
-export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o "${NET}"/"${rrfs_ver}")}
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
 export COMINobsproc="${COMINobsproc:-$(compath.py obsproc/"${obsproc_ver}")}"
 

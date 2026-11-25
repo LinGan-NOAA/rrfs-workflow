@@ -44,7 +44,7 @@ if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   else
     export ENSMEM_INDX=${MEMBER_NAME}
   fi
-  export mem_num=m$(echo "${ENSMEM_INDX}")
+  export mem_num=m"${ENSMEM_INDX}"
   export DO_ENSEMBLE="TRUE"
 else
   export ENSMEM_INDX=""
@@ -106,7 +106,7 @@ export CYCLE_SUBTYPE=${CYCLE_SUBTYPE:-empty}
 #-----------------------------------------------------------------------
 # Define COM directories
 #-----------------------------------------------------------------------
-export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o "${NET}"/"${rrfs_ver}")}
 export COMOUT=${COMOUT:-${COMrrfs}/${RUN}.${PDY}/${cyc}}
 if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
   export COMOUT=${COMOUT}_spinup

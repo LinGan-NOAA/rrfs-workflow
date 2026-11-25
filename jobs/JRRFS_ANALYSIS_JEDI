@@ -43,7 +43,7 @@ if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
     export mem_num=""
   else
     export ENSMEM_INDX=${MEMBER_NAME}
-    export mem_num=m$(echo "${ENSMEM_INDX}")
+    export mem_num=m"${ENSMEM_INDX}"
   fi
   export DO_ENSEMBLE="TRUE"
 else
@@ -53,7 +53,7 @@ else
 fi
 
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
-export COMrrfs=${COMrrfs:-$(compath.py -o $"{NET}"/"${rrfs_ver}")}
+export COMrrfs=${COMrrfs:-$(compath.py -o "${NET}"/"${rrfs_ver}")}
 
 export COMINgfs=${COMINgfs:-$(compath.py gfs/"${gfs_ver}")}
 export COMINobsproc=${COMINobsproc:-$(compath.py obsproc/"${obsproc_ver}")}
@@ -131,7 +131,7 @@ else
 fi
 
 mkdir -p "${COMOUT}"
-export SATBIAS_OUT=$(compath.py -o $"{NET}"/"${rrfs_ver}"/satbias/satbias."${PDY}")
+export SATBIAS_OUT=$(compath.py -o "${NET}"/"${rrfs_ver}"/satbias/satbias."${PDY}")
 
 #-----------------------------------------------------------------------
 # Define forecast INPUT directories

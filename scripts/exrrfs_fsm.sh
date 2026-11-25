@@ -572,7 +572,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
       # 000~017 have every 15 minutes
       if [[ $((fhr)) -le 17 ]]; then
         for sub_fhr in 00 15 30 45; do
-          fc=$(count_matching_files "${umbrella_forecast_data}"/log.atm.f"${fhr_3d}"-$"{sub_fhr}"-*)
+          fc=$(count_matching_files "${umbrella_forecast_data}"/log.atm.f"${fhr_3d}"-"${sub_fhr}"-*)
           if [[ "${fc}" -gt 0 ]]; then
             if [[ "${fhr}" -eq 0 ]] && [[ ${sub_fhr} == "00" ]]; then
               if [[ "${array_element_scan_release_det_post_long[${fhr}0036]}" == "NO" ]]; then
@@ -582,7 +582,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
             else
               if [[ "${array_element_scan_release_det_post_long[${fhr}${sub_fhr}00]}" == "NO" ]]; then
                 array_element_scan_release_det_post_long[${fhr}${sub_fhr}00]="found"
-                ecflow_client --event release_det_post_f"${fhr_3d}"_$"{sub_fhr}"_00_long
+                ecflow_client --event release_det_post_f"${fhr_3d}"_"${sub_fhr}"_00_long
               fi
             fi
           else
@@ -653,7 +653,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
       # 000~017 have every 15 minutes
       if [[ $((fhr)) -le 17 ]]; then
         for sub_fhr in 00 15 30 45; do
-          fc=$(count_matching_files "${umbrella_forecast_data}"/log.atm.f"${fhr_3d}"-$"{sub_fhr}"-*)
+          fc=$(count_matching_files "${umbrella_forecast_data}"/log.atm.f"${fhr_3d}"-"${sub_fhr}"-*)
           if [[ "${fc}" -gt 0 ]]; then
             if [[ "${fhr}" -eq 0 ]] && [[ ${sub_fhr} == "00" ]]; then
               if [[ "${array_element_scan_release_det_post[${fhr}0036]}" == "NO" ]]; then
@@ -663,7 +663,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
             else
               if [[ "${array_element_scan_release_det_post[${fhr}${sub_fhr}00]}" == "NO" ]]; then
                 array_element_scan_release_det_post[${fhr}${sub_fhr}00]="found"
-                ecflow_client --event release_det_post_f"${fhr_3d}"_$"{sub_fhr}"_00
+                ecflow_client --event release_det_post_f"${fhr_3d}"_"${sub_fhr}"_00
               fi
             fi
           else

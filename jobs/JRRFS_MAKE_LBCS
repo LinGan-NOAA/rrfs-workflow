@@ -85,11 +85,11 @@ export COMIN=${COMIN:-$(compath.py rrfs/"${rrfs_ver}")}
 
 if [[ "${WGF}" = "enkf" ]] || [[ "${WGF}" = "ensf" ]]; then
   export ENSMEM_INDX=${MEMBER_NAME}
-  export mem_num=m$(echo "${ENSMEM_INDX}")
-  export COMOUT="${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/"${mem_num}"/lbcs)}"
+  export mem_num=m"${ENSMEM_INDX}"
+  export COMOUT="${COMOUT:-$(compath.py -o "${NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/"${mem_num}"/lbcs)}"
 else
   export ENSMEM_INDX=""
-  export COMOUT="${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/lbcs)}"
+  export COMOUT="${COMOUT:-$(compath.py -o "${NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}"/lbcs)}"
   export umbrella_lbcops_data=${umbrella_ops_data:-${DATAROOT}/rrfs_lbcops_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}}
   if [[ -d "${umbrella_lbcops_data}" ]] && [[ "${BCGRP}" = "00" ]]; then
     mv "${umbrella_lbcops_data}" "${umbrella_lbcops_data}"_$$

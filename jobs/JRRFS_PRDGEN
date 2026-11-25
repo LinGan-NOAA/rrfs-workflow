@@ -82,11 +82,11 @@ if [[ "${WGF}" = "ensf" ]]; then
 elif [[ "${WGF}" = "det" ]]; then
   export ENSMEM_INDX=""
 fi
-export mem_num=m$(echo "${ENSMEM_INDX}")
+export mem_num=m"${ENSMEM_INDX}"
 export CYCLE_TYPE=${CYCLE_TYPE:-prod}
 export DO_ENSFCST=${DO_ENSFCST:-"FALSE"}
 export COMrrfs=${COMrrfs:-$(compath.py -o rrfs/"${rrfs_ver}")}
-export COMOUT=${COMOUT:-$(compath.py -o $"{NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}")}
+export COMOUT=${COMOUT:-$(compath.py -o "${NET}"/"${rrfs_ver}"/"${RUN}"."${PDY}"/"${cyc}")}
 
 # Output from smoke and dust goes to umbrella data
 export umbrella_post_data=${DATAROOT}/rrfs_post_${cyc}_${rrfs_ver_2d}_${envir}/${WGF}
