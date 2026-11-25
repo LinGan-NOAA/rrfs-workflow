@@ -8,7 +8,7 @@ export FIXLAM=${FIXLAM:-${HOMErrfs}/fix/lam/RRFS_NA_3km}
 export FIX_GSI="${FIXrrfs}/gsi"
 # export OROG_DIR="${HOMErrfs}/fix/lam/RRFS_NA_3km"
 export THOMPSON_MP_CLIMO_FP="${FIXam}/Thompson_MP_MONTHLY_CLIMO.nc"
-if [ "${WGF}" == "firewx" ]; then
+if [[ "${WGF}" == "firewx" ]]; then
 #notused?  export CCPP_PHYS_SUITE_FP="${PARMrrfs}/config/${WGF}/suite_RRFS_sas_nogwd.xml"
   export CCPP_PHYS_SUITE='RRFS_sas_nogwd'
 fi
@@ -58,10 +58,10 @@ This is the ex-script for the task that generates initial condition
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s "${firewx_loc}" ]; then
+  if [[ -s "${firewx_loc}" ]]; then
     LAT_CTR=""
     LON_CTR=""
     if [[ -s "${firewx_loc}" ]]; then
@@ -96,7 +96,7 @@ ic_spec_fhrs=$(( 0 + time_offset_hrs ))
 
 hh=${CDATE:8:2}
 yyyymmdd=${CDATE:0:8}
-OFFSETDATE=`${NDATE} -"${time_offset_hrs}" "${yyyymmdd}""${hh}"`
+OFFSETDATE=$($(${NDATE} -"${time_offset_hrs}" "${yyyymmdd}""${hh}"))
 export extrn_mdl_cdate="${OFFSETDATE}"
 
 # Starting year, month, day, and hour of the external model forecast.
@@ -114,11 +114,11 @@ case "${extrn_mdl_name}" in
 
   "GFS")
     sysdir="${COMINgfs}/gfs.${yyyymmdd}/${hh}/atmos"
-    if [ "${gfs_file_fmt}" = "grib2" ]; then
+    if [[ "${gfs_file_fmt}" = "grib2" ]]; then
       fns_on_disk=( "gfs.t${hh}z.pgrb2.0p25.f0${fcst_hh}" )
-    elif [ "${gfs_file_fmt}" = "netcdf" ]; then
+    elif [[ "${gfs_file_fmt}" = "netcdf" ]]; then
       fns=( "atm" "sfc" )
-      if [ "${fcst_hh}" = "00" ]; then
+      if [[ "${fcst_hh}" = "00" ]]; then
         suffix="anl.nc"
       else
         suffix="f0${fcst_hh}.nc"
@@ -141,7 +141,7 @@ case "${extrn_mdl_name}" in
     # conditions from the parent deterministic post, whose products carry that domain's own grid
     # spacing and name rather than the NA ones. This task runs as the 1.5 km fire weather grid, so
     # the parent domain is not in its environment; take whichever natlev file the parent wrote.
-    if [ "${RETRO:-NO}" = "YES" ] && [ ! -e "${sysdir}/${fns_on_disk[0]}" ]; then
+    if [[ "${RETRO:-NO}" = "YES" ]] && [[ ! -e "${sysdir}/${fns_on_disk[0]}" ]]; then
       fn_parent=""
 
       # Enable nullglob so unmatched globs disappear instead of returning literal asterisks
@@ -153,7 +153,7 @@ case "${extrn_mdl_name}" in
       if [[ ${#parent_files[@]} -gt 0 ]]; then
         fn_parent="${parent_files[0]}"
       fi
-      if [ -n "${fn_parent}" ]; then
+      if [[ -n "${fn_parent}" ]]; then
         fns_on_disk=( "$( basename "${fn_parent}" )" )
         print_info_msg "Fire weather ICs: using the parent post file ${fns_on_disk[0]}"
       fi
@@ -219,7 +219,7 @@ case "${MACHINE}" in
 
 esac
 
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
   export FIXLAM=${COMrrfs}/${RUN}.${PDY}/${cyc}/input
 else
   export FIXLAM=${FIXLAM:-${FIXrrfs}/lam/${PREDEF_GRID_NAME}}
@@ -264,7 +264,7 @@ for fp in "${extrn_mdl_fps_on_disk[@]}"; do
   #
   # If the external model file exists, then...
   #
-  if [ -f "${fp}" ]; then
+  if [[ -f "${fp}" ]]; then
     #
     # Increment the counter that keeps track of the number of external
     # model files found on disk and print out an informational message.
@@ -277,11 +277,11 @@ File fp exists on disk:
     # If we are NOT searching for user-staged external model files, then
     # we also check that the current file is at least min_age minutes old.
     #
-    if [ "${use_user_staged_extrn_files}" != "TRUE" ]; then
+    if [[ "${use_user_staged_extrn_files}" != "TRUE" ]]; then
 
       old_file=$(find "${fp}" -mmin "+${min_age}" -print -quit) || \
         err_exit "Failed checking file age for ${fp}"
-      if [ -n "${old_file}" ]; then
+      if [[ -n "${old_file}" ]]; then
         print_info_msg "
 File fp is older than the minimum required age of min_age minutes:
   fp = \"${fp}\"
@@ -304,7 +304,7 @@ Not checking presence and age of remaining external model files on disk."
     # If an external model file is not found and we are searching for it
     # in a user-specified directory, print out an error message and exit.
     #
-    if [ "${use_user_staged_extrn_files}" = "TRUE" ]; then
+    if [[ "${use_user_staged_extrn_files}" = "TRUE" ]]; then
       fns_on_disk_display=$(printf '"%s" ' "${fns_on_disk[@]}")
       err_exit "\
 File fp does NOT exist on disk:
@@ -392,9 +392,9 @@ case "${CCPP_PHYS_SUITE}" in
   "FV3_RAP" | \
   "RRFS_sas" | \
   "RRFS_sas_nogwd" )
-    if [ "${EXTRN_MDL_NAME_ICS}" = "RRFS" ] || \
-       [ "${EXTRN_MDL_NAME_ICS}" = "GFS" ] || \
-       [ "${EXTRN_MDL_NAME_ICS}" = "GDASENKF" ]; then
+    if [[ "${EXTRN_MDL_NAME_ICS}" = "RRFS" ]] || \
+       [[ "${EXTRN_MDL_NAME_ICS}" = "GFS" ]] || \
+       [[ "${EXTRN_MDL_NAME_ICS}" = "GDASENKF" ]]; then
       varmap_file="GFSphys_var_map.txt"
     fi
     ;;
@@ -524,8 +524,8 @@ convert_nst=""
 #-----------------------------------------------------------------------
 #
 nsoill_out="4"
-if [ "${EXTRN_MDL_NAME_ICS}" = "RRFS" ] && \
-   [ "${SDF_USES_RUC_LSM}" = "TRUE" ]; then
+if [[ "${EXTRN_MDL_NAME_ICS}" = "RRFS" ]] && \
+   [[ "${SDF_USES_RUC_LSM}" = "TRUE" ]]; then
   nsoill_out="9"
 fi
 #
@@ -543,7 +543,7 @@ fi
 #-----------------------------------------------------------------------
 #
 thomp_mp_climo_file=""
-if [ "${SDF_USES_THOMPSON_MP}" = "TRUE" ]; then
+if [[ "${SDF_USES_THOMPSON_MP}" = "TRUE" ]]; then
   thomp_mp_climo_file="${THOMPSON_MP_CLIMO_FP}"
 fi
 #
@@ -557,14 +557,14 @@ fi
 case "${EXTRN_MDL_NAME_ICS}" in
 
 "GFS")
-  if [ "${GFS_FILE_FMT_ICS}" = "grib2" ]; then
+  if [[ "${GFS_FILE_FMT_ICS}" = "grib2" ]]; then
     external_model="GFS"
     fn_grib2="${EXTRN_MDL_FNS[0]}"
     input_type="grib2"
     convert_nst=False
     fn_atm="${EXTRN_MDL_FNS[0]}"
     fn_sfc="${EXTRN_MDL_FNS[1]}"
-  elif [ "${GFS_FILE_FMT_ICS}" = "netcdf" ]; then
+  elif [[ "${GFS_FILE_FMT_ICS}" = "netcdf" ]]; then
     tracers_input="[\"spfh\",\"clwmr\",\"o3mr\",\"icmr\",\"rwmr\",\"snmr\",\"grle\"]"
     tracers="[\"sphum\",\"liq_wat\",\"o3mr\",\"ice_wat\",\"rainwat\",\"snowwat\",\"graupel\"]"
     external_model="FV3GFS"
@@ -631,7 +631,7 @@ dd="${EXTRN_MDL_CDATE:6:2}"
 hh="${EXTRN_MDL_CDATE:8:2}"
 
 fhr="${EXTRN_MDL_ICS_OFFSET_HRS}"
-cdate_crnt_fhr=`${NDATE} +"${fhr}" "${yyyymmdd}""${hh}"`
+cdate_crnt_fhr=$($(${NDATE} +"${fhr}" "${yyyymmdd}""${hh}"))
 
 #
 # Get the month, day, and hour corresponding to the current forecast time
@@ -704,7 +704,7 @@ settings="
 # Call the python script to create the namelist file.
 #
 nml_fn="fort.41"
-"${USHrrfs}"/set_namelist.py -u "${settings}" -o ${nml_fn} || \
+"${USHrrfs}"/set_namelist.py -u "${settings}" -o "${nml_fn}" || \
   err_exit "\
 Call to python script set_namelist.py to set the variables in the namelist
 file read in by the ${exec_fn} executable failed.  Parameters passed to
@@ -722,7 +722,7 @@ ${settings}"
 #
 #-----------------------------------------------------------------------
 #
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
   sp_lon=$(echo "${LON_CTR} + 360" | bc -l)
   sp_lat=$(echo "(90 - ${LAT_CTR}) * -1" | bc -l)
   gridspecs="rot-ll:${sp_lon}:${sp_lat}:0 -10:801:0.025 -10:801:0.025"
@@ -743,7 +743,7 @@ fi
 export pgm="ufs_util_chgres_cube"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 #
 #-----------------------------------------------------------------------
@@ -818,7 +818,7 @@ if [[ ${DO_ENS_BLENDING} == "TRUE" && ${EXTRN_MDL_NAME_ICS} = "GDASENKF" ]]; the
   cpreq "${fixgriddir}"/cold2warm_all.nc .
   export pgm1=rrfs_util_fv3lam_pre_blending.exe
 . prep_step
-  ${APRUN_PRE_BLENDING} "${EXECrrfs}"/${pgm1} >>"${pgmout_pre_blending}" 2>errfile_pre_blending
+  ${APRUN_PRE_BLENDING} "${EXECrrfs}"/"${pgm1}" >>"${pgmout_pre_blending}" 2>errfile_pre_blending
   export err=$?; err_chk
   mv "${DATA}"/cold2warm_all.nc "${shared_output_data}"/.
 
@@ -872,7 +872,7 @@ ${settings}
 EOM
 }
 export err=$?
-if [ ${err} -ne 0 ]; then
+if [[ "${err}" -ne 0 ]]; then
   err_exit "\
 Heredoc (cat) command to create a variable definitions file associated
 with the external model from which to generate ${ics_or_lbcs} returned with a

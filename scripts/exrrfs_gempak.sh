@@ -9,7 +9,7 @@ export GEMPAK_FIX=${GEMPAK_FIX:-${FIXrrfs}/gempak/fix}
 # Set up model and cycle specific variables
 #################################################
 
-export model=`echo "${RUN}" | awk '{print tolower($0)}'`
+export model=$($(echo "${RUN}" | awk '{print tolower($0)}'))
 export GRIB=prslev
 FHR=$(echo "${FHR}" | cut -c1-3)
 #################################################################

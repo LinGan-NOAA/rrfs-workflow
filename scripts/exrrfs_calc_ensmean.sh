@@ -123,11 +123,11 @@ for imem in  $(seq 1 "${nens}")
   bkpath=${umbrella_forecast_data}/m${ensmem}/INPUT
   dynvarfile=${bkpath}/fv_core.res.tile1.nc
   tracerfile=${bkpath}/fv_tracer.res.tile1.nc
-  if [ -r "${dynvarfile}" ] && [ -r "${tracerfile}" ] ; then
+  if [[ -r "${dynvarfile}" ]] && [[ -r "${tracerfile}" ]] ; then
     ln -sf "${bkpath}"/fv_core.res.tile1.nc  ./fv3sar_tile1_mem"${memberstring}"_dynvar
     ln -sf "${bkpath}"/fv_tracer.res.tile1.nc   ./fv3sar_tile1_mem"${memberstring}"_tracer
     ln -sf "${bkpath}"/sfc_data.nc  ./fv3sar_tile1_mem"${memberstring}"_sfcvar
-    if [ "${imem}" -eq 1 ]; then
+    if [[ "${imem}" -eq 1 ]]; then
       # Prepare the data structure for ensemble mean
       ln -s "${umbrella_forecast_data}"/ensmean/INPUT/fv_core.res.tile1.nc fv3sar_tile1_dynvar
       ln -s "${umbrella_forecast_data}"/ensmean/INPUT/fv_tracer.res.tile1.nc fv3sar_tile1_tracer
@@ -180,7 +180,7 @@ EOF
 export pgm="rrfs_util_ens_mean_recenter_P2DIO.exe"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/${pgm} < namelist.ens >>"${pgmout}" 2>errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" < namelist.ens >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 #
 #-----------------------------------------------------------------------

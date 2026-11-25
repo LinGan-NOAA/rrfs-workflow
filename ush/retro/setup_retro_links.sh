@@ -29,7 +29,7 @@ ecf_dir=${repo}/ecf
 
 # cpreq comes from prod_util; on Ursa that is modulefiles/run_ursa.lua (spack-stack). The machine
 # decides this rather than retro/config.sh, since the modules are what that machine has.
-if [ "${MACHINE}" = "URSA" ]; then
+if [[ "${MACHINE}" = "URSA" ]]; then
   if ! type module >/dev/null 2>&1; then source /etc/profile; fi
   module use "${repo}/modulefiles"
   module load run_ursa
@@ -45,13 +45,13 @@ retro_gsiparm=${repo}/sorc/_workaround_/fix/gsi/gsiparm.anl.sh
 mkdir -p "${fix_dir}"
 for src in "${fix_src}"/*; do
   name=$(basename "${src}")
-  [ "${name}" = "workflow" ] && continue
-  if [ "${name}" = "gsi" ]; then
+  [[ "${name}" = "workflow" ]] && continue
+  if [[ "${name}" = "gsi" ]]; then
     # Keep GSI files as individual links so selected workarounds can safely replace them.
-    [ -L "${fix_dir}/gsi" ] && rm -f "${fix_dir}/gsi"
+    [[ -L "${fix_dir}/gsi" ]] && rm -f "${fix_dir}/gsi"
     mkdir -p "${fix_dir}/gsi"
     for gsi_file in "${src}"/*; do
-      [ -e "${gsi_file}" ] || continue
+      [[ -e "${gsi_file}" ]] || continue
       gsi_name=$(basename "${gsi_file}")
       ln -snf "${gsi_file}" "${fix_dir}/gsi/${gsi_name}"
     done
@@ -74,14 +74,14 @@ cd "${fix_dir}/workflow"
 
 # Retros read the staged GFS GRIB2 files for the deterministic boundaries; the netcdf files
 # operations uses (hourly out to f102, four cycles a day) are far too large to stage.
-if [ "${RETRO:-NO}" = "YES" ]; then
+if [[ "${RETRO:-NO}" = "YES" ]]; then
   echo "Retro: deterministic LBCs from GFS grib2, no Great Lakes FVCOM..."
   sed -i "s|^export GFS_FILE_FMT_LBCS=.*|export GFS_FILE_FMT_LBCS='grib2'|" ./det/workflow.conf
   # Cold start ICs (retro/config.sh): the GFS cycle that many hours earlier, and its file format
-  if [ -n "${EXTRN_MDL_ICS_OFFSET_HRS:-}" ]; then
+  if [[ -n "${EXTRN_MDL_ICS_OFFSET_HRS:-}" ]]; then
     sed -i "s|^export EXTRN_MDL_ICS_OFFSET_HRS=.*|export EXTRN_MDL_ICS_OFFSET_HRS='${EXTRN_MDL_ICS_OFFSET_HRS}'|" ./det/workflow.conf
   fi
-  if [ -n "${GFS_FILE_FMT_ICS:-}" ]; then
+  if [[ -n "${GFS_FILE_FMT_ICS:-}" ]]; then
     sed -i "s|^export GFS_FILE_FMT_ICS=.*|export GFS_FILE_FMT_ICS='${GFS_FILE_FMT_ICS}'|" ./det/workflow.conf
   fi
   # No Great Lakes FVCOM (nosofs) data is staged for retros, and warm starts abort without it; the
@@ -91,14 +91,14 @@ fi
 
 # The domain (DOMAIN in retro/config.sh): its grid, fix files and job sizes.
 domain_file=${ecf_dir}/defs/retro/domains/${DOMAIN}.sh
-[ -f "${domain_file}" ] || { echo "FATAL: no ${domain_file} for DOMAIN=${DOMAIN}"; exit 1; }
+[[ -f "${domain_file}" ]] || { echo "FATAL: no ${domain_file} for DOMAIN=${DOMAIN}"; exit 1; }
 # shellcheck source=/dev/null
 . "${domain_file}"
 echo "Domain: ${DOMAIN}"
 # its fix directories go in beside the NA ones, so fix/<subdir> becomes a directory of links
 for entry in "${DOMAIN_FIX_LINKS[@]}"; do
   sub=${entry%%:*}
-  [ -L "${fix_dir}/${sub}" ] && rm -f "${fix_dir}/${sub}"
+  [[ -L "${fix_dir}/${sub}" ]] && rm -f "${fix_dir}/${sub}"
   mkdir -p "${fix_dir}/${sub}"
   for src in "${fix_src}/${sub}"/*; do
     ln -snf "${src}" "${fix_dir}/${sub}/$(basename "${src}")"
@@ -107,19 +107,19 @@ for entry in "${DOMAIN_FIX_LINKS[@]}"; do
 done
 
 # Replace and verify GSI workaround files only when explicitly requested.
-if [ "${workaround}" = "YES" ] && { [ -f "${retro_convinfo}" ] || [ -f "${retro_gsiparm}" ]; }; then
-  if [ -L "${fix_dir}/gsi" ]; then
+if [[ "${workaround}" = "YES" ]] && { [[ -f "${retro_convinfo}" ]] || [[ -f "${retro_gsiparm}" ]]; }; then
+  if [[ -L "${fix_dir}/gsi" ]]; then
     echo "FATAL: suite GSI fix directory is still a symlink: ${fix_dir}/gsi" >&2
     exit 1
   fi
   mkdir -p "${fix_dir}/gsi"
   for override_src in "${retro_convinfo}" "${retro_gsiparm}"; do
-    [ -f "${override_src}" ] || continue
+    [[ -f "${override_src}" ]] || continue
     override_name=$(basename "${override_src}")
     override_dest=${fix_dir}/gsi/${override_name}
-    [ -L "${override_dest}" ] && rm -f "${override_dest}"
+    [[ -L "${override_dest}" ]] && rm -f "${override_dest}"
     cp "${override_src}" "${override_dest}"
-    if [ -L "${override_dest}" ] || ! cmp -s "${override_src}" "${override_dest}"; then
+    if [[ -L "${override_dest}" ]] || ! cmp -s "${override_src}" "${override_dest}"; then
       echo "FATAL: suite GSI copy does not match workaround: ${override_dest}" >&2
       exit 1
     fi
@@ -132,7 +132,7 @@ for wgf in det enkf ensf; do
   printf '%s\n' "${conf_block}" >> "${fix_dir}/workflow/${wgf}/workflow.conf"
   # A domain whose values were taken from a package workflow.conf (DOMAIN_PACKAGE_CONF) is checked
   # against it, up to its retro overrides, so a package update that changes one is noticed
-  if [ -n "${DOMAIN_PACKAGE_CONF:-}" ]; then
+  if [[ -n "${DOMAIN_PACKAGE_CONF:-}" ]]; then
     pkg_conf=${fix_src}/workflow/${wgf}/${DOMAIN_PACKAGE_CONF}
     unquote="s/[[:space:]]+#.*//; s/^['\"]//; s/['\"]$//"
     while IFS= read -r line; do
@@ -141,13 +141,13 @@ for wgf in det enkf ensf; do
       name=${BASH_REMATCH[1]}
       ours=$(sed -E "${unquote}" <<< "${BASH_REMATCH[2]}")
       theirs=$(grep -E "^ *export ${name}=" "${pkg_conf}" | tail -1 | sed -E "s/^ *export ${name}=//; ${unquote}")
-      if [ "${ours}" != "${theirs}" ]; then
+      if [[ "${ours}" != "${theirs}" ]]; then
         echo "WARNING: ${DOMAIN}.sh sets ${wgf} ${name}='${ours}', but ${pkg_conf} has '${theirs}'"
       fi
     done <<< "${conf_block}"
   fi
   # a domain without NML_NPX keeps the package namelists' grid
-  [ -n "${NML_NPX:-}" ] || continue
+  [[ -n "${NML_NPX:-}" ]] || continue
   for fl in "${repo}"/parm/config/${wgf}/input.nml*; do
     sed -i -E "s/^( *npx *= *).*/\1${NML_NPX}/; s/^( *npy *= *).*/\1${NML_NPY}/; \
       s/^( *target_lat *= *).*/\1${NML_TARGET_LAT}/; s/^( *target_lon *= *).*/\1${NML_TARGET_LON}/; \
@@ -247,7 +247,7 @@ EOF
 # Carry this experiment's radiance DA switch into the regenerated runtime workflow config.
 for name in DO_RADDA RUN_RADAR OB_TYPE RUN_SUBHOURLY_POST JCB_CONFIG_CONV JCB_CONFIG_DBZ DO_DACOLD EXT_SONDE DO_SURFACE_CYCLE \
             NNODES_ANALYSIS_JEDI PPN_ANALYSIS_JEDI TPP_ANALYSIS_JEDI; do
-  if [ -n "${!name+x}" ]; then
+  if [[ -n "${!name+x}" ]]; then
     echo "export ${name}='${!name}'" >> ./det/workflow.conf
     echo "JEDI: ${name}=${!name}"
   fi
@@ -256,12 +256,12 @@ done
 # The JEDI EnKF settings, into enkf/workflow.conf. With DA_SYSTEM_ENKF there, prep_cyc makes the
 # members' reflectivity file for GETKF and the forecast turns the analyzed A-grid wind into D-grid
 # wind. GETKF also reads the MRMS reflectivity in IODA.
-if [ "${DA_SYSTEM_ENKF:-GSI}" = "JEDI" ] || [ "${DA_SYSTEM_ENKF:-GSI}" = "jedi" ]; then
+if [[ "${DA_SYSTEM_ENKF:-GSI}" = "JEDI" ]] || [[ "${DA_SYSTEM_ENKF:-GSI}" = "jedi" ]]; then
   echo "export DA_SYSTEM_ENKF='JEDI'" >> ./enkf/workflow.conf
   echo "export DO_IODA_MRMS='TRUE'" >> ./enkf/workflow.conf
   echo "JEDI EnKF: DA_SYSTEM_ENKF=JEDI DO_IODA_MRMS=TRUE"
   for name in JCB_CONFIG_ENKF NNODES_ANALYSIS_ENKF_JEDI PPN_ANALYSIS_ENKF_JEDI TPP_ANALYSIS_ENKF_JEDI; do
-    if [ -n "${!name+x}" ]; then
+    if [[ -n "${!name+x}" ]]; then
       echo "export ${name}='${!name}'" >> ./enkf/workflow.conf
       echo "JEDI EnKF: ${name}=${!name}"
     fi

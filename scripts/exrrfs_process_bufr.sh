@@ -221,7 +221,7 @@ export pgm="rrfs_util_process_Lightning.exe"
 . prep_step
 
 if [[ "${run_lightning}" == true ]]; then
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_lightning
   if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.LightningInFV3LAM.bin ]] && [[ -s "${DATA}"/LightningInFV3LAM.dat ]]; then
@@ -302,7 +302,7 @@ EOF
 export pgm="rrfs_util_process_larccld.exe"
 . prep_step
 if [[ "${run_cloud}" == true ]]; then
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_larccld
 
@@ -382,7 +382,7 @@ EOF
 export pgm="rrfs_util_process_metarcld.exe"
 . prep_step
 if [[ "${run_metar}" == true ]]; then
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_metarcld
   if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.fv3_metarcloud.bin ]] && [[ -s "${DATA}"/fv3_metarcloud.bin ]]; then

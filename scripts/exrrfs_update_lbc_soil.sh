@@ -132,7 +132,7 @@ fixgriddir=${FIX_GSI}/${PREDEF_GRID_NAME}
 bkpath=${FORECAST_INPUT_PRODUCT}
 
 # decide background type
-if [ -r "${bkpath}/coupler.res" ]; then
+if [[ -r "${bkpath}/coupler.res" ]]; then
   BKTYPE=0              # warm start
 else
   BKTYPE=1              # cold start
@@ -163,7 +163,7 @@ EOF
   export pgm="rrfs_util_adjust_soiltq.exe"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_adjust_soiltq
 
@@ -176,7 +176,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ ${BKTYPE} -eq 0 ] && [ "${DO_UPDATE_BC}" = "TRUE" ]; then  # warm start
+if [[ "${BKTYPE}" -eq 0 ]] && [[ "${DO_UPDATE_BC}" = "TRUE" ]]; then  # warm start
   ln -s "${bkpath}"/gfs_bndy.tile7.000.nc .
 
 cat << EOF > namelist.updatebc
@@ -190,7 +190,7 @@ EOF
   export pgm="rrfs_util_update_bc.exe"
   . prep_step
 
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_update_bc
 

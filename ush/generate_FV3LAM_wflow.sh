@@ -95,7 +95,7 @@ for pkg in ${pkgs[@]}  ; do
 done
 
 #Finally, check if the number of errors is >0, and if so exit with helpful message
-if [ $pyerrors -gt 0 ];then
+if [[ $"pyerrors" -gt 0 ]];then
   print_err_msg_exit "Errors found: check your python environment"
 fi
 
@@ -115,7 +115,7 @@ fi
 #-----------------------------------------------------------------------
 #
 if [[ ! -L ${USHrrfs}/../fix/.agent || ! -e ${USHrrfs}/../fix/.agent ]] \
-  && [ -e ${USHrrfs}/Init.sh ]; then
+  && [[ -e ${USHrrfs}/Init.sh ]]; then
     ${USHrrfs}/Init.sh
 fi
 #
@@ -154,7 +154,7 @@ WFLOW_XML_FP="$EXPTDIR/${WFLOW_XML_FN}"
 #
 ensmem_indx_name="\"\""
 uscore_ensmem_name="\"\""
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   ensmem_indx_name="mem"
   uscore_ensmem_name="_m#${ensmem_indx_name}#"
 fi
@@ -581,7 +581,7 @@ chmod +x ${EXPTDIR}/run_rocoto.sh
 #
 #-----------------------------------------------------------------------
 #
-if [ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]; then
+if [[ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]]; then
 #
 # Make a backup copy of the user's crontab file and save it in a file.
 #
@@ -616,7 +616,7 @@ Copying contents of user cron table to backup file:
   grep_output=$( crontab -l | grep "^${crontab_line_esc_astr}$" )
   exit_status=$?
 
-  if [ "${exit_status}" -eq 0 ]; then
+  if [[ "${exit_status}" -eq 0 ]]; then
 
     print_info_msg "
 The following line already exists in the cron table and thus will not be
@@ -642,11 +642,11 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${DO_DACYCLE}" = "TRUE" ]; then
+if [[ "${DO_DACYCLE}" = "TRUE" ]]; then
   # Resolve the target directory that the FIXgsi symlink points to
   ln -fsn "$FIXrrfs/gsi" "$FIXgsi"
   path_resolved=$( readlink -m "$FIXgsi" )
-  if [ ! -d "${path_resolved}" ]; then
+  if [[ ! -d "${path_resolved}" ]]; then
     print_err_msg_exit "Missing link to FIXgsi
     FIXgsi = \"$FIXgsi\"
     path_resolved = \"${path_resolved}\"
@@ -658,7 +658,7 @@ fi  # check if DA
 # Resolve the target directory that the FIXcrtm symlink points to
 ln -fsn "$CRTM_FIX" "$FIXcrtm"
 path_resolved=$( readlink -m "$FIXcrtm" )
-if [ ! -d "${path_resolved}" ]; then
+if [[ ! -d "${path_resolved}" ]]; then
   print_err_msg_exit "Missing link to FIXcrtm
   FIXcrtm = \"$FIXcrtm\"
   path_resolved = \"${path_resolved}\"
@@ -669,7 +669,7 @@ fi
 # Resolve the target directory that the FIXuppcrtm symlink points to
 ln -fsn "$CRTM_FIX" "$FIXuppcrtm"
 path_resolved=$( readlink -m "$FIXuppcrtm" )
-if [ ! -d "${path_resolved}" ]; then
+if [[ ! -d "${path_resolved}" ]]; then
   print_err_msg_exit "\
   Missing link to FIXuppcrtm
   FIXuppcrtm = \"$FIXuppcrtm\"
@@ -681,7 +681,7 @@ fi
 # Resolve the target directory that the FIXsmokedust symlink points to
 ln -fsn "$FIXrrfs/smoke_dust" "$FIXsmokedust"
 path_resolved=$( readlink -m "$FIXsmokedust" )
-if [ ! -d "${path_resolved}" ]; then
+if [[ ! -d "${path_resolved}" ]]; then
   print_err_msg_exit "Missing link to FIXsmokedust
   FIXsmokedust = \"$FIXsmokedust\"
   path_resolved = \"${path_resolved}\"
@@ -689,11 +689,11 @@ if [ ! -d "${path_resolved}" ]; then
   the experiment generation script."
 fi
 
-if [ "${DO_BUFRSND}" = "TRUE" ]; then
+if [[ "${DO_BUFRSND}" = "TRUE" ]]; then
   # Resolve the target directory that the FIXbufrsnd symlink points to
   ln -fsn "$FIXrrfs/bufrsnd" "$FIXbufrsnd"
   path_resolved=$( readlink -m "$FIXbufrsnd" )
-  if [ ! -d "${path_resolved}" ]; then
+  if [[ ! -d "${path_resolved}" ]]; then
     print_err_msg_exit "Missing link to FIXbufrsnd
     FIXsmokedust = \"$FIXbufrsnd\"
     path_resolved = \"${path_resolved}\"
@@ -706,7 +706,7 @@ fi
 check_for_preexist_dir_file "$FIXam" "delete"
 ln -fsn "$FIXgsm" "$FIXam"
 path_resolved=$( readlink -m "$FIXam" )
-if [ ! -d "${path_resolved}" ]; then
+if [[ ! -d "${path_resolved}" ]]; then
   print_err_msg_exit "\
   The path specified by FIXam after resolving all symlinks (path_resolved)
   must be an existing directory:
@@ -779,7 +779,7 @@ npy=$((NY+1))
 # May want to remove kice from FV3.input.yml (and maybe input.nml.FV3).
 #
 kice=""
-if [ "${SDF_USES_RUC_LSM}" = "TRUE" ]; then
+if [[ "${SDF_USES_RUC_LSM}" = "TRUE" ]]; then
   kice="9"
 fi
 #
@@ -797,11 +797,11 @@ fi
 # Also, may want to set lsm here as well depending on SDF_USES_RUC_LSM.
 #
 lsoil="4"
-if [ "${EXTRN_MDL_NAME_ICS}" = "HRRR" -o \
-     "${EXTRN_MDL_NAME_ICS}" = "RAP" -o \
-     "${EXTRN_MDL_NAME_ICS}" = "HRRRDAS" -o \
-     "${EXTRN_MDL_NAME_ICS}" = "RRFS" ] && \
-   [ "${SDF_USES_RUC_LSM}" = "TRUE" ]; then
+if [[ "${EXTRN_MDL_NAME_ICS}" = "HRRR" || \
+      "${EXTRN_MDL_NAME_ICS}" = "RAP" || \
+      "${EXTRN_MDL_NAME_ICS}" = "HRRRDAS" || \
+      "${EXTRN_MDL_NAME_ICS}" = "RRFS" ]] && \
+   [[ "${SDF_USES_RUC_LSM}" = "TRUE" ]]; then
   lsoil="9"
 fi
 #
@@ -814,7 +814,7 @@ fi
 #
 avg_max_length="3600.0"
 fhzero="1.0"
-if [ "${NSOUT_MIN}" = "15" ]; then
+if [[ "${NSOUT_MIN}" = "15" ]]; then
   avg_max_length="3600.0"
   fhzero="1.0"
 fi
@@ -863,7 +863,7 @@ settings="\
     'rrfs_sd': ${DO_SMOKE_DUST},
     'ebb_dcycle': ${EBB_DCYCLE},
   }"
-if [ "${USE_CLM}" = "TRUE" ]; then
+if [[ "${USE_CLM}" = "TRUE" ]]; then
     settings="$settings
 'gfs_physics_nml': {
     'lkm': 1,
@@ -895,7 +895,7 @@ settings="$settings
 'namsfc': {"
 
 dummy_run_dir="$EXPTDIR/any_cyc"
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
   dummy_run_dir="${dummy_run_dir}/any_ensmem"
 fi
 
@@ -910,7 +910,7 @@ for (( i=0; i<${num_nml_vars}; i++ )); do
               sed -n -r -e "s/${regex_search}/\2/p" )
 
   fp="\"\""
-  if [ ! -z "${FIXam_fn}" ]; then
+  if [[ ! -z "${FIXam_fn}" ]]; then
     fp="$FIXam/${FIXam_fn}"
   fi
 #
@@ -943,7 +943,7 @@ settings="$settings
 #
 # For generating the namelist for the fire weather grid, do not use a yaml file.
 #
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
 $USHrrfs/set_namelist.py -q \
                         -n ${FV3_NML_BASE_SUITE_FP} \
                         -u "$settings" \
@@ -991,7 +991,7 @@ $settings"
 # the C-resolution of the grid), and this parameter is in most workflow
 # configurations is not known until the grid is created.
 #
-if [ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]]; then
 
   set_FV3nml_sfc_climo_filenames || print_err_msg_exit "\
 Call to function to set surface climatology file names in the FV3 namelist
@@ -1000,11 +1000,11 @@ file failed."
 fi
 
 if [[ "${DO_DACYCLE}" = "TRUE" || "${DO_ENKFUPDATE}" = "TRUE" ]]; then
-  if [ "${SDF_USES_RUC_LSM}" = "TRUE" ]; then
+  if [[ "${SDF_USES_RUC_LSM}" = "TRUE" ]]; then
     lsoil="9"
   fi
   lupdatebc="false"
-  if [ "${DO_UPDATE_BC}" = "TRUE" ]; then
+  if [[ "${DO_UPDATE_BC}" = "TRUE" ]]; then
     lupdatebc="false" # not ready for setting this to true yet
   fi
 
@@ -1062,7 +1062,7 @@ settings="\
   }"
 settings="$settings
 'nam_stochy': {"
-if [ "${DO_SPPT}" = "TRUE" ]; then
+if [[ "${DO_SPPT}" = "TRUE" ]]; then
     settings="$settings
     'iseed_sppt': ${ISEED_SPPT},
     'sppt': ${SPPT_MAG},
@@ -1074,7 +1074,7 @@ if [ "${DO_SPPT}" = "TRUE" ]; then
     'use_zmtnblck': ${USE_ZMTNBLCK},"
 fi
 
-if [ "${DO_SHUM}" = "TRUE" ]; then
+if [[ "${DO_SHUM}" = "TRUE" ]]; then
     settings="$settings
     'iseed_shum': ${ISEED_SHUM},
     'shum': ${SHUM_MAG},
@@ -1083,7 +1083,7 @@ if [ "${DO_SHUM}" = "TRUE" ]; then
     'shumint': ${SHUM_INT},"
 fi
 
-if [ "${DO_SKEB}" = "TRUE" ]; then
+if [[ "${DO_SKEB}" = "TRUE" ]]; then
     settings="$settings
     'iseed_skeb': ${ISEED_SKEB},
     'skeb': ${SKEB_MAG},
@@ -1094,7 +1094,7 @@ if [ "${DO_SKEB}" = "TRUE" ]; then
     'skeb_vdof': ${SKEB_VDOF},"
 fi
 
-if [ "${DO_SPP}" = "TRUE" ] || [ "${DO_LSM_SPP}" = "TRUE" ] || [ "${DO_SPPT}" = "TRUE" ] || [ "${DO_SHUM}" = "TRUE" ] || [ "${DO_SKEB}" = "TRUE" ]; then
+if [[ "${DO_SPP}" = "TRUE" ]] || [[ "${DO_LSM_SPP}" = "TRUE" ]] || [[ "${DO_SPPT}" = "TRUE" ]] || [[ "${DO_SHUM}" = "TRUE" ]] || [[ "${DO_SKEB}" = "TRUE" ]]; then
     settings="$settings
     'new_lscale': ${NEW_LSCALE},"
 fi
@@ -1106,7 +1106,7 @@ settings="$settings
 #
 settings="$settings
 'nam_sppperts': {"
-if [ "${DO_SPP}" = "TRUE" ]; then
+if [[ "${DO_SPP}" = "TRUE" ]]; then
     settings="$settings
     'iseed_spp': [ $( printf "%s, " "${ISEED_SPP[@]}" ) ],
     'spp_lscale': [ $( printf "%s, " "${SPP_LSCALE[@]}" ) ],
@@ -1126,7 +1126,7 @@ settings="$settings
 #
 settings="$settings
 'nam_sfcperts': {"
-if [ "${DO_LSM_SPP}" = "TRUE" ]; then
+if [[ "${DO_LSM_SPP}" = "TRUE" ]]; then
     settings="$settings
     'lndp_type': ${LNDP_TYPE},
     'lndpint':  ${LNDPINT},
@@ -1150,8 +1150,8 @@ $settings"
 #
 # Generate namelist files with stochastic physics if needed
 #
-if [ "${DO_ENSEMBLE}" = TRUE ] && ([ "${DO_SPP}" = TRUE ] || [ "${DO_SPPT}" = TRUE ] || [ "${DO_SHUM}" = TRUE ] \
-  || [ "${DO_SKEB}" = TRUE ] || [ "${DO_LSM_SPP}" =  TRUE ]); then
+if [[ "${DO_ENSEMBLE}" = TRUE ]] && ([[ "${DO_SPP}" = TRUE ]] || [[ "${DO_SPPT}" = TRUE ]] || [[ "${DO_SHUM}" = TRUE ]] \
+  || [[ "${DO_SKEB}" = TRUE ]] || [[ "${DO_LSM_SPP}" =  TRUE ]]); then
 
   $USHrrfs/set_namelist.py -q \
                           -n  ${FV3_NML_FP}  \
@@ -1186,7 +1186,7 @@ if [[ "${DO_DACYCLE}" = "TRUE" || "${DO_ENKFUPDATE}" = "TRUE" ]]; then
      settings =
  $settings"
 
- if [ "${DO_ENSFCST_MULPHY}" = "TRUE" ]; then
+ if [[ "${DO_ENSFCST_MULPHY}" = "TRUE" ]]; then
    for i in {1..5}
    do
      $USHrrfs/set_namelist.py -q \
@@ -1291,7 +1291,7 @@ echo -e "../fix/.agent points to " $(readlink -f ${HOMErrfs}/fix/.agent) "\n"
 #
 # If necessary, run the NOMADS script to source external model data.
 #
-if [ "${NOMADS}" = "TRUE" ]; then
+if [[ "${NOMADS}" = "TRUE" ]]; then
   echo "Getting NOMADS online data"
   echo "NOMADS_file_type=" $NOMADS_file_type
   cd $EXPTDIR
@@ -1389,7 +1389,7 @@ rm "${tmp_fp}"
 # ful, move the log file in which the "tee" command saved the output of
 # the function to the experiment directory.
 #
-if [ $retval -eq 0 ]; then
+if [[ $retval -eq 0 ]]; then
   mv "${log_fp}" "$exptdir"
 #
 # If the call to the generate_FV3LAM_wflow function above was not suc-

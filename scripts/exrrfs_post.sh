@@ -7,10 +7,10 @@ export FIX_UPP="${FIXrrfs}/upp"
 export FIX_UPP_CRTM="${CRTM_FIX}"
 export CUSTOM_POST_CONFIG_FP="${FIXrrfs}/upp/postxconfig-NT-rrfs.txt"
 export CUSTOM_POST_PARAMS_FP="${FIXrrfs}/upp/params_grib2_tbl_new"
-if [ "${WGF}" == "ensf" ]; then
+if [[ "${WGF}" == "ensf" ]]; then
   export CUSTOM_POST_CONFIG_FP="${FIXrrfs}/upp/postxconfig-NT-refs.txt"
 fi
-if [ "${WGF}" == "firewx" ]; then
+if [[ "${WGF}" == "firewx" ]]; then
   export CUSTOM_POST_CONFIG_FP="${FIXrrfs}/upp/postxconfig-NT-firewx.txt"
 fi
 
@@ -126,10 +126,10 @@ fhr=${FHR:-}
 #-----------------------------------------------------------------------
 #
 #  set to 15 minute output for subhour
-if [ "${NSOUT_MIN}" = "0" ]; then
+if [[ "${NSOUT_MIN}" = "0" ]]; then
   nsout_min=61
 else
-  if [ "${NSOUT_MIN}" = "15" ]; then
+  if [[ "${NSOUT_MIN}" = "15" ]]; then
     nsout_min=15
   else
     sout_min=61
@@ -143,15 +143,15 @@ phy_file="${shared_forecast_output_data}/phyf${fhr}.nc"
 SUBH_GEN=0
 
 len_fhr=${#fhr}
-if [ "${len_fhr}" -eq 9 ]; then
+if [[ "${len_fhr}" -eq 9 ]]; then
   post_fhr=${fhr:0:3}
   post_min=${fhr:4:2}
-  if [ "${post_min}" -lt "${nsout_min}" ]; then
+  if [[ "${post_min}" -lt "${nsout_min}" ]]; then
     post_min=00
 #	  if [ $post_fhr -ge 1 -a $post_fhr -le $POSTPROC_SUBH_LEN_HRS ]
 	  # Hourly post jobs only aggregate quarter-hour files when those tasks are enabled.
-	  if [ "${RUN_SUBHOURLY_POST:-TRUE}" != "FALSE" ] && \
-             [ "${post_fhr}" -ge 1 ] && [ "${post_fhr}" -le 18 ]; then
+	  if [[ "${RUN_SUBHOURLY_POST:-TRUE}" != "FALSE" ]] &&
+             [[ "${post_fhr}" -ge 1 ]] && [[ "${post_fhr}" -le 18 ]]; then
             SUBH_GEN=1
 	  fi
   fi
@@ -210,38 +210,38 @@ for what in "${FIX_UPP_CRTM}"/*Emis* ; do
    ln -s "${what}" .
 done
 
-if [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ]; then
+if [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ]]; then
 # For RRFS: use special postcntrl for fhr=0,1 to eliminate duplicate
 # max/min hourly (f000 only) and accumulation fields (f000 and f001);
 # use special postcntrl for ensemble and firewx forecasts
-  if [ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ] || [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
-    if [ "${post_fhr}" -eq 000 ]; then
-      if [ "${WGF}" = "det" ]; then
+  if [[ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]] || [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
+    if [[ "${post_fhr}" -eq 000 ]]; then
+      if [[ "${WGF}" = "det" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_f00.txt"
-      elif [ "${WGF}" = "ensf" ]; then
+      elif [[ "${WGF}" = "ensf" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-refs_f00.txt"
-      elif [ "${WGF}" = "firewx" ]; then
+      elif [[ "${WGF}" = "firewx" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_firewx_f00.txt"
       fi
-    elif [ "${post_fhr}" -eq 001 ]; then
-      if [ "${WGF}" = "det" ]; then
+    elif [[ "${post_fhr}" -eq 001 ]]; then
+      if [[ "${WGF}" = "det" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_f01.txt"
-      elif [ "${WGF}" = "ensf" ]; then
+      elif [[ "${WGF}" = "ensf" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-refs_f01.txt"
-      elif [ "${WGF}" = "firewx" ]; then
+      elif [[ "${WGF}" = "firewx" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_firewx_f01.txt"
       fi
     else
-      if [ "${WGF}" = "det" ]; then
+      if [[ "${WGF}" = "det" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs.txt"
-      elif [ "${WGF}" = "ensf" ]; then
+      elif [[ "${WGF}" = "ensf" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-refs.txt"
-      elif [ "${WGF}" = "firewx" ]; then
+      elif [[ "${WGF}" = "firewx" ]]; then
         CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_firewx.txt"
       fi
     fi
   fi
-  if [ "${post_min}" -ge "${nsout_min}" ]; then
+  if [[ "${post_min}" -ge "${nsout_min}" ]]; then
      CUSTOM_POST_CONFIG_FP="${FIX_UPP}/postxconfig-NT-rrfs_subh.txt"
   fi
   post_config_fp="${CUSTOM_POST_CONFIG_FP}"
@@ -257,7 +257,7 @@ to the post forecast hour directory (DATA):
 else
   post_config_fp="${FIX_UPP}/postxconfig-NT-rrfs.txt"
   post_params_fp="${FIX_UPP}/params_grib2_tbl_new"
-  if [ "${post_min}" -ge "${nsout_min}" ]; then
+  if [[ "${post_min}" -ge "${nsout_min}" ]]; then
      post_config_fp="${FIX_UPP}/postxconfig-NT-rrfs_subh.txt"
   fi
   print_info_msg "
@@ -272,20 +272,20 @@ fi
 cpreq -p "${post_config_fp}" ./postxconfig-NT.txt
 cpreq -p "${post_params_fp}" ./params_grib2_tbl_new
 
-if [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km_HRRRIC" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km_HRRRIC" ]]; then
   grid_specs_rrfs="lambert:-97.5:38.500000 237.826355:1746:3000 21.885885:1014:3000"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ]]; then
   grid_specs_rrfs="lambert:-97.5:38.500000 237.280472:1799:3000 21.138115:1059:3000"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]]; then
   grid_specs_rrfs="rot-ll:247.000000:-35.000000:0.000000 299.000000:4881:0.025000 -37.0000000:2961:0.025000"
-elif [ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ]]; then
   grid_specs_rrfs="rot-ll:254.000000:-36.000000:0.000000 304.174600:956:0.1169118 -48.5768500:831:0.1170527"
 fi
-if [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km_HRRRIC" ] || [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ] || [ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ] || [ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km_HRRRIC" ]] || [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ]] || [[ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]] || [[ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ]]; then
   for ayear in 100y 10y 5y 2y ; do
     for ahour in 01h 03h 06h 12h 24h; do
-      if [ -f "${FIX_UPP}"/"${PREDEF_GRID_NAME}"/ari${ayear}_${ahour}.grib2 ]; then
-        ln -snf "${FIX_UPP}"/"${PREDEF_GRID_NAME}"/ari${ayear}_${ahour}.grib2 ari${ayear}_${ahour}.grib2
+      if [[ -f "${FIX_UPP}"/"${PREDEF_GRID_NAME}"/ari"${ayear}"_"${ahour}".grib2 ]]; then
+        ln -snf "${FIX_UPP}"/"${PREDEF_GRID_NAME}"/ari"${ayear}"_"${ahour}".grib2 ari"${ayear}"_"${ahour}".grib2
       fi
     done
   done
@@ -303,9 +303,9 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "ensf" ]; then
+if [[ "${WGF}" = "ensf" ]]; then
   export e1=3
-  export e2=`echo "${MEMBER_NAME}" | cut -c2-3`
+  export e2=$($(echo "${MEMBER_NAME}" | cut -c2-3))
   export e3=5
 fi
 #
@@ -316,10 +316,10 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${post_min}" = 15 ] || [ "${post_min}" = 30 ] || [ "${post_min}" = 45 ]; then
+if [[ "${post_min}" = 15 ]] || [[ "${post_min}" = 30 ]] || [[ "${post_min}" = 45 ]]; then
   export OMP_NUM_THREADS=${TPP_POST_SUBH}
   ncores=$(( NNODES_POST_SUBH*PPN_POST_SUBH))
-  if [ "${MACHINE}" = "URSA" ]; then
+  if [[ "${MACHINE}" = "URSA" ]]; then
     APRUN="srun --export=ALL -n ${ncores} --ntasks-per-node=${PPN_POST_SUBH} --cpus-per-task=${OMP_NUM_THREADS}"
   else
     APRUN="mpiexec -n ${ncores} -ppn ${PPN_POST_SUBH} --cpu-bind core --depth ${OMP_NUM_THREADS}"
@@ -337,7 +337,7 @@ print_info_msg "${VERBOSE}" "Starting post-processing for fhr = ${fhr} hr..."
 export pgm="upp.x"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/${pgm} < itag >>"${pgmout}" 2>errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" < itag >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 #
 #-----------------------------------------------------------------------
@@ -359,9 +359,9 @@ export err=$?; err_chk
 # get the length of the fhr string to decide format of forecast time stamp.
 # 9 is sub-hourly forecast and 3 is full hour forecast only.
 len_fhr=${#fhr}
-if [ "${len_fhr}" -eq 9 ]; then
+if [[ "${len_fhr}" -eq 9 ]]; then
   post_min=${fhr:4:2}
-  if [ "${post_min}" -lt "${nsout_min}" ]; then
+  if [[ "${post_min}" -lt "${nsout_min}" ]]; then
     post_min=00
   fi
 else
@@ -369,24 +369,24 @@ else
 fi
 
 subh_fhr=${fhr}
-if [ "${len_fhr}" -eq 2 ]; then
+if [[ "${len_fhr}" -eq 2 ]]; then
   post_fhr=${fhr}
-elif [ "${len_fhr}" -eq 3 ]; then
-  if [ "${fhr:0:1}" = "0" ]; then
+elif [[ "${len_fhr}" -eq 3 ]]; then
+  if [[ "${fhr:0:1}" = "0" ]]; then
     post_fhr="${fhr:1}"
   else
     post_fhr=${fhr}
   fi
-elif [ "${len_fhr}" -eq 9 ]; then
-  if [ "${fhr:0:1}" = "0" ]; then
-    if [ "${post_min}" -eq 00 ]; then
+elif [[ "${len_fhr}" -eq 9 ]]; then
+  if [[ "${fhr:0:1}" = "0" ]]; then
+    if [[ "${post_min}" -eq 00 ]]; then
       post_fhr="${fhr:1:2}"
       subh_fhr="${fhr:0:3}"
     else
       post_fhr="${fhr:1:2}.${fhr:4:2}"
     fi
   else
-    if [ "${post_min}" -eq 00 ]; then
+    if [[ "${post_min}" -eq 00 ]]; then
       post_fhr="${fhr:0:3}"
       subh_fhr="${fhr:0:3}"
     else
@@ -405,26 +405,26 @@ fhr=${subh_fhr}
 
 gridname=""
 gridspacing=""
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
   gridname="firewx"
   gridspacing="1p5km"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_25km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_25km" ]]; then
   gridname="conus"
   gridspacing="25km"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_13km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_13km" ]]; then
   gridname="conus"
   gridspacing="13km"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_3km" ]]; then
   gridname="conus"
   gridspacing="3km"
-elif [ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]; then
+elif [[ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]]; then
   gridname="na"
   gridspacing="3km"
 fi
 net4=$(echo "${NET:0:4}" | tr '[:upper:]' '[:lower:]')
 
 # Include member number with ensemble forecast output
-if [ "${DO_ENSFCST}" = "TRUE" ]; then
+if [[ "${DO_ENSFCST}" = "TRUE" ]]; then
   prslev=${DATA}/${net4}.t${cyc}z.${mem_num}.prslev.${gridspacing}.f${fhr}.${gridname}.grib2
   natlev=${DATA}/${net4}.t${cyc}z.${mem_num}.natlev.${gridspacing}.f${fhr}.${gridname}.grib2
   fld2d=${DATA}/${net4}.t${cyc}z.${mem_num}.2dfld.${gridspacing}.f${fhr}.${gridname}.grib2
@@ -434,9 +434,9 @@ else
   fld2d=${DATA}/${net4}.t${cyc}z.2dfld.${gridspacing}.f${fhr}.${gridname}.grib2
 fi
 
-if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
+if [[ -f PRSLEV.GrbF"${post_fhr}" ]]; then
 # If post_min is 15, 30, or 45, then copy the grib2 file to umbrella_post_data
-  if [ "${post_min}" = 15 ] || [ "${post_min}" = 30 ] || [ "${post_min}" = 45 ]; then
+  if [[ "${post_min}" = 15 ]] || [[ "${post_min}" = 30 ]] || [[ "${post_min}" = 45 ]]; then
     cpreq -p PRSLEV.GrbF"${post_fhr}" "${umbrella_post_data}"
     echo "Subhourly file copied to umbrella data directory, exit post task"
     exit
@@ -444,7 +444,7 @@ if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
 
   wgrib2 2DFLD.GrbF"${post_fhr}" -set center 7 -grib "${fld2d}" >>"${pgmout}" 2>>errfile
 
-  if [ ${SUBH_GEN} = 1 ]
+  if [[ "${SUBH_GEN}" = 1 ]]
   then
     fld2d_subh_combo=${DATA}/${net4}.t${cyc}z.2dfld.${gridspacing}.subh.f${fhr}.${gridname}.grib2
     fld2d_subh=${DATA}/PRSLEV.GrbF${fhr}.00
@@ -455,7 +455,7 @@ if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
 
 
     fhrm1tmp="$((10#${fhr}-1))"
-    fhrm1=`printf "%02d\n" ${fhrm1tmp}`
+    fhrm1=$($(printf "%02d\n" "${fhrm1tmp}"))
 
     tm15=${umbrella_post_data}/PRSLEV.GrbF${fhrm1}.45
     tm30=${umbrella_post_data}/PRSLEV.GrbF${fhrm1}.30
@@ -464,7 +464,7 @@ if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
 # Safety check to ensure all 15 min output files are available
     looplim=30
     loop=1
-    while [ ${loop} -le ${looplim} ]
+    while [[ "${loop}" -le "${looplim}" ]]
     do
       if [[ -e "${tm15}" && -e "${tm30}" && -e "${tm45}" ]]
       then
@@ -473,7 +473,7 @@ if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
         loop=$((loop+1))
         sleep 20
       fi
-      if [ ${loop} -ge ${looplim} ]
+      if [[ "${loop}" -ge "${looplim}" ]]
       then
         msg="FATAL ERROR: ABORTING after 10 minutes of waiting for 15 minute UPP output ${tm15} ${tm30} ${tm45}"
         err_exit "${msg}"
@@ -491,11 +491,11 @@ if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
   fi # SUB_GEN=1 test
 fi # PRSLEV test
 
-if [ -f NATLEV.GrbF"${post_fhr}" ]; then
+if [[ -f NATLEV.GrbF"${post_fhr}" ]]; then
   wgrib2 NATLEV.GrbF"${post_fhr}" -set center 7 -grib "${natlev}" >>"${pgmout}" 2>>errfile
 fi
 
-if [ -f PRSLEV.GrbF"${post_fhr}" ]; then
+if [[ -f PRSLEV.GrbF"${post_fhr}" ]]; then
   wgrib2 PRSLEV.GrbF"${post_fhr}" -set center 7 -not "UGRD:30 m above ground" -grib "${prslev}" >>"${pgmout}" 2>>errfile
 fi
 #
@@ -514,10 +514,10 @@ if [[ -f ${natlev} ]]; then
 fi
 
 # Only one latlons_corners file per cycle is needed in COMOUT - make this change later
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
   cpreq -p latlons_corners.txt.f"${fhr}" "${COMOUT}"
 fi
-if [ ${SUBH_GEN} = 1 ]; then
+if [[ "${SUBH_GEN}" = 1 ]]; then
   cpreq -p "${fld2d_subh_combo}" "${COMOUT}"
 fi
 

@@ -102,7 +102,7 @@ boundary_len_hrs="${BOUNDARY_LEN}"
 
 hh=${CDATE:8:2}
 yyyymmdd=${CDATE:0:8}
-OFFSETDATE=`${NDATE} -"${time_offset_hrs}" "${yyyymmdd}""${hh}"`
+OFFSETDATE=$($(${NDATE} -"${time_offset_hrs}" "${yyyymmdd}""${hh}"))
 export extrn_mdl_cdate="${OFFSETDATE}"
 
 # Starting year, month, day, and hour of the external model forecast.
@@ -764,7 +764,7 @@ list file has not specified for this external LBC model (EXTRN_MDL_NAME_LBCS):
   dd="${EXTRN_MDL_CDATE:6:2}"
   hh="${EXTRN_MDL_CDATE:8:2}"
 
-  cdate_crnt_fhr=`${NDATE} +"${fhr}" "${yyyymmdd}""${hh}"`
+  cdate_crnt_fhr=$($(${NDATE} +"${fhr}" "${yyyymmdd}""${hh}"))
 #
 # Get the month, day, and hour corresponding to the current forecast time
 # of the the external model.
@@ -847,7 +847,8 @@ ${settings}"
     gridspecs="rot-ll:${sp_lon}:${sp_lat}:0 -10:801:0.025 -10:801:0.025"
     lbc_spec_fhrs=( "${EXTRN_MDL_LBC_SPEC_FHRS[${i}]}" )
     fcst_hhh=$(( lbc_spec_fhrs - EXTRN_MDL_LBCS_OFFSET_HRS ))
-    fcst_hhh_FV3LAM=`printf %3.3i "${fcst_hhh}"`
+    # shellcheck disable=SC2128
+    fcst_hhh_FV3LAM=$($(printf %3.3i "${fcst_hhh}"))
     fn_grib2_subset=rrfs.t${hh}z.natlev.f${fcst_hhh_FV3LAM}.subset.grib2
 
     if [[ ! -s "${extrn_mdl_staging_dir}"/"${fn_grib2}" ]]; then
@@ -876,9 +877,11 @@ ${settings}"
 # the forecast hour of the FV3-LAM (which is not necessarily the same as
 # that of the external model since their start times may be offset).
 #
+  # shellcheck disable=SC2178
   lbc_spec_fhrs=( "${EXTRN_MDL_LBC_SPEC_FHRS[${i}]}" )
+  # shellcheck disable=SC2178
   fcst_hhh=$(( lbc_spec_fhrs - EXTRN_MDL_LBCS_OFFSET_HRS ))
-  fcst_hhh_FV3LAM=`printf %3.3i "${fcst_hhh}"`
+  fcst_hhh_FV3LAM=$($(printf %3.3i "${fcst_hhh}"))
 
 # copy results to COMOUT for longer time disk storage.
   cpreq gfs.bndy.nc "${COMOUT}"/gfs_bndy.tile7."${fcst_hhh_FV3LAM}".nc

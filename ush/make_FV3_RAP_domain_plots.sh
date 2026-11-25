@@ -48,17 +48,17 @@ if true; then
 # Show FV3 global domain (tiles 1-6) on a global cylindrical projection.
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   fields=\(/"${fields}"/\) \
-  nlev=${nlev} \
-  fcst_index=\(/${fcst_index}/\) \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index=\(/"${fcst_index}"/\) \
+  res="${RES}" \
   tile_inds=\(/1,2,3,4,5,6/\) \
   draw_tile_bdy=True \
   draw_tile_grid=False \
   draw_RAP_domain=False \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=False \
   draw_RAP_grid=False \
   map_proj=\"cyln\" \
@@ -73,17 +73,17 @@ if false; then
 # on a global cylindrical projection.
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   'fields=(/"u1000", "v1000"/)' \
-  nlev=${nlev} \
-  fcst_index=${fcst_index} \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index="${fcst_index}" \
+  res="${RES}" \
   tile_inds=\(/7/\) \
   draw_tile_bdy=True \
   draw_tile_grid=False \
   draw_RAP_domain=True \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=False \
   map_proj=\"cyln\" \
@@ -97,17 +97,17 @@ if false; then
 # on a sphere (orthogonal spherical projection).
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   'fields=(/"u1000", "v1000"/)' \
-  nlev=${nlev} \
-  fcst_index=${fcst_index} \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index="${fcst_index}" \
+  res="${RES}" \
   tile_inds=\(/7/\) \
   draw_tile_bdy=True \
   draw_tile_grid=False \
   draw_RAP_domain=True \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=False \
   map_proj=\"ortho\" \
@@ -122,17 +122,17 @@ if false; then
 # on a cylindrical projection.
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   'fields=(/"u1000", "v1000"/)' \
-  nlev=${nlev} \
-  fcst_index=${fcst_index} \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index="${fcst_index}" \
+  res="${RES}" \
   tile_inds=\(/5,6,7/\) \
   draw_tile_bdy=True \
   draw_tile_grid=True \
   draw_RAP_domain=True \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=True \
   map_proj=\"cyln\" \
@@ -147,17 +147,17 @@ if false; then
 # on a global cylindrical projection (no subregion).
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   'fields=(/"u1000", "v1000"/)' \
-  nlev=${nlev} \
-  fcst_index=${fcst_index} \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index="${fcst_index}" \
+  res="${RES}" \
   tile_inds=\(/7/\) \
   draw_tile_bdy=False \
   draw_tile_grid=False \
   draw_RAP_domain=True \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=False \
   map_proj=\"cyln\" \
@@ -173,17 +173,17 @@ if false; then
 # and grid makes a black tile 7 over CONUS.
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   'fields=(/"u1000", "v1000"/)' \
-  nlev=${nlev} \
-  fcst_index=${fcst_index} \
-  res=${RES} \
+  nlev="${nlev}" \
+  fcst_index="${fcst_index}" \
+  res="${RES}" \
   tile_inds=\(/7/\) \
   draw_tile_bdy=True \
   draw_tile_grid=True \
   draw_RAP_domain=False \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=False \
   map_proj=\"cyln\" \
@@ -206,17 +206,17 @@ if false; then
 # on a subregional cylindrical projection centered over CONUS.
 #
 ncl -n plot_fields.ncl \
-  grid_dir=\"${grid_dir}\" \
-  base_name=\"${base_name}\" \
+  grid_dir=\""${grid_dir}"\" \
+  base_name=\""${base_name}"\" \
   fields=\(/"${fields}"/\) \
-  nlev=${nlev} \
+  nlev="${nlev}" \
   fcst_index=\(/"${fcst_index}"/\) \
-  res=${RES} \
+  res="${RES}" \
   tile_inds=\(/7/\) \
   draw_tile_bdy=True \
   draw_tile_grid=False \
   draw_RAP_domain=False \
-  RAP_grid_fn=\"${RAP_grid_fn}\" \
+  RAP_grid_fn=\""${RAP_grid_fn}"\" \
   draw_RAP_bdy=True \
   draw_RAP_grid=False \
   map_proj=\"cyln\" \

@@ -84,7 +84,7 @@ USHrrfs="${scrfunc_dir}"
 #-----------------------------------------------------------------------
 #
 EXPT_DEFAULT_CONFIG_FN="config_defaults.sh"
-. "${USHrrfs}"/${EXPT_DEFAULT_CONFIG_FN}
+. "${USHrrfs}"/"${EXPT_DEFAULT_CONFIG_FN}"
 #
 #-----------------------------------------------------------------------
 #
@@ -96,7 +96,7 @@ EXPT_DEFAULT_CONFIG_FN="config_defaults.sh"
 #
 #-----------------------------------------------------------------------
 #
-if [ -f "${EXPT_CONFIG_FN}" ]; then
+if [[ -f "${EXPT_CONFIG_FN}" ]]; then
 #
 # We require that the variables being set in the user-specified configu-
 # ration file have counterparts in the default configuration file.  This
@@ -135,11 +135,11 @@ check_var_valid_value "VERBOSE" "valid_vals_VERBOSE"
 # other valid values later on.
 #
 VERBOSE=${VERBOSE^^}
-if [ "${VERBOSE}" = "TRUE" ] || \
-   [ "${VERBOSE}" = "YES" ]; then
+if [[ "${VERBOSE}" = "TRUE" ]] || \
+   [[ "${VERBOSE}" = "YES" ]]; then
   VERBOSE="TRUE"
-elif [ "${VERBOSE}" = "FALSE" ] || \
-     [ "${VERBOSE}" = "NO" ]; then
+elif [[ "${VERBOSE}" = "FALSE" ]] || \
+     [[ "${VERBOSE}" = "NO" ]]; then
   VERBOSE="FALSE"
 fi
 #
@@ -155,11 +155,11 @@ check_var_valid_value "USE_CRON_TO_RELAUNCH" "valid_vals_USE_CRON_TO_RELAUNCH"
 # other valid values later on.
 #
 USE_CRON_TO_RELAUNCH=${USE_CRON_TO_RELAUNCH^^}
-if [ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ] || \
-   [ "${USE_CRON_TO_RELAUNCH}" = "YES" ]; then
+if [[ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]] || \
+   [[ "${USE_CRON_TO_RELAUNCH}" = "YES" ]]; then
   USE_CRON_TO_RELAUNCH="TRUE"
-elif [ "${USE_CRON_TO_RELAUNCH}" = "FALSE" ] || \
-     [ "${USE_CRON_TO_RELAUNCH}" = "NO" ]; then
+elif [[ "${USE_CRON_TO_RELAUNCH}" = "FALSE" ]] || \
+     [[ "${USE_CRON_TO_RELAUNCH}" = "NO" ]]; then
   USE_CRON_TO_RELAUNCH="FALSE"
 fi
 #
@@ -175,11 +175,11 @@ check_var_valid_value "RUN_TASK_MAKE_GRID" "valid_vals_RUN_TASK_MAKE_GRID"
 # consider other valid values later on.
 #
 RUN_TASK_MAKE_GRID=${RUN_TASK_MAKE_GRID^^}
-if [ "${RUN_TASK_MAKE_GRID}" = "TRUE" ] || \
-   [ "${RUN_TASK_MAKE_GRID}" = "YES" ]; then
+if [[ "${RUN_TASK_MAKE_GRID}" = "TRUE" ]] || \
+   [[ "${RUN_TASK_MAKE_GRID}" = "YES" ]]; then
   RUN_TASK_MAKE_GRID="TRUE"
-elif [ "${RUN_TASK_MAKE_GRID}" = "FALSE" ] || \
-     [ "${RUN_TASK_MAKE_GRID}" = "NO" ]; then
+elif [[ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]] || \
+     [[ "${RUN_TASK_MAKE_GRID}" = "NO" ]]; then
   RUN_TASK_MAKE_GRID="FALSE"
 fi
 #
@@ -195,11 +195,11 @@ check_var_valid_value "RUN_TASK_MAKE_OROG" "valid_vals_RUN_TASK_MAKE_OROG"
 # consider other valid values later on.
 #
 RUN_TASK_MAKE_OROG=${RUN_TASK_MAKE_OROG^^}
-if [ "${RUN_TASK_MAKE_OROG}" = "TRUE" ] || \
-   [ "${RUN_TASK_MAKE_OROG}" = "YES" ]; then
+if [[ "${RUN_TASK_MAKE_OROG}" = "TRUE" ]] || \
+   [[ "${RUN_TASK_MAKE_OROG}" = "YES" ]]; then
   RUN_TASK_MAKE_OROG="TRUE"
-elif [ "${RUN_TASK_MAKE_OROG}" = "FALSE" ] || \
-     [ "${RUN_TASK_MAKE_OROG}" = "NO" ]; then
+elif [[ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]] || \
+     [[ "${RUN_TASK_MAKE_OROG}" = "NO" ]]; then
   RUN_TASK_MAKE_OROG="FALSE"
 fi
 #
@@ -216,11 +216,11 @@ check_var_valid_value \
 # have to consider other valid values later on.
 #
 RUN_TASK_MAKE_SFC_CLIMO=${RUN_TASK_MAKE_SFC_CLIMO^^}
-if [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "TRUE" ] || \
-   [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "YES" ]; then
+if [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "TRUE" ]] || \
+   [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "YES" ]]; then
   RUN_TASK_MAKE_SFC_CLIMO="TRUE"
-elif [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ] || \
-     [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "NO" ]; then
+elif [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]] || \
+     [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "NO" ]]; then
   RUN_TASK_MAKE_SFC_CLIMO="FALSE"
 fi
 #
@@ -237,11 +237,11 @@ check_var_valid_value \
 # have to consider other valid values later on.
 #
 RUN_TASK_PRDGEN=${RUN_TASK_PRDGEN^^}
-if [ "${RUN_TASK_PRDGEN}" = "TRUE" ] || \
-   [ "${RUN_TASK_PRDGEN}" = "YES" ]; then
+if [[ "${RUN_TASK_PRDGEN}" = "TRUE" ]] || \
+   [[ "${RUN_TASK_PRDGEN}" = "YES" ]]; then
   RUN_TASK_PRDGEN="TRUE"
-elif [ "${RUN_TASK_PRDGEN}" = "FALSE" ] || \
-     [ "${RUN_TASK_PRDGEN}" = "NO" ]; then
+elif [[ "${RUN_TASK_PRDGEN}" = "FALSE" ]] || \
+     [[ "${RUN_TASK_PRDGEN}" = "NO" ]]; then
   RUN_TASK_PRDGEN="FALSE"
 fi
 #
@@ -257,11 +257,11 @@ check_var_valid_value "DO_SHUM" "valid_vals_DO_SHUM"
 # have to consider other valid values later on.
 #
 DO_SHUM=${DO_SHUM^^}
-if [ "${DO_SHUM}" = "TRUE" ] || \
-   [ "${DO_SHUM}" = "YES" ]; then
+if [[ "${DO_SHUM}" = "TRUE" ]] || \
+   [[ "${DO_SHUM}" = "YES" ]]; then
   DO_SHUM="TRUE"
-elif [ "${DO_SHUM}" = "FALSE" ] || \
-     [ "${DO_SHUM}" = "NO" ]; then
+elif [[ "${DO_SHUM}" = "FALSE" ]] || \
+     [[ "${DO_SHUM}" = "NO" ]]; then
   DO_SHUM="FALSE"
 fi
 #
@@ -277,11 +277,11 @@ check_var_valid_value "DO_SPPT" "valid_vals_DO_SPPT"
 # have to consider other valid values later on.
 #
 DO_SPPT=${DO_SPPT^^}
-if [ "${DO_SPPT}" = "TRUE" ] || \
-   [ "${DO_SPPT}" = "YES" ]; then
+if [[ "${DO_SPPT}" = "TRUE" ]] || \
+   [[ "${DO_SPPT}" = "YES" ]]; then
   DO_SPPT="TRUE"
-elif [ "${DO_SPPT}" = "FALSE" ] || \
-     [ "${DO_SPPT}" = "NO" ]; then
+elif [[ "${DO_SPPT}" = "FALSE" ]] || \
+     [[ "${DO_SPPT}" = "NO" ]]; then
   DO_SPPT="FALSE"
 fi
 #
@@ -297,11 +297,11 @@ check_var_valid_value "DO_SPP" "valid_vals_DO_SPP"
 # have to consider other valid values later on.
 #
 DO_SPP=${DO_SPP^^}
-if [ "${DO_SPP}" = "TRUE" ] || \
-   [ "${DO_SPP}" = "YES" ]; then
+if [[ "${DO_SPP}" = "TRUE" ]] || \
+   [[ "${DO_SPP}" = "YES" ]]; then
   DO_SPP="TRUE"
-elif [ "${DO_SPP}" = "FALSE" ] || \
-     [ "${DO_SPP}" = "NO" ]; then
+elif [[ "${DO_SPP}" = "FALSE" ]] || \
+     [[ "${DO_SPP}" = "NO" ]]; then
   DO_SPP="FALSE"
 fi
 #
@@ -317,11 +317,11 @@ check_var_valid_value "DO_LSM_SPP" "valid_vals_DO_LSM_SPP"
 # have to consider other valid values later on.
 #
 DO_LSM_SPP=${DO_LSM_SPP^^}
-if [ "${DO_LSM_SPP}" = "TRUE" ] || \
-   [ "${DO_LSM_SPP}" = "YES" ]; then
+if [[ "${DO_LSM_SPP}" = "TRUE" ]] || \
+   [[ "${DO_LSM_SPP}" = "YES" ]]; then
   DO_LSM_SPP="TRUE"
-elif [ "${DO_LSM_SPP}" = "FALSE" ] || \
-     [ "${DO_LSM_SPP}" = "NO" ]; then
+elif [[ "${DO_LSM_SPP}" = "FALSE" ]] || \
+     [[ "${DO_LSM_SPP}" = "NO" ]]; then
   DO_LSM_SPP="FALSE"
 fi
 #
@@ -337,11 +337,11 @@ check_var_valid_value "DO_SKEB" "valid_vals_DO_SKEB"
 # have to consider other valid values later on.
 #
 DO_SKEB=${DO_SKEB^^}
-if [ "${DO_SKEB}" = "TRUE" ] || \
-   [ "${DO_SKEB}" = "YES" ]; then
+if [[ "${DO_SKEB}" = "TRUE" ]] || \
+   [[ "${DO_SKEB}" = "YES" ]]; then
   DO_SKEB="TRUE"
-elif [ "${DO_SKEB}" = "FALSE" ] || \
-     [ "${DO_SKEB}" = "NO" ]; then
+elif [[ "${DO_SKEB}" = "FALSE" ]] || \
+     [[ "${DO_SKEB}" = "NO" ]]; then
   DO_SKEB="FALSE"
 fi
 #
@@ -355,13 +355,13 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${DO_SHUM}" = "FALSE" ]; then
+if [[ "${DO_SHUM}" = "FALSE" ]]; then
   SHUM_MAG=-999.0
 fi
-if [ "${DO_SKEB}" = "FALSE" ]; then
+if [[ "${DO_SKEB}" = "FALSE" ]]; then
   SKEB_MAG=-999.0
 fi
-if [ "${DO_SPPT}" = "FALSE" ]; then
+if [[ "${DO_SPPT}" = "FALSE" ]]; then
   SPPT_MAG=-999.0
 fi
 #
@@ -374,7 +374,7 @@ fi
 #-----------------------------------------------------------------------
 #
 N_VAR_SPP=0
-if [ "${DO_SPP}" = "TRUE" ]; then
+if [[ "${DO_SPP}" = "TRUE" ]]; then
   N_VAR_SPP=${#SPP_VAR_LIST[@]}
 fi
 #
@@ -395,7 +395,7 @@ fi
 N_VAR_LNDP=0
 LNDP_TYPE=0
 FHCYC_LSM_SPP_OR_NOT=0
-if [ "${DO_LSM_SPP}" = "TRUE" ]; then
+if [[ "${DO_LSM_SPP}" = "TRUE" ]]; then
   N_VAR_LNDP=${#LSM_SPP_VAR_LIST[@]}
   LNDP_TYPE=2
   FHCYC_LSM_SPP_OR_NOT=0
@@ -409,14 +409,14 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${DO_SPP}" = "TRUE" ]; then
-  if [ "${#SPP_MAG_LIST[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#SPP_LSCALE[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#SPP_TSCALE[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#SPP_SIGTOP1[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#SPP_SIGTOP2[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#SPP_STDDEV_CUTOFF[@]}" != "${N_VAR_SPP}" ] || \
-     [ "${#ISEED_SPP[@]}" != "${N_VAR_SPP}" ]; then
+if [[ "${DO_SPP}" = "TRUE" ]]; then
+  if [[ "${#SPP_MAG_LIST[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#SPP_LSCALE[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#SPP_TSCALE[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#SPP_SIGTOP1[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#SPP_SIGTOP2[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#SPP_STDDEV_CUTOFF[@]}" != "${N_VAR_SPP}" ]] || \
+     [[ "${#ISEED_SPP[@]}" != "${N_VAR_SPP}" ]]; then
   print_err_msg_exit "\
 All MYNN PBL, MYNN SFC, GSL GWD, Thompson MP, or RRTMG SPP-related namelist
 variables set in ${CONFIG_FN} must be equal in number of entries to what is
@@ -433,8 +433,8 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${DO_LSM_SPP}" = "TRUE" ]; then
-  if [ "${#LSM_SPP_MAG_LIST[@]}" != "${N_VAR_LNDP}" ]; then
+if [[ "${DO_LSM_SPP}" = "TRUE" ]]; then
+  if [[ "${#LSM_SPP_MAG_LIST[@]}" != "${N_VAR_LNDP}" ]]; then
   print_err_msg_exit "\
 All Noah or RUC-LSM SPP-related namelist variables (except ISEED_LSM_SPP)
 set in ${CONFIG_FN} must be equal in number of entries to what is found in
@@ -457,11 +457,11 @@ check_var_valid_value "USE_FVCOM" "valid_vals_USE_FVCOM"
 # other valid values later on.
 #
 USE_FVCOM=${USE_FVCOM^^}
-if [ "${USE_FVCOM}" = "TRUE" ] || \
-   [ "${USE_FVCOM}" = "YES" ]; then
+if [[ "${USE_FVCOM}" = "TRUE" ]] || \
+   [[ "${USE_FVCOM}" = "YES" ]]; then
   USE_FVCOM="TRUE"
-elif [ "${USE_FVCOM}" = "FALSE" ] || \
-     [ "${USE_FVCOM}" = "NO" ]; then
+elif [[ "${USE_FVCOM}" = "FALSE" ]] || \
+     [[ "${USE_FVCOM}" = "NO" ]]; then
   USE_FVCOM="FALSE"
 fi
 #
@@ -516,13 +516,13 @@ for (( i=0; i<obs_number; i++ ));
 do
   value2check=${optionList[${i}]}
   check_var_valid_value "${value2check}" "valid_vals_${value2check}"
-  eval value2change=\$"${value2check}"
+  eval value2change=\"${value2check}"
   value2change=${value2change^^}
-  if [ "${value2change}" = "TRUE" ] ||
-     [ "${value2change}" = "YES" ]; then
+  if [[ "${value2change}" = "TRUE" ]] ||
+     [[ "${value2change}" = "YES" ]]; then
     value2change="TRUE"
-  elif [ "${value2change}" = "FALSE" ] ||
-       [ "${value2change}" = "NO" ]; then
+  elif [[ "${value2change}" = "FALSE" ]] ||
+       [[ "${value2change}" = "NO" ]]; then
     value2change="FALSE"
   fi
   eval "${value2check}"="${value2change}"
@@ -629,7 +629,7 @@ check_var_valid_value "SCHED" "valid_vals_SCHED"
 #
 #-----------------------------------------------------------------------
 #
-if [ -z "${ACCOUNT}" ]; then
+if [[ -z "${ACCOUNT}" ]]; then
   print_err_msg_exit "\
 The variable ACCOUNT cannot be empty:
   ACCOUNT = \"${ACCOUNT}\""
@@ -663,7 +663,7 @@ check_var_valid_value "GTYPE" "valid_vals_GTYPE"
 #
 #-----------------------------------------------------------------------
 #
-if [ ! -z "${PREDEF_GRID_NAME}" ]; then
+if [[ ! -z "${PREDEF_GRID_NAME}" ]]; then
   err_msg="\
 The predefined regional grid specified in PREDEF_GRID_NAME is not sup-
 ported:
@@ -702,7 +702,7 @@ check_var_valid_value \
 #
 DATE_OR_NULL=$( printf "%s" "${DATE_FIRST_CYCL}" | \
                 sed -n -r -e "s/^([0-9]{8})$/\1/p" )
-if [ -z "${DATE_OR_NULL}" ]; then
+if [[ -z "${DATE_OR_NULL}" ]]; then
   print_err_msg_exit "\
 DATE_FIRST_CYCL must be a string consisting of exactly 8 digits of the
 form \"YYYYMMDD\", where YYYY is the 4-digit year, MM is the 2-digit
@@ -712,7 +712,7 @@ fi
 
 DATE_OR_NULL=$( printf "%s" "${DATE_LAST_CYCL}" | \
                 sed -n -r -e "s/^([0-9]{8})$/\1/p" )
-if [ -z "${DATE_OR_NULL}" ]; then
+if [[ -z "${DATE_OR_NULL}" ]]; then
   print_err_msg_exit "\
 DATE_LAST_CYCL must be a string consisting of exactly 8 digits of the
 form \"YYYYMMDD\", where YYYY is the 4-digit year, MM is the 2-digit
@@ -735,7 +735,7 @@ for CYCL in "${CYCL_HRS[@]}"; do
 
   CYCL_OR_NULL=$( printf "%s" "${CYCL}" | sed -n -r -e "s/^([0-9]{2})$/\1/p" )
 
-  if [ -z "${CYCL_OR_NULL}" ]; then
+  if [[ -z "${CYCL_OR_NULL}" ]]; then
     print_err_msg_exit "\
 Each element of CYCL_HRS must be a string consisting of exactly 2 digits
 (including a leading \"0\", if necessary) specifying an hour-of-day.  Ele-
@@ -745,8 +745,8 @@ have this form:
   CYCL_HRS[${i}] = \"${CYCL_HRS[${i}]}\""
   fi
 
-  if [ "${CYCL_OR_NULL}" -lt "0" ] || \
-     [ "${CYCL_OR_NULL}" -gt "23" ]; then
+  if [[ "${CYCL_OR_NULL}" -lt "0" ]] || \
+     [[ "${CYCL_OR_NULL}" -gt "23" ]]; then
     print_err_msg_exit "\
 Each element of CYCL_HRS must be an integer between \"00\" and \"23\", in-
 clusive (including a leading \"0\", if necessary), specifying an hour-of-
@@ -876,7 +876,7 @@ property_name="local_path"
 # Get the base directory of the FV3 forecast model code.
 #
 UFS_WTHR_MDL_DIR="${SORCrrfs}/ufs-weather-model"
-if [ ! -d "${UFS_WTHR_MDL_DIR}" ]; then
+if [[ ! -d "${UFS_WTHR_MDL_DIR}" ]]; then
   print_err_msg_exit "\
 The base directory in which the FV3 source code should be located
 (UFS_WTHR_MDL_DIR) does not exist:
@@ -888,7 +888,7 @@ fi
 # Get the base directory of the UFS_UTILS codes.
 #
 UFS_UTILS_DIR="${SORCrrfs}/UFS_UTILS"
-if [ ! -d "${UFS_UTILS_DIR}" ]; then
+if [[ ! -d "${UFS_UTILS_DIR}" ]]; then
   print_err_msg_exit "\
 The base directory in which the UFS utilities source codes should be lo-
 cated (UFS_UTILS_DIR) does not exist:
@@ -900,7 +900,7 @@ fi
 # Get the base directory of the UPP code.
 #
 UPP_DIR="${SORCrrfs}/UPP"
-if [ ! -d "${UPP_DIR}" ]; then
+if [[ ! -d "${UPP_DIR}" ]]; then
   print_err_msg_exit "\
 The base directory in which the UPP source code should be located
 (UPP_DIR) does not exist:
@@ -923,11 +923,11 @@ check_var_valid_value \
 # have to consider other valid values later on.
 #
 USE_CUSTOM_POST_CONFIG_FILE=${USE_CUSTOM_POST_CONFIG_FILE^^}
-if [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ] || \
-   [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "YES" ]; then
+if [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ]] || \
+   [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "YES" ]]; then
   USE_CUSTOM_POST_CONFIG_FILE="TRUE"
-elif [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "FALSE" ] || \
-     [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "NO" ]; then
+elif [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "FALSE" ]] || \
+     [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "NO" ]]; then
   USE_CUSTOM_POST_CONFIG_FILE="FALSE"
 fi
 #
@@ -937,7 +937,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ ${#ADDNL_OUTPUT_GRIDS[@]} -ne 0 ]; then
+if [[ ${#ADDNL_OUTPUT_GRIDS[@]} -ne 0 ]]; then
   for grid in "${ADDNL_OUTPUT_GRIDS[@]}" ; do
     TILE_SETS="${TILE_SETS} ${grid}"
     TILE_LABELS="${TILE_LABELS} ${grid}"
@@ -950,8 +950,8 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ]; then
-  if [ ! -f "${CUSTOM_POST_CONFIG_FP}" ]; then
+if [[ "${USE_CUSTOM_POST_CONFIG_FILE}" = "TRUE" ]]; then
+  if [[ ! -f "${CUSTOM_POST_CONFIG_FP}" ]]; then
     print_err_msg_exit "
 The custom post configuration specified by CUSTOM_POST_CONFIG_FP does not
 exist:
@@ -969,7 +969,7 @@ fi
 #-----------------------------------------------------------------------
 #
 fcst_len_hrs_max="999"
-if [ "${FCST_LEN_HRS}" -gt "${fcst_len_hrs_max}" ]; then
+if [[ "${FCST_LEN_HRS}" -gt "${fcst_len_hrs_max}" ]]; then
   print_err_msg_exit "\
 Forecast length is greater than maximum allowed length:
   FCST_LEN_HRS = ${FCST_LEN_HRS}
@@ -987,7 +987,7 @@ fi
 #
 rem=$(( FCST_LEN_HRS%LBC_SPEC_INTVL_HRS ))
 
-if [ "${rem}" -ne "0" ]; then
+if [[ "${rem}" -ne "0" ]]; then
   print_err_msg_exit "\
 The forecast length (FCST_LEN_HRS) is not evenly divisible by the lateral
 boundary conditions update interval (LBC_SPEC_INTVL_HRS):
@@ -1017,7 +1017,7 @@ LBC_SPEC_FCST_LONG_HRS=($( seq 0 "${LBC_SPEC_INTVL_HRS}" \
 #
 #-----------------------------------------------------------------------
 #
-if [ ! -z "${PREDEF_GRID_NAME}" ]; then
+if [[ ! -z "${PREDEF_GRID_NAME}" ]]; then
   . "${USHrrfs}"/set_predef_grid_params.sh
 fi
 #
@@ -1041,7 +1041,7 @@ check_var_valid_value \
 #
 #-----------------------------------------------------------------------
 #
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
   err_msg="\
 The number of grid cells per tile in each horizontal direction specified
 in GFDLgrid_RES is not supported:
@@ -1058,7 +1058,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ -z "${DT_ATMOS}" ]; then
+if [[ -z "${DT_ATMOS}" ]]; then
   print_err_msg_exit "\
 The forecast model main time step (DT_ATMOS) is set to a null string:
   DT_ATMOS = ${DT_ATMOS}
@@ -1067,7 +1067,7 @@ configuration file (EXPT_CONFIG_FP) and rerun:
   EXPT_CONFIG_FP = \"${EXPT_CONFIG_FP}\""
 fi
 
-if [ -z "${LAYOUT_X}" ]; then
+if [[ -z "${LAYOUT_X}" ]]; then
   print_err_msg_exit "\
 The number of MPI processes to be used in the x direction (LAYOUT_X) by
 the forecast job is set to a null string:
@@ -1077,7 +1077,7 @@ configuration file (EXPT_CONFIG_FP) and rerun:
   EXPT_CONFIG_FP = \"${EXPT_CONFIG_FP}\""
 fi
 
-if [ -z "${LAYOUT_Y}" ]; then
+if [[ -z "${LAYOUT_Y}" ]]; then
   print_err_msg_exit "\
 The number of MPI processes to be used in the y direction (LAYOUT_Y) by
 the forecast job is set to a null string:
@@ -1087,7 +1087,7 @@ configuration file (EXPT_CONFIG_FP) and rerun:
   EXPT_CONFIG_FP = \"${EXPT_CONFIG_FP}\""
 fi
 
-if [ -z "${BLOCKSIZE}" ]; then
+if [[ -z "${BLOCKSIZE}" ]]; then
   print_err_msg_exit "\
 The cache size to use for each MPI task of the forecast (BLOCKSIZE) is
 set to a null string:
@@ -1108,19 +1108,19 @@ fi
 #-----------------------------------------------------------------------
 #
 GWD_HRRRsuite_DIR=""
-if [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ] || \
-   [ "${CCPP_PHYS_SUITE}" = "FV3_HRRR_gf" ]  || \
-   [ "${CCPP_PHYS_SUITE}" = "RRFS_sas" ]  || \
-   [ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ]  || \
-   [ "${CCPP_PHYS_SUITE}" = "FV3_GFS_v15_thompson_mynn_lam3km" ]; then
+if [[ "${CCPP_PHYS_SUITE}" = "FV3_HRRR" ]] || \
+   [[ "${CCPP_PHYS_SUITE}" = "FV3_HRRR_gf" ]]  || \
+   [[ "${CCPP_PHYS_SUITE}" = "RRFS_sas" ]]  || \
+   [[ "${CCPP_PHYS_SUITE}" = "FV3_RAP" ]]  || \
+   [[ "${CCPP_PHYS_SUITE}" = "FV3_GFS_v15_thompson_mynn_lam3km" ]]; then
   #
   # Make sure that GWD_HRRRsuite_BASEDIR is set equal to FIXLAM_NCO_BASEDIR
   #
-  if [ "${GWD_HRRRsuite_BASEDIR}" != "${FIXLAM_NCO_BASEDIR}" ]; then
+  if [[ "${GWD_HRRRsuite_BASEDIR}" != "${FIXLAM_NCO_BASEDIR}" ]]; then
     gwd_hrrrsuite_basedir_orig="${GWD_HRRRsuite_BASEDIR}"
     GWD_HRRRsuite_BASEDIR="${FIXLAM_NCO_BASEDIR}"
 
-    if [ ! -z "${gwd_hrrrsuite_basedir_orig}" ]; then
+    if [[ ! -z "${gwd_hrrrsuite_basedir_orig}" ]]; then
       print_err_msg_exit "The workflow assumes that the base
 directory (GWD_HRRRsuite_BASEDIR) under which the grid-specific
 subdirectories containing the gravity wave drag-related orography
@@ -1136,7 +1136,7 @@ Resetting GWD_HRRRsuite_BASEDIR to FIXLAM_NCO_BASEDIR.  Reset value is:
 #
 # Check that GWD_HRRRsuite_BASEDIR exists and is a directory.
 #
-  if [ ! -d "${GWD_HRRRsuite_BASEDIR}" ]; then
+  if [[ ! -d "${GWD_HRRRsuite_BASEDIR}" ]]; then
     print_err_msg_exit "\
 The base directory (GWD_HRRRsuite_BASEDIR) under which the grid-specific
 subdirectories containing the gravity wave drag-related orography files
@@ -1151,7 +1151,7 @@ not a directory):
 # orography statistics files required by this suite are available only
 # for (some of) the predefined grids.
 #
-  if [ -z "${PREDEF_GRID_NAME}" ]; then
+  if [[ -z "${PREDEF_GRID_NAME}" ]]; then
     print_err_msg_exit "\
 A predefined grid name (PREDEF_GRID_NAME) must be specified when using
 the FV3_HRRR/FV3_RAP physics suites:
@@ -1163,7 +1163,7 @@ the FV3_HRRR/FV3_RAP physics suites:
 # statistics files required by the FV3_HRRR/FV3_RAP suites are located
 # actually exists.
 #
-    if [ ! -d "${GWD_HRRRsuite_DIR}" ]; then
+    if [[ ! -d "${GWD_HRRRsuite_DIR}" ]]; then
       print_err_msg_exit "\
 The directory (GWD_HRRRsuite_DIR) that should contain the gravity wave
 drag-related orography files for the FV3_HRRR/FV3_RAP suites does not exist:
@@ -1172,7 +1172,7 @@ drag-related orography files for the FV3_HRRR/FV3_RAP suites does not exist:
       print_err_msg_exit "\
 Unable to inspect the directory (GWD_HRRRsuite_DIR):
   GWD_HRRRsuite_DIR = \"${GWD_HRRRsuite_DIR}\""
-    elif [ -z "${gwd_hrrrsuite_entry}" ]; then
+    elif [[ -z "${gwd_hrrrsuite_entry}" ]]; then
       print_err_msg_exit "\
 The directory (GWD_HRRRsuite_DIR) that should contain the gravity wave
 drag related orography files for the FV3_HRRR/FV3_RAP suites is empty:
@@ -1197,7 +1197,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${EXPT_BASEDIR:0:1}" != "/" ]; then
+if [[ "${EXPT_BASEDIR:0:1}" != "/" ]]; then
   EXPT_BASEDIR="${HOMErrfs}/../expt_dirs/${EXPT_BASEDIR}"
 fi
 EXPT_BASEDIR="$( readlink -m "${EXPT_BASEDIR}" )"
@@ -1210,7 +1210,7 @@ mkdir -p "${EXPT_BASEDIR}"
 #
 #-----------------------------------------------------------------------
 #
-if [ -z "${EXPT_SUBDIR}" ]; then
+if [[ -z "${EXPT_SUBDIR}" ]]; then
   print_err_msg_exit "\
 The name of the experiment subdirectory (EXPT_SUBDIR) cannot be empty:
   EXPT_SUBDIR = \"${EXPT_SUBDIR}\""
@@ -1337,7 +1337,7 @@ LOG_BASEDIR="${PTMP}/logs"
 dot_ccpp_phys_suite_or_null=".${CCPP_PHYS_SUITE}"
 
 DATA_TABLE_TMPL_FN="${DATA_TABLE_FN}"
-if [ "${USE_CLM}" = "TRUE" ]; then
+if [[ "${USE_CLM}" = "TRUE" ]]; then
 DIAG_TABLE_TMPL_FN="${DIAG_TABLE_FN}${dot_ccpp_phys_suite_or_null}_clm"
 else
 DIAG_TABLE_TMPL_FN="${DIAG_TABLE_FN}${dot_ccpp_phys_suite_or_null}"
@@ -1376,7 +1376,7 @@ UFS_CONFIG_TMPL_FP="${PARMrrfs}/${UFS_CONFIG_TMPL_FN}"
 CCPP_PHYS_SUITE_FN="suite_${CCPP_PHYS_SUITE}.xml"
 CCPP_PHYS_SUITE_IN_CCPP_FP="${UFS_WTHR_MDL_DIR}/FV3/ccpp/suites/${CCPP_PHYS_SUITE_FN}"
 CCPP_PHYS_SUITE_FP="${EXPTDIR}/${CCPP_PHYS_SUITE_FN}"
-if [ ! -f "${CCPP_PHYS_SUITE_IN_CCPP_FP}" ]; then
+if [[ ! -f "${CCPP_PHYS_SUITE_IN_CCPP_FP}" ]]; then
   print_err_msg_exit "\
 The CCPP suite definition file (CCPP_PHYS_SUITE_IN_CCPP_FP) does not exist
 in the local clone of the ufs-weather-model:
@@ -1399,7 +1399,7 @@ fi
 UFS_YAML_FN="fd_ufs.yaml"
 UFS_YAML_IN_PARM_FP="${UFS_WTHR_MDL_DIR}/tests/parm/${UFS_YAML_FN}"
 UFS_YAML_FP="${EXPTDIR}/${UFS_YAML_FN}"
-if [ ! -f "${UFS_YAML_IN_PARM_FP}" ]; then
+if [[ ! -f "${UFS_YAML_IN_PARM_FP}" ]]; then
   print_err_msg_exit "\
 The (UFS_YAML_IN_PARM_FP) does not exist
 in the local clone of the ufs-weather-model:
@@ -1477,9 +1477,9 @@ check_var_valid_value "USE_USER_STAGED_EXTRN_FILES" "valid_vals_USE_USER_STAGED_
 # have to consider other valid values later on.
 #
 USE_USER_STAGED_EXTRN_FILES=${USE_USER_STAGED_EXTRN_FILES^^}
-if [ "${USE_USER_STAGED_EXTRN_FILES}" = "YES" ]; then
+if [[ "${USE_USER_STAGED_EXTRN_FILES}" = "YES" ]]; then
   USE_USER_STAGED_EXTRN_FILES="TRUE"
-elif [ "${USE_USER_STAGED_EXTRN_FILES}" = "NO" ]; then
+elif [[ "${USE_USER_STAGED_EXTRN_FILES}" = "NO" ]]; then
   USE_USER_STAGED_EXTRN_FILES="FALSE"
 fi
 #
@@ -1491,16 +1491,16 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${USE_USER_STAGED_EXTRN_FILES}" = "TRUE" ]; then
+if [[ "${USE_USER_STAGED_EXTRN_FILES}" = "TRUE" ]]; then
 
-  if [ ! -d "${EXTRN_MDL_SOURCE_BASEDIR_ICS}" ]; then
+  if [[ ! -d "${EXTRN_MDL_SOURCE_BASEDIR_ICS}" ]]; then
     print_err_msg_exit "\
 The directory (EXTRN_MDL_SOURCE_BASEDIR_ICS) in which the user-staged
 external model files for generating ICs should be located does not exist:
   EXTRN_MDL_SOURCE_BASEDIR_ICS = \"${EXTRN_MDL_SOURCE_BASEDIR_ICS}\""
   fi
 
-  if [ ! -d "${EXTRN_MDL_SOURCE_BASEDIR_LBCS}" ]; then
+  if [[ ! -d "${EXTRN_MDL_SOURCE_BASEDIR_LBCS}" ]]; then
     print_err_msg_exit "\
 The directory (EXTRN_MDL_SOURCE_BASEDIR_LBCS) in which the user-staged
 external model files for generating LBCs should be located does not exist:
@@ -1512,7 +1512,7 @@ fi
 NDIGITS_ENSMEM_NAMES="0"
 ENSMEM_NAMES=("")
 FV3_NML_ENSMEM_FPS=("")
-if [ "${DO_ENSEMBLE}" = "TRUE" ]; then
+if [[ "${DO_ENSEMBLE}" = "TRUE" ]]; then
 #  NDIGITS_ENSMEM_NAMES="${#NUM_ENS_MEMBERS}"
   NDIGITS_ENSMEM_NAMES="3"
 # Strip away all leading zeros in NUM_ENS_MEMBERS by converting it to a
@@ -1548,7 +1548,7 @@ FV3_EXEC_FP="${HOMErrfs}/exec/${FV3_EXEC_FN}"
 #
 WFLOW_LAUNCH_SCRIPT_FP="${USHrrfs}/${WFLOW_LAUNCH_SCRIPT_FN}"
 WFLOW_LAUNCH_LOG_FP="${EXPTDIR}/${WFLOW_LAUNCH_LOG_FN}"
-if [ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]; then
+if [[ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]]; then
   CRONTAB_LINE="*/${CRON_RELAUNCH_INTVL_MNTS} * * * * cd ${EXPTDIR} && \
 ./${WFLOW_LAUNCH_SCRIPT_FN} >> ./${WFLOW_LAUNCH_LOG_FN} 2>&1"
 else
@@ -1592,8 +1592,8 @@ nco_fix_dir="${FIXLAM_NCO_BASEDIR}/${PREDEF_GRID_NAME}"
 # The grid, orography, and surface climatology files are not pregenerated
 # for the fire weather grid.  Do not produce an error when using this grid.
 #
-if [ "${PREDEF_GRID_NAME}" != "RRFS_FIREWX_1.5km" ]; then
-  if [ ! -d "${nco_fix_dir}" ]; then
+if [[ "${PREDEF_GRID_NAME}" != "RRFS_FIREWX_1.5km" ]]; then
+  if [[ ! -d "${nco_fix_dir}" ]]; then
     print_err_msg_exit "\
   The directory (nco_fix_dir) that should contain the pregenerated grid,
   orography, and surface climatology files does not exist:
@@ -1605,10 +1605,10 @@ fi
 # If RUN_TASK_MAKE_GRID is set to "FALSE", the workflow will look for
 # the pregenerated grid files in GRID_DIR.
 #
-if [ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]]; then
   # Set nco_fix_dir by default
   GRID_DIR="${GRID_DIR:-${nco_fix_dir}}"
-  if [ ! -d "${GRID_DIR}" ]; then
+  if [[ ! -d "${GRID_DIR}" ]]; then
     print_err_msg_exit "\
 The directory (GRID_DIR) that should contain the pregenerated grid files
 does not exist:
@@ -1621,10 +1621,10 @@ fi
 # If RUN_TASK_MAKE_OROG is set to "FALSE", the workflow will look for
 # the pregenerated orography files in OROG_DIR.
 #
-if [ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]]; then
   # Set nco_fix_dir by default
   OROG_DIR="${OROG_DIR:-${nco_fix_dir}}"
-  if [ ! -d "${OROG_DIR}" ]; then
+  if [[ ! -d "${OROG_DIR}" ]]; then
     print_err_msg_exit "\
 The directory (OROG_DIR) that should contain the pregenerated orography
 files does not exist:
@@ -1637,10 +1637,10 @@ fi
 # If RUN_TASK_MAKE_SFC_CLIMO is set to "FALSE", the workflow will look
 # for the pregenerated surface climatology files in SFC_CLIMO_DIR.
 #
-if [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]]; then
   # Set nco_fix_dir by default
   SFC_CLIMO_DIR="${SFC_CLIMO_DIR:-${nco_fix_dir}}"
-  if [ ! -d "${SFC_CLIMO_DIR}" ]; then
+  if [[ ! -d "${SFC_CLIMO_DIR}" ]]; then
     print_err_msg_exit "\
 The directory (SFC_CLIMO_DIR) that should contain the pregenerated surface
 climatology files does not exist:
@@ -1682,7 +1682,7 @@ check_var_valid_value \
 #
 #-----------------------------------------------------------------------
 #
-if [ "${EXTRN_MDL_NAME_ICS}" = "GFS" ]; then
+if [[ "${EXTRN_MDL_NAME_ICS}" = "GFS" ]]; then
   err_msg="\
 The file format for GFS external model files specified in GFS_-
 FILE_FMT_ICS is not supported:
@@ -1697,7 +1697,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${EXTRN_MDL_NAME_LBCS}" = "GFS" ]; then
+if [[ "${EXTRN_MDL_NAME_LBCS}" = "GFS" ]]; then
   err_msg="\
 The file format for GFS external model files specified in GFS_-
 FILE_FMT_LBCS is not supported:
@@ -1763,7 +1763,7 @@ NH4=4
 #
 #-----------------------------------------------------------------------
 #
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
 
   set_gridparams_GFDLgrid \
     lon_of_t6_ctr="${GFDLgrid_LON_T6_CTR}" \
@@ -1792,7 +1792,7 @@ if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
 #
 #-----------------------------------------------------------------------
 #
-elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
+elif [[ "${GRID_GEN_METHOD}" = "ESGgrid" ]]; then
 
   set_gridparams_ESGgrid \
     lon_ctr="${ESGgrid_LON_CTR}" \
@@ -1851,7 +1851,7 @@ RES_IN_FIXLAM_FILENAMES=""
 #-----------------------------------------------------------------------
 #
 res_in_grid_fns=""
-if [ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]]; then
 
   link_fix \
     verbose="${VERBOSE}" \
@@ -1873,7 +1873,7 @@ fi
 #-----------------------------------------------------------------------
 #
 res_in_orog_fns=""
-if [ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]]; then
 
   link_fix \
     verbose="${VERBOSE}" \
@@ -1882,8 +1882,8 @@ if [ "${RUN_TASK_MAKE_OROG}" = "FALSE" ]; then
   print_err_msg_exit "\
 Call to function to create links to orography files failed."
 
-  if [ ! -z "${RES_IN_FIXLAM_FILENAMES}" ] && \
-     [ "${res_in_orog_fns}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]; then
+  if [[ ! -z "${RES_IN_FIXLAM_FILENAMES}" ]] && \
+     [[ "${res_in_orog_fns}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]]; then
     print_err_msg_exit "\
 The resolution extracted from the orography file names (res_in_orog_fns)
 does not match the resolution in other groups of files already consi-
@@ -1906,7 +1906,7 @@ fi
 #-----------------------------------------------------------------------
 #
 res_in_sfc_climo_fns=""
-if [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]]; then
 
   link_fix \
     verbose="${VERBOSE}" \
@@ -1915,8 +1915,8 @@ if [ "${RUN_TASK_MAKE_SFC_CLIMO}" = "FALSE" ]; then
   print_err_msg_exit "\
 Call to function to create links to surface climatology files failed."
 
-  if [ ! -z "${RES_IN_FIXLAM_FILENAMES}" ] && \
-     [ "${res_in_sfc_climo_fns}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]; then
+  if [[ ! -z "${RES_IN_FIXLAM_FILENAMES}" ]] && \
+     [[ "${res_in_sfc_climo_fns}" -ne "${RES_IN_FIXLAM_FILENAMES}" ]]; then
     print_err_msg_exit "\
 The resolution extracted from the surface climatology file names (res_-
 in_sfc_climo_fns) does not match the resolution in other groups of files
@@ -1938,7 +1938,7 @@ fi
 #-----------------------------------------------------------------------
 #
 CRES=""
-if [ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]; then
+if [[ "${RUN_TASK_MAKE_GRID}" = "FALSE" ]]; then
   CRES="C${RES_IN_FIXLAM_FILENAMES}"
 fi
 
@@ -1955,11 +1955,11 @@ check_var_valid_value "QUILTING" "valid_vals_QUILTING"
 # other valid values later on.
 #
 QUILTING=${QUILTING^^}
-if [ "${QUILTING}" = "TRUE" ] || \
-   [ "${QUILTING}" = "YES" ]; then
+if [[ "${QUILTING}" = "TRUE" ]] || \
+   [[ "${QUILTING}" = "YES" ]]; then
   QUILTING="TRUE"
-elif [ "${QUILTING}" = "FALSE" ] || \
-     [ "${QUILTING}" = "NO" ]; then
+elif [[ "${QUILTING}" = "FALSE" ]] || \
+     [[ "${QUILTING}" = "NO" ]]; then
   QUILTING="FALSE"
 fi
 #
@@ -1975,11 +1975,11 @@ check_var_valid_value "PRINT_ESMF" "valid_vals_PRINT_ESMF"
 # other valid values later on.
 #
 PRINT_ESMF=${PRINT_ESMF^^}
-if [ "${PRINT_ESMF}" = "TRUE" ] || \
-   [ "${PRINT_ESMF}" = "YES" ]; then
+if [[ "${PRINT_ESMF}" = "TRUE" ]] || \
+   [[ "${PRINT_ESMF}" = "YES" ]]; then
   PRINT_ESMF="TRUE"
-elif [ "${PRINT_ESMF}" = "FALSE" ] || \
-     [ "${PRINT_ESMF}" = "NO" ]; then
+elif [[ "${PRINT_ESMF}" = "FALSE" ]] || \
+     [[ "${PRINT_ESMF}" = "NO" ]]; then
   PRINT_ESMF="FALSE"
 fi
 #
@@ -1992,7 +1992,7 @@ fi
 #-----------------------------------------------------------------------
 #
 PE_MEMBER01=$(( LAYOUT_X*LAYOUT_Y ))
-if [ "${QUILTING}" = "TRUE" ]; then
+if [[ "${QUILTING}" = "TRUE" ]]; then
   PE_MEMBER01=$(( PE_MEMBER01 + WRTCMP_write_groups*WRTCMP_write_tasks_per_group ))
 fi
 
@@ -2009,7 +2009,7 @@ component if it is being used) are:
 #
 #-----------------------------------------------------------------------
 #
-if [ "${QUILTING}" = "TRUE" ]; then
+if [[ "${QUILTING}" = "TRUE" ]]; then
   err_msg="\
 The coordinate system used by the write-component output grid specified
 in WRTCMP_output_grid is not supported:
@@ -2115,7 +2115,7 @@ set_thompson_mp_fix_files \
 #-----------------------------------------------------------------------
 #
 GLOBAL_VAR_DEFNS_FP="${EXPTDIR}/${GLOBAL_VAR_DEFNS_FN}"
-cp "${USHrrfs}"/${EXPT_DEFAULT_CONFIG_FN} "${GLOBAL_VAR_DEFNS_FP}"
+cp "${USHrrfs}"/"${EXPT_DEFAULT_CONFIG_FN}" "${GLOBAL_VAR_DEFNS_FP}"
 #
 #-----------------------------------------------------------------------
 #
@@ -2239,7 +2239,7 @@ while IFS= read -r crnt_line; do
 # If var_name is not empty, then a variable name was found in the cur-
 # rent line in line_list.
 #
-  if [ ! -z "${var_name}" ]; then
+  if [[ ! -z "${var_name}" ]]; then
 
     print_info_msg "${VERBOSE}" "
 var_name = \"${var_name}\""
@@ -2256,7 +2256,7 @@ var_name = \"${var_name}\""
 # empty string if the variable specified in var_name is unset (i.e. un-
 # defined).
 #
-    if [ ! -z ${!var_name+x} ]; then
+    if [[ ! -z ${!var_name+x} ]]; then
 #
 # The variable may be a scalar or an array.  Thus, we first treat it as
 # an array and obtain the number of elements that it contains.
@@ -2275,7 +2275,7 @@ var_name = \"${var_name}\""
 # lar.)  In this case, we enclose its value in double quotes and save
 # the result in var_value.
 #
-      if [ "${num_elems}" -eq 1 ]; then
+      if [[ "${num_elems}" -eq 1 ]]; then
         var_value="${!var_name}"
         var_value="\"${var_value}\""
 #
@@ -2295,7 +2295,7 @@ var_name = \"${var_name}\""
         arrays_on_one_line="TRUE"
         arrays_on_one_line="FALSE"
 
-        if [ "${arrays_on_one_line}" = "TRUE" ]; then
+        if [[ "${arrays_on_one_line}" = "TRUE" ]]; then
           var_value=$(printf "\"%s\" " "${!array_name_at}")
 #          var_value=$(printf "\"%s\" \\\\\\ \\\n" "${!array_name_at}")
         else
@@ -2542,7 +2542,7 @@ definitions file returned with a nonzero status."
 #
 #-----------------------------------------------------------------------
 #
-if [ "${GRID_GEN_METHOD}" = "GFDLgrid" ]; then
+if [[ "${GRID_GEN_METHOD}" = "GFDLgrid" ]]; then
 
   { cat << EOM >> "${GLOBAL_VAR_DEFNS_FP}"
 #
@@ -2567,7 +2567,7 @@ EOM
 Heredoc (cat) command to append grid parameters to variable definitions
 file returned with a nonzero status."
 
-elif [ "${GRID_GEN_METHOD}" = "ESGgrid" ]; then
+elif [[ "${GRID_GEN_METHOD}" = "ESGgrid" ]]; then
 
   { cat << EOM >> "${GLOBAL_VAR_DEFNS_FP}"
 #

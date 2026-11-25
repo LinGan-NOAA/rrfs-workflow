@@ -36,7 +36,7 @@ export FV3_NML_SPINUPCYC_FP="${PARMrrfs}/config/${WGF}/input.nml_spinupcyc"
 # export DIAG_TABLE_FN="diag_table"
 # export THOMPSON_MP_CLIMO_FP="${FIXam}/Thompson_MP_MONTHLY_CLIMO.nc"
 #
-if [ $WGF == "firewx" ]; then
+if [[ $WGF == "firewx" ]]; then
   export DIAG_TABLE_TMPL_FP="${PARMrrfs}/diag_table.RRFS_sas_nogwd"
 #no?  export CCPP_PHYS_SUITE_FP="${PARMrrfs}/config/${WGF}/suite_RRFS_sas_nogwd.xml"
   export CCPP_PHYS_SUITE='RRFS_sas_nogwd'
@@ -88,11 +88,13 @@ specified cycle.
 #
 #-----------------------------------------------------------------------
 #
-if [ ${WGF} = "firewx" ]; then
+if [[ ${WGF} = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s ${firewx_loc} ]; then
+  if [[ -s ${firewx_loc} ]]; then
+    # shellcheck disable=SC2006
     LAT_CTR=`grep ${hh}z $firewx_loc | awk '{print $2}'`
+    # shellcheck disable=SC2006
     LON_CTR=`grep ${hh}z $firewx_loc | awk '{print $3}'`
   else
     echo "WARNING:  Did not find firewx_loc to to set center point.  Will default to DC region"
@@ -111,7 +113,7 @@ fi
 #
 run_blending=${COMOUT}/run_blending
 run_ensinit=${COMOUT}/run_ensinit
-if [ $WGF = "enkf" ]; then
+if [[ $WGF = "enkf" ]]; then
   run_ensinit_ct=$(find ${COMOUT}/.. -name "run_ensinit"|wc -l)
 fi
 if [[ ${CYCLE_SUBTYPE} == "ensinit" && ${run_ensinit_ct} -eq 0 ]]; then
@@ -166,7 +168,7 @@ case $MACHINE in
 
   "JET")
     APRUN="srun --export=ALL --mem=0"
-    if [ "${PREDEF_GRID_NAME}" == "RRFS_NA_3km" ]; then
+    if [[ "${PREDEF_GRID_NAME}" == "RRFS_NA_3km" ]]; then
       OMP_NUM_THREADS=4
     else
       OMP_NUM_THREADS=2
@@ -183,7 +185,7 @@ Run command has not been specified for this machine:
 esac
 [[ -e ${umbrella_forecast_data}/forecast_clean.flag ]] && rm -f ${umbrella_forecast_data}/forecast_clean.flag
 
-if [ ${WGF} = "firewx" ]; then
+if [[ ${WGF} = "firewx" ]]; then
 #  export FIXLAM=${COMrrfs}/firewx_input/${CDATE}
   export FIXLAM=${COMrrfs}/${RUN}.${PDY}/${cyc}/input
 
@@ -211,15 +213,15 @@ export OMP_STACKSIZE=${OMP_STACKSIZE:-1024m}
 #-----------------------------------------------------------------------
 #
 anlfile=${FORECAST_INPUT_PRODUCT}/fv_core.res.tile1.nc
-if [ ${WGF} = "enkf" ] && [ "${DA_SYSTEM_ENKF:-GSI}" = "JEDI" ] && [ -f ${anlfile} ] \
+if [[ ${WGF} = "enkf" ]] && [[ "${DA_SYSTEM_ENKF:-GSI}" = "JEDI" ]] && [[ -f ${anlfile} ]] \
    && ncdump -h ${anlfile} | grep -q " ua_anl("; then
   export LD_LIBRARY_PATH="${RDASAPP_DIR:-${HOMErrfs}/sorc/RDASApp}/build/lib64:${LD_LIBRARY_PATH}"
   # Disable HDF5's advisory file locking to avoid intermittent failures
   export HDF5_USE_FILE_LOCKING=FALSE
   export pgm="rdas_ua2u.x"
-  cpreq -p ${EXECrrfs}/${pgm} ${DATA}/${pgm}
+  cpreq -p ${EXECrrfs}/"${pgm}" ${DATA}/"${pgm}"
 
-  ${APRUN_UA} ${DATA}/${pgm} ua_update_u \
+  ${APRUN_UA} ${DATA}/"${pgm}" ua_update_u \
     --in_grid=${FIXrrfs}/gsi/${PREDEF_GRID_NAME}/fv3_grid_spec \
     --in_anl=${anlfile} \
     --remove_anl_winds >>$pgmout 2>errfile
@@ -247,8 +249,8 @@ relative_or_null=""
 # Symlink to mosaic file with a completely different name.
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}mosaic.halo${NH3}.nc" # must use *mosaic.halo3.nc
 symlink="grid_spec.nc"
-if [ -f "${target}" ]; then
-  cpreq $target $symlink
+if [[ -f "${target}" ]]; then
+  cpreq $target $"symlink"
 else
   err_exit "\
 Cannot create symlink because target does not exist:
@@ -261,7 +263,7 @@ grid_fn=$( get_charvar_from_netcdf "${mosaic_fn}" "gridfiles" )
 
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}grid.tile7.halo${NH3}.nc"
 symlink="${grid_fn}"
-if [ -f "${target}" ]; then
+if [[ -f "${target}" ]]; then
   cpreq $target $symlink
 else
   err_exit "\
@@ -283,7 +285,7 @@ fi
 #
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}grid.tile${TILE_RGNL}.halo${NH4}.nc"
 symlink="grid.tile${TILE_RGNL}.halo${NH4}.nc"
-if [ -f "${target}" ]; then
+if [[ -f "${target}" ]]; then
   cpreq $target $symlink
 else
   err_exit "\
@@ -296,8 +298,8 @@ relative_or_null=""
 # Symlink to halo-0 orography file with "${CRES}_" and "halo0" stripped from name.
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH0}.nc"
 symlink="oro_data.nc"
-if [ -f "${target}" ]; then
-  cpreq $target $symlink
+if [[ -f "${target}" ]]; then
+  cpreq $target $"symlink"
 else
   err_exit "\
 Cannot create symlink because target does not exist:
@@ -319,7 +321,7 @@ fi
 #
 target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data.tile${TILE_RGNL}.halo${NH4}.nc"
 symlink="oro_data.tile${TILE_RGNL}.halo${NH4}.nc"
-if [ -f "${target}" ]; then
+if [[ -f "${target}" ]]; then
   cpreq $target $symlink
 else
   err_exit "\
@@ -346,7 +348,7 @@ if [[ ${suite_match} == TRUE ]]; then
   for fileid in "${fileids[@]}"; do
     target="${FIXLAM}/${CRES}${DOT_OR_USCORE}oro_data_${fileid}.tile${TILE_RGNL}.halo${NH0}.nc"
     symlink="oro_data_${fileid}.nc"
-    if [ -f "${target}" ]; then
+    if [[ -f "${target}" ]]; then
       cpreq $target $symlink
     else
       err_exit "\
@@ -377,12 +379,12 @@ of the current run directory (DATA), where
 
 cd ${DATA}/INPUT
 # Do not need to do this for firewx, which is a cold start
-if [ ${WGF} != "firewx" ]; then
+if [[ ${WGF} != "firewx" ]]; then
   ln -sf ${FORECAST_INPUT_PRODUCT}/* .
 fi
 
 BKTYPE=1    # cold start using INPUT
-if [ -r ${DATA}/INPUT/coupler.res ] ; then
+if [[ -r ${DATA}/INPUT/coupler.res ]] ; then
   BKTYPE=0  # cycling using RESTART
 fi
 print_info_msg "$VERBOSE" "
@@ -391,24 +393,24 @@ The forecast has BKTYPE $BKTYPE (1:cold start ; 0 cycling)"
 relative_or_null=""
 
 n_iolayouty=$(($IO_LAYOUT_Y-1))
-list_iolayout=$(seq 0 $n_iolayouty)
+list_iolayout=$(seq 0 $"n_iolayouty")
 
-if [ "${DO_NON_DA_RUN}" = "TRUE" ]; then
+if [[ "${DO_NON_DA_RUN}" = "TRUE" ]]; then
   target="${umbrella_ics_data}/gfs_data.tile${TILE_RGNL}.halo${NH0}.nc"
 else
-  if [ ${BKTYPE} -eq 1 ]; then
+  if [[ "${BKTYPE}" -eq 1 ]]; then
     target="gfs_data.tile${TILE_RGNL}.halo${NH0}.nc"
   else
     target="fv_core.res.tile1.nc"
   fi
 fi
 symlink="gfs_data.nc"
-if [ -f "${target}.0000" ]; then
+if [[ -f "${target}.0000" ]]; then
   for ii in ${list_iolayout}
   do
     iii=$(printf %4.4i $ii)
-    if [ -f "${target}.${iii}" ]; then
-      ln -sf ${relative_or_null} $target.${iii} $symlink.${iii}
+    if [[ -f "${target}.${iii}" ]]; then
+      ln -sf ${relative_or_null} $target.${iii} $"symlink".${iii}
     else
       err_exit "\
       Cannot create symlink because target does not exist:
@@ -416,8 +418,8 @@ if [ -f "${target}.0000" ]; then
     fi
   done
 else
-  if [ -f "${target}" ]; then
-    ln -sf ${relative_or_null} $target $symlink
+  if [[ -f "${target}" ]]; then
+    ln -sf ${relative_or_null} $target $"symlink"
   else
     err_exit "\
     Cannot create symlink because target does not exist:
@@ -425,14 +427,14 @@ else
   fi
 fi
 
-if [ "${DO_NON_DA_RUN}" = "TRUE" ]; then
+if [[ "${DO_NON_DA_RUN}" = "TRUE" ]]; then
   target="${umbrella_ics_data}/sfc_data.tile${TILE_RGNL}.halo${NH0}.nc"
   symlink="sfc_data.nc"
-  ln -sf ${relative_or_null} $target $symlink
+  ln -sf ${relative_or_null} $target $"symlink"
 
   target="${umbrella_ics_data}/gfs_ctrl.nc"
   symlink="gfs_ctrl.nc"
-  ln -sf ${relative_or_null} $target $symlink
+  ln -sf ${relative_or_null} $target $"symlink"
 
   target="${umbrella_ics_data}/gfs_bndy.tile${TILE_RGNL}.000.nc"
   symlink="gfs_bndy.tile${TILE_RGNL}.000.nc"
@@ -444,13 +446,13 @@ if [ "${DO_NON_DA_RUN}" = "TRUE" ]; then
     ln -sf ${relative_or_null} $target $symlink
   done
 else
-  if [ ${BKTYPE} -eq 1 ]; then
+  if [[ "${BKTYPE}" -eq 1 ]]; then
     target="sfc_data.tile${TILE_RGNL}.halo${NH0}.nc"
     symlink="sfc_data.nc"
     # Additional logic to examine if sfc_data.nc already exist
-    if [ ! -s sfc_data.nc ]; then
-      if [ -f "${target}" ]; then
-        ln -sf ${relative_or_null} $target $symlink
+    if [[ ! -s sfc_data.nc ]]; then
+      if [[ -f "${target}" ]]; then
+        ln -sf ${relative_or_null} $target $"symlink"
       else
         err_exit "\
         Cannot create symlink because target does not exist:
@@ -458,7 +460,7 @@ else
       fi
     fi
   else
-    if [ -f "sfc_data.nc.0000" ] || [ -f "sfc_data.nc" ]; then
+    if [[ -f "sfc_data.nc.0000" ]] || [[ -f "sfc_data.nc" ]]; then
       print_info_msg "$VERBOSE" "
       sfc_data.nc is available at INPUT directory"
     else
@@ -468,7 +470,7 @@ else
   fi
 fi
 
-if [ "${DO_SMOKE_DUST}" = "TRUE" ]; then
+if [[ "${DO_SMOKE_DUST}" = "TRUE" ]]; then
   ln -snf  ${FIX_SMOKE_DUST}/${PREDEF_GRID_NAME}/dust12m_data.nc  ${DATA}/INPUT/dust12m_data.nc
   ln -snf  ${FIX_SMOKE_DUST}/${PREDEF_GRID_NAME}/emi_data.nc      ${DATA}/INPUT/emi_data.nc
   yyyymmddhh=${CDATE:0:10}
@@ -476,7 +478,7 @@ if [ "${DO_SMOKE_DUST}" = "TRUE" ]; then
   echo ${yyyymmddhh}, ${yyyymmdd}
   smokefile=${COMrrfs}/RAVE_INTP/rave_intp.${yyyymmdd}/SMOKE_RRFS_data_${yyyymmddhh}00.nc
   echo "try to use smoke file=",${smokefile}
-  if [ -f ${smokefile} ]; then
+  if [[ -f ${smokefile} ]]; then
     cpreq -p ${smokefile} ${DATA}/INPUT/SMOKE_RRFS_data.nc
   else
     ln -snf ${FIX_SMOKE_DUST}/${PREDEF_GRID_NAME}/dummy_24hr_smoke.nc ${DATA}/INPUT/SMOKE_RRFS_data.nc
@@ -516,7 +518,7 @@ for (( i=0; i<${num_symlinks}; i++ )); do
 
   symlink="${DATA}/$symlink"
   target="$FIXam/$target"
-  if [ -f "${target}" ]; then
+  if [[ -f "${target}" ]]; then
     ln -sf ${relative_or_null} $target $symlink
   else
     err_exit "\
@@ -550,34 +552,34 @@ cpreq ${relative_or_null} ${UFS_YAML_FP} ${DATA}
 # Determine if running stochastic physics for the specified cycles in CYCL_HRS_STOCH
 #
 STOCH="FALSE"
-if [ "${DO_ENSEMBLE}" = TRUE ] && ([ "${DO_SPP}" = TRUE ] || [ "${DO_SPPT}" = TRUE ] || [ "${DO_SHUM}" = TRUE ] \
-  || [ "${DO_SKEB}" = TRUE ] || [ "${DO_LSM_SPP}" =  TRUE ]); then
+if [[ "${DO_ENSEMBLE}" = TRUE ]] && ([[ "${DO_SPP}" = TRUE ]] || [[ "${DO_SPPT}" = TRUE ]] || [[ "${DO_SHUM}" = TRUE ]] \
+  || [[ "${DO_SKEB}" = TRUE ]] || [[ "${DO_LSM_SPP}" =  TRUE ]]); then
    HH=${HH:-${cyc}}
    for cyc_start in "${CYCL_HRS_STOCH[@]}"; do
-     if [ ${HH} -eq ${cyc_start} ]; then
+     if [[ ${HH} -eq ${cyc_start} ]]; then
        STOCH="TRUE"
        FV3_NML_RESTART_STOCH_FP=${PARMrrfs}/config/${WGF}/input.nml_restart_stoch
      fi
    done
 fi
 
-if [ ${BKTYPE} -eq 0 ]; then
+if [[ "${BKTYPE}" -eq 0 ]]; then
   # cycling, using namelist for cycling forecast
-  if [ "${STOCH}" = "TRUE" ]; then
-    cpreq -p ${FV3_NML_RESTART_STOCH_FP} ${DATA}/${FV3_NML_FN}
+  if [[ "${STOCH}" = "TRUE" ]]; then
+    cpreq -p ${FV3_NML_RESTART_STOCH_FP} ${DATA}/"${FV3_NML_FN}"
   else
   # believe need to create options here on the FV3_NML_RESTART_FP to copy in for different configs.
 
-    if [ ${CYCLE_TYPE} = "spinup" ]; then
-      cpreq -p ${FV3_NML_RESTART_SPINUPCYC_FP} ${DATA}/${FV3_NML_FN}
+    if [[ ${CYCLE_TYPE} = "spinup" ]]; then
+      cpreq -p ${FV3_NML_RESTART_SPINUPCYC_FP} ${DATA}/"${FV3_NML_FN}"
     else
-      if [ ${WGF} = "enkf" ]; then
+      if [[ ${WGF} = "enkf" ]]; then
        if [[ $((10#${cyc} % 2)) -eq 0 ]]; then
          FCST_LEN_HRS=3
        else
          FCST_LEN_HRS=1
        fi
-       cpreq -p ${FV3_NML_RESTART_FP} ${DATA}/${FV3_NML_FN}
+       cpreq -p ${FV3_NML_RESTART_FP} ${DATA}/"${FV3_NML_FN}"
       else
         FCST_LEN_HRS=${FCST_LEN_HRS_CYCLES[$((10#${cyc}))]}
         # The hourly cycles and the longer ones at 00, 06, 12 and 18z take different
@@ -585,105 +587,105 @@ if [ ${BKTYPE} -eq 0 ]; then
         # picks out the same two in operations, but matches neither once the forecasts
         # are shortened, and then nothing is copied and the model stops on a missing
         # input.nml.
-        if [ $(( 10#${cyc} % 6 )) -ne 0 ]; then
+        if [[ $(( 10#${cyc} % 6 )) -ne 0 ]]; then
 
-          if [ -e ${FIXLAM}/115_nodes_det/routehandle_fb01 ]; then
-           files=`ls ${FIXLAM}/115_nodes_det/routehandle_fb??`
+          if [[ -e ${FIXLAM}/115_nodes_det/routehandle_fb01 ]]; then
+           files=`$(ls ${FIXLAM}/115_nodes_det/routehandle_fb??)`
 	   echo "#! /bin/sh" > ./para_copy.sh
            for fl in $files
            do
              echo "cpreq $fl ${DATA}/" >> ./para_copy.sh
            done
-	   cpprocs=`cat ./para_copy.sh | grep routehandle | wc -l`
+	   cpprocs=`cat ./p$(ara_copy.sh | grep routehandle | wc -l`)
 	   #mpiexec -n ${cpprocs} -ppn ${cpprocs} --cpu-bind core cfp ./para_copy.sh
 	   rm ./para_copy.sh
 	  fi
 
 
-          cpreq -p ${FV3_NML_RESTART_18H_FP} ${DATA}/${FV3_NML_FN}
+          cpreq -p ${FV3_NML_RESTART_18H_FP} ${DATA}/"${FV3_NML_FN}"
         else
 
-          if [ -e ${FIXLAM}/154_nodes_det/routehandle_fb01 ]; then
-	   files=`ls ${FIXLAM}/154_nodes_det/routehandle_fb??`
+          if [[ -e ${FIXLAM}/154_nodes_det/routehandle_fb01 ]]; then
+	   files=`ls ${FI$(XLAM}/154_nodes_det/routehandle_fb??`)
 	   echo "#! /bin/sh" > ./para_copy.sh
            for fl in $files
            do
              echo "cpreq $fl ${DATA}/" >> ./para_copy.sh
            done
-	   cpprocs=`cat ./para_copy.sh | grep routehandle | wc -l`
+	   cpprocs=`cat ./p$(ara_copy.sh | grep routehandle | wc -l`)
 	   #mpiexec -n ${cpprocs} -ppn ${cpprocs} --cpu-bind core cfp ./para_copy.sh
 	   rm ./para_copy.sh
 	  fi
 
-          cpreq -p ${FV3_NML_RESTART_LONG_FP} ${DATA}/${FV3_NML_FN}
+          cpreq -p ${FV3_NML_RESTART_LONG_FP} ${DATA}/"${FV3_NML_FN}"
         fi
       fi
     fi
   fi
 else # not cycling
-  if [ -f "INPUT/cycle_surface.done" ]; then
+  if [[ -f "INPUT/cycle_surface.done" ]]; then
   # namelist for cold start with surface cycle
-    cpreq -p ${FV3_NML_CYCSFC_FP} ${DATA}/${FV3_NML_FN}
+    cpreq -p ${FV3_NML_CYCSFC_FP} ${DATA}/"${FV3_NML_FN}"
   else
   # cold start, using namelist for cold start
-    if [ "${STOCH}" = "TRUE" ]; then
-      cpreq -p ${FV3_NML_STOCH_FP} ${DATA}/${FV3_NML_FN}
+    if [[ "${STOCH}" = "TRUE" ]]; then
+      cpreq -p ${FV3_NML_STOCH_FP} ${DATA}/"${FV3_NML_FN}"
      else
       # is there a cold start spinup need?
-       if [ ${CYCLE_TYPE} = "spinup" ]; then
-         cpreq -p ${FV3_NML_SPINUPCYC_FP} ${DATA}/${FV3_NML_FN}
-       elif [ ${WGF} = "firewx" ] || [ ${WGF} = "enkf" ]; then
-         cpreq -p ${FV3_NML_FP} ${DATA}/${FV3_NML_FN}
+       if [[ ${CYCLE_TYPE} = "spinup" ]]; then
+         cpreq -p ${FV3_NML_SPINUPCYC_FP} ${DATA}/"${FV3_NML_FN}"
+       elif [[ ${WGF} = "firewx" ]] || [[ ${WGF} = "enkf" ]]; then
+         cpreq -p ${FV3_NML_FP} ${DATA}/"${FV3_NML_FN}"
        else
          FCST_LEN_HRS=${FCST_LEN_HRS_CYCLES[$((10#${cyc}))]}
          # as above: the cycle, not the forecast length, chooses the namelist
-         if [ $(( 10#${cyc} % 6 )) -ne 0 ]; then
-          if [ -e ${FIXLAM}/115_nodes_det/routehandle_fb01 ]; then
-           files=`ls ${FIXLAM}/115_nodes_det/routehandle_fb??`
+         if [[ $(( 10#${cyc} % 6 )) -ne 0 ]]; then
+          if [[ -e ${FIXLAM}/115_nodes_det/routehandle_fb01 ]]; then
+           files=`$(ls ${FIXLAM}/115_nodes_det/routehandle_fb??)`
 	   echo "#! /bin/sh" > ./para_copy.sh
            for fl in $files
            do
              echo "cpreq $fl ${DATA}/" >> ./para_copy.sh
            done
-	   cpprocs=`cat ./para_copy.sh | grep routehandle | wc -l`
+	   cpprocs=`cat ./p$(ara_copy.sh | grep routehandle | wc -l`)
 	   mpiexec -n ${cpprocs} -ppn ${cpprocs} --cpu-bind core cfp ./para_copy.sh  # ci-skip: launcher_trap
 	   rm ./para_copy.sh
 	  fi
 
-           cpreq -p ${FV3_NML_18H_FP} ${DATA}/${FV3_NML_FN}
+           cpreq -p ${FV3_NML_18H_FP} ${DATA}/"${FV3_NML_FN}"
          else
 
-          if [ -e ${FIXLAM}/154_nodes_det/routehandle_fb01 ]; then
-	   files=`ls ${FIXLAM}/154_nodes_det/routehandle_fb??`
+          if [[ -e ${FIXLAM}/154_nodes_det/routehandle_fb01 ]]; then
+	   files=`ls ${FI$(XLAM}/154_nodes_det/routehandle_fb??`)
 	   echo "#! /bin/sh" > ./para_copy.sh
            for fl in $files
            do
              echo "cpreq $fl ${DATA}/" >> ./para_copy.sh
            done
-	   cpprocs=`cat ./para_copy.sh | grep routehandle | wc -l`
+	   cpprocs=`cat ./p$(ara_copy.sh | grep routehandle | wc -l`)
 	   mpiexec -n ${cpprocs} -ppn ${cpprocs} --cpu-bind core cfp ./para_copy.sh  # ci-skip: launcher_trap
 	   rm ./para_copy.sh
 	  fi
 
-           cpreq -p ${FV3_NML_LONG_FP} ${DATA}/${FV3_NML_FN}
+           cpreq -p ${FV3_NML_LONG_FP} ${DATA}/"${FV3_NML_FN}"
          fi
        fi
     fi
   fi
 fi
 
-if [ "${STOCH}" = "TRUE" ]; then
-  if [ ${BKTYPE} -eq 0 ] && [ ${DO_ENSFCST_MULPHY} = "TRUE" ]; then
+if [[ "${STOCH}" = "TRUE" ]]; then
+  if [[ "${BKTYPE}" -eq 0 ]] && [[ ${DO_ENSFCST_MULPHY} = "TRUE" ]]; then
     ensmem_num=$(echo "${ENSMEM_INDX}" | awk '{print $1+0}')
-    cpreq -p ${FV3_NML_RESTART_STOCH_FP}_ensphy${ensmem_num} ${DATA}/${FV3_NML_FN}_base
+    cpreq -p ${FV3_NML_RESTART_STOCH_FP}_ensphy${ensmem_num} ${DATA}/"${FV3_NML_FN}"_base
     rm -fr ${DATA}/field_table
     cpreq -p ${PARMrrfs}/field_table.rrfsens_phy0${ENSMEM_INDX} ${DATA}/field_table
   else
-    cpreq -p ${DATA}/${FV3_NML_FN} ${DATA}/${FV3_NML_FN}_base
+    cpreq -p ${DATA}/"${FV3_NML_FN}" ${DATA}/"${FV3_NML_FN}"_base
   fi
   set_FV3nml_ens_stoch_seeds cdate="$CDATE"
   export err=$?
-  if [ $err -ne 0 ]; then
+  if [[ $"err" -ne 0 ]]; then
     err_exit "\
  Call to function to create the ensemble-based namelist for the current
  cycle's (CDATE) run directory (DATA) failed:
@@ -694,18 +696,18 @@ fi
 
 # Set paths to surface climatology fix files in namelist for firewx configuration
 # Rewrite the default center lat/lon values in the namelist, if needed.
-if [ ${WGF} = "firewx" ]; then
+if [[ ${WGF} = "firewx" ]]; then
   set_FV3nml_sfc_climo_filenames
   export err=$?
-  if [ $err -ne 0 ]; then
+  if [[ $"err" -ne 0 ]]; then
     err_exit "\
   Call to function to set surface climatology file names in the FV3 namelist
   file failed."
   fi
 
-  if [ ${LAT_CTR} != 49.3 ] || [ ${LON_CTR} != -123.0 ]; then
-    sed -i -e "s/49.3/${LAT_CTR}/g" ${DATA}/${FV3_NML_FN}
-    sed -i -e "s/-123.0/${LON_CTR}/g" ${DATA}/${FV3_NML_FN}
+  if [[ ${LAT_CTR} != 49.3 ]] || [[ ${LON_CTR} != -123.0 ]]; then
+    sed -i -e "s/49.3/${LAT_CTR}/g" ${DATA}/"${FV3_NML_FN}"
+    sed -i -e "s/-123.0/${LON_CTR}/g" ${DATA}/"${FV3_NML_FN}"
   fi
 fi
 
@@ -715,29 +717,29 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ ${CYCLE_TYPE} = "spinup" ]; then
+if [[ ${CYCLE_TYPE} = "spinup" ]]; then
   FCST_LEN_HRS="${FCST_LEN_HRS_SPINUP}"
   LAYOUT_X="${LAYOUT_X_SPINUP}"
   LAYOUT_Y="${LAYOUT_Y_SPINUP}"
   WRITE_GRP="${WRTCMP_write_groups_SPINUP}"
   WRITE_TSK="${WRTCMP_write_tasks_per_group_SPINUP}"
 else
-  if [ ${WGF} = "det" ] || [ ${WGF} = "ensf" ] ; then
+  if [[ ${WGF} = "det" ]] || [[ ${WGF} = "ensf" ]] ; then
     FCST_LEN_HRS=${FCST_LEN_HRS_CYCLES[$((10#${cyc}))]}
     # There are three sets of layout and write-task settings: the hourly deterministic cycle
     # (_18H), the longer deterministic cycle at 00, 06, 12 and 18z (_LONG) and the ensemble
     # forecast (_ENSF). Which cycle it is decides the set. Lengths of 18, 84 and 60 hours would
     # pick out the same three in operations, but leave every setting empty for a run with
     # shorter forecasts, and the model is then launched with no rank count at all.
-    if [ ${WGF} = "ensf" ]; then
+    if [[ ${WGF} = "ensf" ]]; then
       LAYOUT_X="${LAYOUT_X_ENSF}"
-      if [ $ensmem_num = "2" ] || [ $ensmem_num = "3" ] || [ $ensmem_num = "5" ]; then
+      if [[ $ensmem_num = "2" ]] || [[ $ensmem_num = "3" ]] || [[ $ensmem_num = "5" ]]; then
         LAYOUT_X="${LAYOUT_X_ENSF_LARGER}"
       fi
       LAYOUT_Y="${LAYOUT_Y_ENSF}"
       WRITE_GRP="${WRTCMP_write_groups_ENSF}"
       WRITE_TSK="${WRTCMP_write_tasks_per_group_ENSF}"
-    elif [ $(( 10#${cyc} % 6 )) -eq 0 ]; then
+    elif [[ $(( 10#${cyc} % 6 )) -eq 0 ]]; then
       LAYOUT_X="${LAYOUT_X_LONG}"
       LAYOUT_Y="${LAYOUT_Y_LONG}"
       WRITE_GRP="${WRTCMP_write_groups_LONG}"
@@ -748,7 +750,7 @@ else
       WRITE_GRP="${WRTCMP_write_groups_18H}"
       WRITE_TSK="${WRTCMP_write_tasks_per_group_18H}"
     fi
-  elif [ ${WGF} = "enkf" ] || [ ${WGF} = "firewx" ]; then
+  elif [[ ${WGF} = "enkf" ]] || [[ ${WGF} = "firewx" ]]; then
 # should already have LAYOUT_X and LAYOUT_Y
     WRITE_GRP="${WRTCMP_write_groups}"
     WRITE_TSK="${WRTCMP_write_tasks_per_group}"
@@ -757,7 +759,7 @@ fi
 
 PE_RAW=$(( LAYOUT_X*LAYOUT_Y ))
 PE_FCST=$(( ${PE_RAW} + ${WRITE_GRP}*${WRITE_TSK} ))
-if [ "${MACHINE}" = "URSA" ]; then
+if [[ "${MACHINE}" = "URSA" ]]; then
   # Launch exactly PE_FCST ranks; FMS aborts if the job has more ranks than the layout uses
   APRUN="${APRUN} -n ${PE_FCST} --ntasks-per-node=${PPN_FORECAST} --cpus-per-task=${OMP_NUM_THREADS}"
 else
@@ -778,20 +780,20 @@ fhr=0
 NLN=${NLN:-"/bin/ln -sf"}
 
 #if [ ${DO_ENSFCST} == "FALSE" ]; then
-if [ ${DO_ENSFCST} == "FALSE" ] && [ ${WGF} != "firewx" ]; then
+if [[ ${DO_ENSFCST} == "FALSE" ]] && [[ ${WGF} != "firewx" ]]; then
   # These links are what makes the model write into the shared output directory the post tasks
   # read, and are only wanted for the deterministic production forecast: the EnKF and the
   # spin-up cycle are not posted. Operations tells them apart by a length over 6 hours, which
   # leaves a shortened deterministic forecast writing into its own working directory, where
   # nothing looks for it.
-  if [ "${WGF}" = "det" ] && [ "${CYCLE_TYPE}" != "spinup" ]; then
+  if [[ "${WGF}" = "det" ]] && [[ "${CYCLE_TYPE}" != "spinup" ]]; then
     for fhr in $(seq 0 $FCST_LEN_HRS); do
       fhr_2d=$( printf "%02d" ${fhr} )
       fhr_3d=$( printf "%03d" ${fhr} )
       # 000~$FCST_LEN_HRS-1 have every 15 minutes
-      if [ $(($fhr)) -le 17 ]; then
+      if [[ $(($fhr)) -le 17 ]]; then
         for sub_fhr in 00 15 30 45; do
-          if [ ${fhr} -eq 0 ] && [ ${sub_fhr} == "00" ]; then
+          if [[ ${fhr} -eq 0 ]] && [[ "${sub_fhr}" == "00" ]]; then
             source_dyn="dynf000-00-36.nc"
             source_phy="phyf000-00-36.nc"
             source_log="log.atm.f000-00-36"
@@ -850,39 +852,39 @@ coupler_res_ct=0
 DO_FCST_RESTART=${DO_FCST_RESTART:-"TRUE"}
 
 # Get the current restart set count from shared restart location in the Umbrella Data
-if [ -d ${shared_forecast_restart_data} ]; then
+if [[ -d ${shared_forecast_restart_data} ]]; then
   coupler_res_ct=$(find ${shared_forecast_restart_data} -type f -name "*.coupler.res"|wc -l)
 fi
 
 # make symbolic links to write forecast RESTART files directly to shared forecast RESTART location
-if [ ${CYCLE_TYPE} = "spinup" ]; then
+if [[ ${CYCLE_TYPE} = "spinup" ]]; then
   RESTART_HRS='1'
-  if [ "${CYCLE_SUBTYPE}" = "ensinit" ]; then
+  if [[ "${CYCLE_SUBTYPE}" = "ensinit" ]]; then
     RESTART_HRS='0'
   fi
 fi
 
-if [ $WGF = "det" ] && [[ ! $((10#${cyc} % 6)) -eq 0 ]]; then
+if [[ $WGF = "det" ]] && [[ ! $((10#${cyc} % 6)) -eq 0 ]]; then
   RESTART_HRS='1 2 3 6 12'
 fi
-if [ $WGF = "enkf" ] && [[ $((10#${cyc} % 2)) -eq 0 ]]; then
+if [[ $WGF = "enkf" ]] && [[ $((10#${cyc} % 2)) -eq 0 ]]; then
   RESTART_HRS='1 2 3'
 fi
 
-if [ $FCST_LEN_HRS -gt 0 ]; then
+if [[ $FCST_LEN_HRS -gt 0 ]]; then
   cd ${DATA}/RESTART
   file_ids=( "coupler.res" "fv_core.res.nc" "fv_core.res.tile1.nc" "fv_srf_wnd.res.tile1.nc" "fv_tracer.res.tile1.nc" "fv_diag.res.tile1.nc" "phy_data.nc" "sfc_data.nc" )
-  if [ ${WGF} = "firewx" ]; then
+  if [[ ${WGF} = "firewx" ]]; then
     file_ids=( "coupler.res" "fv_core.res.nc" "fv_core.res.tile1.nc" "fv_srf_wnd.res.tile1.nc" "fv_tracer.res.tile1.nc" "phy_data.nc" "sfc_data.nc" )
   fi
   num_file_ids=${#file_ids[*]}
   read -a restart_hrs <<< "${RESTART_HRS}"
   num_restart_hrs=${#restart_hrs[*]}
   for (( ih_rst=${num_restart_hrs}-1; ih_rst>=0; ih_rst-- )); do
-    cdate_restart_hr=`$NDATE +${restart_hrs[ih_rst]} ${PDY}${cyc}`
+    cdate_restart_hr=`$($NDATE +${restart_hrs[ih_rst]} ${PDY}${cyc})`
     rst_yyyymmdd="${cdate_restart_hr:0:8}"
     rst_hh="${cdate_restart_hr:8:2}"
-    if [ "${CYCLE_SUBTYPE}" = "ensinit" ]; then
+    if [[ "${CYCLE_SUBTYPE}" = "ensinit" ]]; then
       for file_id in "${file_ids[@]}"; do
         eval $NLN ${shared_forecast_restart_data}/${rst_yyyymmdd}.${rst_hh}${dt_mmss}.${file_id} ${rst_yyyymmdd}.${rst_hh}${dt_mmss}.${file_id}
       done
@@ -890,7 +892,7 @@ if [ $FCST_LEN_HRS -gt 0 ]; then
       for file_id in "${file_ids[@]}"; do
         eval $NLN ${shared_forecast_restart_data}/${rst_yyyymmdd}.${rst_hh}0000.${file_id} ${rst_yyyymmdd}.${rst_hh}0000.${file_id}
       done
-      if [ ${DO_ENSFCST} == "TRUE" ]; then
+      if [[ ${DO_ENSFCST} == "TRUE" ]]; then
         eval $NLN ${shared_forecast_restart_data}/${rst_yyyymmdd}.${rst_hh}0000.atm_stoch.res.nc ${rst_yyyymmdd}.${rst_hh}0000.atm_stoch.res.nc
       fi
     fi
@@ -898,11 +900,11 @@ if [ $FCST_LEN_HRS -gt 0 ]; then
   cd ${DATA}
 fi
 
-if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN_HRS -gt 6 ]; then
+if [[ "${DO_FCST_RESTART}" = "TRUE" ]] && [[ $coupler_res_ct -gt 0 ]] && [[ $FCST_LEN_HRS -gt 6 ]]; then
   flag_fcst_restart="TRUE"
   # Update FV3 input.nml for restart
    mem_res="0"
-   if [ ${WGF} = "ensf" ]; then
+   if [[ ${WGF} = "ensf" ]]; then
      mem_res=${ensmem_num}
    fi
    $USHrrfs/update_input_nml.py \
@@ -911,15 +913,15 @@ if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN
     --member ${mem_res} \
     --restart
   export err=$?
-  if [ $err -ne 0 ]; then
+  if [[ $"err" -ne 0 ]]; then
     err_exit "FATAL ERROR: function to update the FV3 input.nml file for RESTART capability"
   fi
   # Check that restart files exist at restart_interval
   file_ids=( "coupler.res" "fv_core.res.nc" "fv_core.res.tile1.nc" "fv_srf_wnd.res.tile1.nc" "fv_tracer.res.tile1.nc" "fv_diag.res.tile1.nc" "phy_data.nc" "sfc_data.nc" )
-  if [ ${WGF} = "firewx" ]; then
+  if [[ ${WGF} = "firewx" ]]; then
     file_ids=( "coupler.res" "fv_core.res.nc" "fv_core.res.tile1.nc" "fv_srf_wnd.res.tile1.nc" "fv_tracer.res.tile1.nc" "phy_data.nc" "sfc_data.nc" )
   fi
-  if [ ${WGF} = "ensf" ]; then
+  if [[ ${WGF} = "ensf" ]]; then
     file_ids=( "coupler.res" "fv_core.res.nc" "fv_core.res.tile1.nc" "fv_diag.res.tile1.nc" "fv_srf_wnd.res.tile1.nc" "fv_tracer.res.tile1.nc" "phy_data.nc" "sfc_data.nc" "atm_stoch.res.nc" )
   fi
   num_file_ids=${#file_ids[*]}
@@ -927,16 +929,16 @@ if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN
   read -a restart_hrs <<< "${RESTART_HRS}"
   num_restart_hrs=${#restart_hrs[*]}
   for (( ih_rst=${num_restart_hrs}-1; ih_rst>=0; ih_rst-- )); do
-    cdate_restart_hr=`$NDATE +${restart_hrs[ih_rst]} ${PDY}${cyc}`
+    cdate_restart_hr=`$($NDATE +${restart_hrs[ih_rst]} ${PDY}${cyc})`
     rst_yyyymmdd="${cdate_restart_hr:0:8}"
     rst_hh="${cdate_restart_hr:8:2}"
     num_rst_files=0
     for file_id in "${file_ids[@]}"; do
-      if [ -e "${umbrella_forecast_data}/RESTART/${rst_yyyymmdd}.${rst_hh}0000.${file_id}" ]; then
+      if [[ -e "${umbrella_forecast_data}/RESTART/${rst_yyyymmdd}.${rst_hh}0000.${file_id}" ]]; then
         (( num_rst_files=num_rst_files+1 ))
       fi
     done
-    if [ "${num_rst_files}" = "${num_file_ids}" ]; then
+    if [[ "${num_rst_files}" = "${num_file_ids}" ]]; then
       FHROT="${restart_hrs[ih_rst]}"
       urange_ih_rst=$((ih_rst+1))
       FHROT_UPPER_RANGE="${restart_hrs[urange_ih_rst]}"
@@ -945,10 +947,10 @@ if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN
     fi
   done
   # Create soft-link of restart files from the shared restart location in Umbrella DATA to INPUT directory
-  if [ ${restart_set_found} == "YES" ]; then
+  if [[ ${restart_set_found} == "YES" ]]; then
     cd ${DATA}/INPUT
     for file_id in "${file_ids[@]}"; do
-      if [ -e "${file_id}" ]; then
+      if [[ -e "${file_id}" ]]; then
         rm -f "${file_id}"
       fi
       target="${umbrella_forecast_data}/RESTART/${rst_yyyymmdd}.${rst_hh}0000.${file_id}"
@@ -958,12 +960,12 @@ if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN
     cd ${DATA}
   fi
   # Clean up old forecast output file in shared output location in Umbrella DATA
-  if [ ${restart_set_found} == "YES" ]; then
+  if [[ ${restart_set_found} == "YES" ]]; then
     cd $shared_forecast_output_data
     [[ -f output_file_backup.sh ]]&& rm -f output_file_backup.sh
     for (( fhr_to_remove=${FHROT_UPPER_RANGE}; fhr_to_remove>=${FHROT}; fhr_to_remove-- )); do
       fhr_to_remove3d=$( printf "%03d" "${fhr_to_remove}" )
-      if [ $fhr_to_remove -eq $FHROT ]; then
+      if [[ $"fhr_to_remove" -eq $FHROT ]]; then
         find -type f -name "log.atm.f*${fhr_to_remove3d}*" | grep -v "00-00" | awk '{print "mv",$1,"./OLD"}' >> output_file_backup.sh
         find -type f -name "dynf*${fhr_to_remove3d}*" | grep -v "00-00" | awk '{print "mv",$1,"./OLD"}' >> output_file_backup.sh
         find -type f -name "phyf*${fhr_to_remove3d}*" | grep -v "00-00" | awk '{print "mv",$1,"./OLD"}' >> output_file_backup.sh
@@ -978,7 +980,7 @@ if [ "${DO_FCST_RESTART}" = "TRUE" ] && [ $coupler_res_ct -gt 0 ] && [ $FCST_LEN
         find -name "dynf*${fhr_to_remove3d}.nc" | awk '{print "mv",$1,"./OLD"}' >> output_file_backup.sh
       fi
     done
-    if [ -s output_file_backup.sh ]; then
+    if [[ -s output_file_backup.sh ]]; then
       echo "The RESTART has found previous output in umbrella output and will move to an OLD directory"
       [[ ! -d OLD ]]&& mkdir OLD
       chmod 755 output_file_backup.sh
@@ -997,21 +999,21 @@ fi
 #
 
 # figure out how best to define the quilt resources here for different runs
-if [ ${CYCLE_TYPE} = "spinup" ]; then
+if [[ ${CYCLE_TYPE} = "spinup" ]]; then
    export WRTCMP_write_groups=$WRTCMP_write_groups_SPINUP
    export WRTCMP_write_tasks_per_group=$WRTCMP_write_tasks_per_group_SPINUP
    export USE_SAVED_ROUTEHANDLES="FALSE"
 else
 
-if [ ${FCST_LEN_HRS} -eq '84' ]; then
+if [[ ${FCST_LEN_HRS} -eq '84' ]]; then
    export WRTCMP_write_groups=$WRTCMP_write_groups_LONG
    export WRTCMP_write_tasks_per_group=$WRTCMP_write_tasks_per_group_LONG
    export USE_SAVED_ROUTEHANDLES="TRUE"
-elif [ ${FCST_LEN_HRS} -eq '60' ]; then
+elif [[ ${FCST_LEN_HRS} -eq '60' ]]; then
    export WRTCMP_write_groups=$WRTCMP_write_groups_ENSF
    export WRTCMP_write_tasks_per_group=$WRTCMP_write_tasks_per_group_ENSF
    export USE_SAVED_ROUTEHANDLES="TRUE"
-elif [ ${FCST_LEN_HRS} -eq '18' ]; then
+elif [[ ${FCST_LEN_HRS} -eq '18' ]]; then
    export WRTCMP_write_groups=$WRTCMP_write_groups_18H
    export WRTCMP_write_tasks_per_group=$WRTCMP_write_tasks_per_group_18H
    export USE_SAVED_ROUTEHANDLES="TRUE"
@@ -1034,7 +1036,7 @@ $USHrrfs/create_model_configure_file.py \
   --cen_lat="${WRTCMP_cen_lat}" \
   --cen_lon="${WRTCMP_cen_lon}"
 export err=$?
-if [ $err -ne 0 ]; then
+if [[ $"err" -ne 0 ]]; then
   err_exit "Call to function to create the model_configure file for
 the current cycle's (CDATE) run directory (DATA) failed:
   DATA = \"${DATA}\""
@@ -1051,14 +1053,14 @@ $USHrrfs/create_diag_table_file.py \
   --path-to-defns ${FIXrrfs}/workflow/${WGF}/workflow.conf \
   --run-dir ${DATA}
 export err=$?
-if [ $err -ne 0 ]; then
+if [[ $"err" -ne 0 ]]; then
   err_exit "Call to function to create the diag_table file for
 the current cycle's (CDATE) run directory (DATA) failed:
   DATA = \"${DATA}\""
 fi
 
 # copy over diag_table for multiphysics ensemble
-if [ "${STOCH}" = "TRUE" ] && [ ${BKTYPE} -eq 0 ] && [ ${DO_ENSFCST_MULPHY} = "TRUE" ]; then
+if [[ "${STOCH}" = "TRUE" ]] && [[ "${BKTYPE}" -eq 0 ]] && [[ ${DO_ENSFCST_MULPHY} = "TRUE" ]]; then
   rm -fr ${DATA}/diag_table
   cpreq -p ${PARMrrfs}/diag_table.rrfsens_phy0${ENSMEM_INDX} ${DATA}/diag_table
 fi
@@ -1075,7 +1077,7 @@ $USHrrfs/create_ufs_configure_file.py \
   --path-to-defns ${FIXrrfs}/workflow/${WGF}/workflow.conf \
   --run-dir ${DATA}
 export err=$?
-if [ $err -ne 0 ]; then
+if [[ $"err" -ne 0 ]]; then
   err_exit "Call to function to create the UFS configuration file for
 the current cycle's (CDATE) run directory (DATA) failed:
   DATA = \"${DATA}\""
@@ -1096,11 +1098,11 @@ fi
 cd INPUT
 [[ ! -f sfc_data.nc ]]&& exit 4
 acsnow_ct=$(ncdump -h sfc_data.nc|grep acsnow|wc -l)
-if [ $acsnow_ct -eq 0 ] && [ ! ${WGF} = "firewx" ]; then
+if [[ $acsnow_ct -eq 0 ]] && [[ ! ${WGF} = "firewx" ]]; then
   echo "Run DATA sfc_data.nc surge for acsnow"
   # Coarser domains (strip when merging to the nco branch): the acsnow fix file is on the
   # NA 3 km grid, so ncks rejects it on any other domain. Its fields are zeros, so make them here.
-  if [ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]; then
+  if [[ "${PREDEF_GRID_NAME}" = "RRFS_NA_3km" ]]; then
     ncks -A ${FIXrrfs}/acsnow/acsnow.nc sfc_data.nc
     export err=$?; err_chk
   else
@@ -1115,11 +1117,11 @@ cd ..
 #
 
 export pgm="ufs_model"
-cpreq -p ${FV3_EXEC_FP} ${DATA}/$pgm
+cpreq -p ${FV3_EXEC_FP} ${DATA}/$"pgm"
 
 . prep_step
 
-$APRUN ${DATA}/$pgm >>$pgmout 2>errfile
+$APRUN ${DATA}/$"pgm" >>$pgmout 2>errfile
 export err=$?; err_chk
 
 echo "Forecast job is completed" &> ${umbrella_forecast_data}/forecast_${CYCLE_TYPE}_clean.flag

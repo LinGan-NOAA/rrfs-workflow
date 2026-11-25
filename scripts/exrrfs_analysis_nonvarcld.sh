@@ -113,24 +113,24 @@ print_info_msg "${VERBOSE}" "fixgriddir is ${fixgriddir}"
 #
 bkpath=${FORECAST_INPUT_PRODUCT}
 
-if [ "${l_cld_uncertainty}" == ".true." ]; then
+if [[ "${l_cld_uncertainty}" == ".true." ]]; then
   # Copy analysis fields into uncertainties - data will be overwritten
   echo "exrrfs_analysis_nonvarcld.sh: copy tracer file into uncertainty file "
   cpreq -p "${bkpath}"/fv_tracer.res.tile1.nc  "${bkpath}"/fv_tracer.unc.tile1.nc
 fi
 
 n_iolayouty=$((IO_LAYOUT_Y-1))
-list_iolayout=$(seq 0 ${n_iolayouty})
+list_iolayout=$(seq 0 "${n_iolayouty}")
 
 cpreq -p "${fixgriddir}"/fv3_akbk       fv3_akbk
 cpreq -p "${fixgriddir}"/fv3_grid_spec  fv3_grid_spec
 
 BKTYPE=0
-if [ -r "${bkpath}/coupler.res" ]; then # Use background from warm restart
+if [[ -r "${bkpath}/coupler.res" ]]; then # Use background from warm restart
 #  if [ "${IO_LAYOUT_Y}" == "1" ]; then
   ln -s "${bkpath}"/fv_core.res.tile1.nc         fv3_dynvars
   ln -s "${bkpath}"/fv_tracer.res.tile1.nc       fv3_tracer
-  if [ "${l_cld_uncertainty}" == ".true." ]; then
+  if [[ "${l_cld_uncertainty}" == ".true." ]]; then
     ln -s "${bkpath}"/fv_tracer.unc.tile1.nc     fv3_tracer_unc
   fi
   ln -s "${bkpath}"/sfc_data.nc                  fv3_sfcdata
@@ -163,7 +163,7 @@ for (( i=0; i<obs_number; i++ ));
 do
   obs_file=${obs_files_source[i]}
   obs_file_t=${obs_files_target[i]}
-  if [ -r "${obs_file}" ]; then
+  if [[ -r "${obs_file}" ]]; then
     cpreq -p "${obs_file}" "${obs_file_t}"
   else
     print_info_msg "${VERBOSE}" "Warning: ${obs_file} does not exist!"
@@ -174,15 +174,15 @@ done
 ss=0
 bigmin="00"
   obs_file=${shared_output_data_init}/rrfs.t${HH}z.RefInGSI3D.bin.${bigmin}
-  if [ "${IO_LAYOUT_Y}" == "1" ]; then
+  if [[ "${IO_LAYOUT_Y}" == "1" ]]; then
     obs_file_check=${obs_file}
   else
     obs_file_check=${obs_file}.0000
   fi
   ((ss+=1))
-  num=$( printf %2.2i ${ss} )
-  if [ -r "${obs_file_check}" ]; then
-     if [ "${IO_LAYOUT_Y}" == "1" ]; then
+  num=$( printf %2.2i "${ss}" )
+  if [[ -r "${obs_file_check}" ]]; then
+     if [[ "${IO_LAYOUT_Y}" == "1" ]]; then
        cpreq -p "${obs_file}" "RefInGSI3D.dat_${num}"
      else
        for ii in ${list_iolayout}
@@ -208,19 +208,19 @@ l_cld_uncertainty=${l_cld_uncertainty:-".false."}
 cld_bld_hgt=${cld_bld_hgt:-"1200.0"}
 l_precip_clear_only=${l_precip_clear_only:-".false."}
 l_qnr_from_qr=${l_qnr_from_qr:-".false."}
-if [ ${BKTYPE} -eq 1 ]; then
+if [[ "${BKTYPE}" -eq 1 ]]; then
   n_iolayouty=1
 else
   n_iolayouty=$((IO_LAYOUT_Y))
 fi
-if [ "${RUN}" == "enkfrrfs" ]; then
+if [[ "${RUN}" == "enkfrrfs" ]]; then
    cld_bld_hgt=0.0
    l_precip_clear_only=.true.
-   if [ "${DO_ENKF_RADAR_REF}" = "TRUE" ]; then
+   if [[ "${DO_ENKF_RADAR_REF}" = "TRUE" ]]; then
      l_qnr_from_qr=".true."
    fi
 else
-  if [ -r "${COMOUT}/gsi_complete_radar.txt" ] ; then
+  if [[ -r "${COMOUT}/gsi_complete_radar.txt" ]] ; then
     l_precip_clear_only=".true."
     l_qnr_from_qr=".true."
   fi
@@ -281,8 +281,8 @@ EOF
 export pgm="rrfs_util_fv3lam_nonvarcldana.exe"
 . prep_step
 
-if [ ${BKTYPE} -eq 0 ]; then
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+if [[ "${BKTYPE}" -eq 0 ]]; then
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
 fi
 #

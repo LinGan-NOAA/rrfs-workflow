@@ -51,6 +51,7 @@ exit 0
 # Remove the Temporary working directory
 ##################################################
 # shellcheck disable=SC2292
+# shellcheck disable=SC2317
 if [[ "${KEEPDATA^^}" != YES ]]; then
   cd "${DATAROOT}"
   rm -rf "${DATA}"

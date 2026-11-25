@@ -122,12 +122,12 @@ dynvarfile_control=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/det/
 tracerfile_control=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/det/INPUT/fv_tracer.res.tile1.nc
 dynvarfile_control_spinup=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/det/INPUT/fv_core.res.tile1.nc
 tracerfile_control_spinup=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/det/INPUT/fv_tracer.res.tile1.nc
-if [ -r "${dynvarfile_control_spinup}" ] && [ -r "${tracerfile_control_spinup}" ] && [[ ${DO_ENSFCST} != "TRUE" ]] ; then
+if [[ -r "${dynvarfile_control_spinup}" ]] && [[ -r "${tracerfile_control_spinup}" ]] && [[ ${DO_ENSFCST} != "TRUE" ]] ; then
   ctrlpath=${DATAROOT}/rrfs_forecast_spinup_${cyc}_${rrfs_ver_2d}_${envir}/det
   ln -sf "${ctrlpath}"/INPUT/fv_core.res.tile1.nc  ./control_dynvar
   ln -sf "${ctrlpath}"/INPUT/fv_tracer.res.tile1.nc   ./control_tracer
   ln -sf "${ctrlpath}"/INPUT/sfc_data.nc  ./control_sfcvar
-elif [ -r "${dynvarfile_control}" ] && [ -r "${tracerfile_control}" ] ; then
+elif [[ -r "${dynvarfile_control}" ]] && [[ -r "${tracerfile_control}" ]] ; then
   ctrlpath=${DATAROOT}/rrfs_forecast_${cyc}_${rrfs_ver_2d}_${envir}/det
   ln -sf "${ctrlpath}"/INPUT/fv_core.res.tile1.nc  ./control_dynvar
   ln -sf "${ctrlpath}"/INPUT/fv_tracer.res.tile1.nc   ./control_tracer
@@ -153,8 +153,8 @@ for imem in  $(seq 1 "${nens}")
 
   dynvarfile=${bkpath}/fv_core.res.tile1.nc
   tracerfile=${bkpath}/fv_tracer.res.tile1.nc
-  if [ -r "${dynvarfile}" ] && [ -r "${tracerfile}" ] ; then
-    if [ "${DO_ENSFCST}" = "TRUE" ] ; then
+  if [[ -r "${dynvarfile}" ]] && [[ -r "${tracerfile}" ]] ; then
+    if [[ "${DO_ENSFCST}" = "TRUE" ]] ; then
       ln -sf "${bkpath}"/fv_core.res.tile1.nc  ./fv3sar_tile1_mem"${memberstring}"_dynvar
       ln -sf "${bkpath}"/fv_tracer.res.tile1.nc   ./fv3sar_tile1_mem"${memberstring}"_tracer
       ln -sf "${bkpath}"/sfc_data.nc  ./fv3sar_tile1_mem"${memberstring}"_sfcvar
@@ -176,11 +176,11 @@ for imem in  $(seq 1 "${nens}")
   (( imem += 1 ))
  done
 
-if [ "${DO_ENSFCST}" = "FALSE" ] ; then
+if [[ "${DO_ENSFCST}" = "FALSE" ]] ; then
   cpprocs=90
   # cfp only exists on WCOSS2, so run the copies serially on other machines
-  if [ "${MACHINE}" = "WCOSS2" ]; then
-    mpiexec -n ${cpprocs} -ppn ${cpprocs} --cpu-bind core cfp ./para_copy.sh
+  if [[ "${MACHINE}" = "WCOSS2" ]]; then
+    mpiexec -n "${cpprocs}" -ppn "${cpprocs}" --cpu-bind core cfp ./para_copy.sh
     export err=$?; err_chk
   else
     bash ./para_copy.sh
@@ -222,7 +222,7 @@ EOF
 printf 'pwd is %s\n' "${PWD}"
 export pgm="rrfs_util_ens_mean_recenter_P2DIO.exe"
 
-${APRUN} "${EXECrrfs}"/${pgm} < namelist.ens >>"${pgmout}" 2>errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" < namelist.ens >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 #
 #-----------------------------------------------------------------------
@@ -240,7 +240,7 @@ done
 # copy recentering file back to umbrella
 #
 #-----------------------------------------------------------------------
-if [ "${DO_ENSFCST}" = "FALSE" ] ; then
+if [[ "${DO_ENSFCST}" = "FALSE" ]] ; then
 for imem in  $(seq 1 "${nens}")
   do
   ensmem=$( printf "%03d" "${imem}" )

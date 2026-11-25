@@ -59,7 +59,7 @@ echo "retro:  ${RETRO_START} to ${RETRO_END}"
 # Decide about the suites before changing anything, so a refusal leaves everything as it was
 ping_ok() { ecflow_client --ping >/dev/null 2>&1; }
 suite_loaded() { ecflow_client --get_state "/$1" >/dev/null 2>&1; }
-if ping_ok && { suite_loaded "${RRFS_SUITE}" || suite_loaded "${PRODCLONE_SUITE}"; } && [ "${reload}" != YES ]; then
+if ping_ok && { suite_loaded "${RRFS_SUITE}" || suite_loaded "${PRODCLONE_SUITE}"; } && [[ "${reload}" != YES ]]; then
   die "suites are already loaded on ${ECF_HOST}:${ECF_PORT}. Re-running would lose their state;
        pass --reload if that is what you want, or use ecflow_client/rrfsstat to work with them."
 fi
@@ -70,7 +70,7 @@ log=${ECF_HOME}/${RRFS_SUITE}/start_retro.setup.log
 mkdir -p "${ECF_HOME}/${RRFS_SUITE}" "${ECF_HOME}/${PRODCLONE_SUITE}" \
          "${OUTPUTDIR}" "${DEV_PTMP}" "${DEV_DATAROOT}"
 # setup_retro_links.sh runs ecf/setup_ecf_links.sh and is verbose; keep its output in a log
-if [ "${workaround}" = YES ]; then
+if [[ "${workaround}" = YES ]]; then
   "${repo}/ush/retro/setup_retro_links.sh" --workaround > "${log}" 2>&1 \
     || die "setup_retro_links.sh failed; see ${log}"
 else
@@ -80,7 +80,7 @@ fi
 echo "links and generated job cards: done (log: ${log})"
 # A retro running 3DVar without the EnKF takes the ensemble for the hybrid analysis from a staged
 # one; link it into COM before the first analysis asks for it (RRFSE_NWGES in retro/config.sh).
-if [ -n "${RRFSE_NWGES:-}" ] && [ "${RUN_ENKF:-TRUE}" = "FALSE" ]; then
+if [[ -n "${RRFSE_NWGES:-}" ]] && [[ "${RUN_ENKF:-TRUE}" = "FALSE" ]]; then
   "${repo}/ush/retro/link_staged_enkf.sh" >> "${log}" 2>&1 \
     || die "link_staged_enkf.sh failed; see ${log}"
   echo "staged ensemble linked into COM (log: ${log})"
@@ -96,7 +96,7 @@ printf '%s\n' "${gen_out}" | head -1
 step "C: ecflow server"
 if ping_ok; then
   echo "a server is already running on ${ECF_HOST}:${ECF_PORT}; using it"
-elif [ "${MACHINE}" = "WCOSS2" ]; then
+elif [[ "${MACHINE}" = "WCOSS2" ]]; then
   # NCO's development servers are started through their own script, which also registers them
   die "no server answers on ${ECF_HOST}:${ECF_PORT}. Start it first: ssh ${ECF_HOST}, then
        export ECF_HOST='${ECF_HOST}' ECF_ROOT='${server_data_root}' ECF_DATA_ROOT='${server_data_root}'
@@ -118,7 +118,7 @@ fi
 ecflow_client --restart
 
 step "D: load and begin the suites"
-if [ "${reload}" = YES ]; then
+if [[ "${reload}" = YES ]]; then
   for s in "${RRFS_SUITE}" "${PRODCLONE_SUITE}"; do
     suite_loaded "${s}" && ecflow_client --delete=force yes "/${s}" && echo "deleted /${s}"
   done
@@ -130,12 +130,12 @@ ecflow_client --load "${repo}/ush/prod_clone/ecf/defs_retro.def"
 # --begin clears ordinary suspensions and submits whatever is already free (e.g. the cleanup
 # tasks), but a suite with "defstatus suspended" comes up suspended, so nothing in it can submit.
 # The retro driver still runs meanwhile and releases the first family, which then waits.
-if [ "${hold}" = YES ]; then
+if [[ "${hold}" = YES ]]; then
   ecflow_client --alter change defstatus suspended "/${RRFS_SUITE}"
 fi
 ecflow_client --begin "${RRFS_SUITE}"
 ecflow_client --begin "${PRODCLONE_SUITE}"
-if [ "${hold}" = YES ]; then
+if [[ "${hold}" = YES ]]; then
   echo "/${RRFS_SUITE} is SUSPENDED: nothing will be submitted until you run"
   echo "  ecflow_client --resume /${RRFS_SUITE}"
 fi
@@ -143,7 +143,7 @@ fi
 step "Running"
 cat <<EOF
 Suites /${RRFS_SUITE} and /${PRODCLONE_SUITE} are loaded and begun on ${ECF_HOST}:${ECF_PORT}.
-$( [ "${hold}" = YES ] && echo "/${RRFS_SUITE} is suspended (--hold); resume it to start submitting." || { [ "${RETRO_LAYOUT:-families}" = chains ] && echo "The retro driver resumes the first ${CYCLE_THROTTLE:-1} cycles within a minute." || echo "The retro driver releases the first family within a minute."; } )
+$( [[ "${hold}" = YES ]] && echo "/${RRFS_SUITE} is suspended (--hold); resume it to start submitting." || { [[ "${RETRO_LAYOUT:-families}" = chains ]] && echo "The retro driver resumes the first ${CYCLE_THROTTLE:-1} cycles within a minute." || echo "The retro driver releases the first family within a minute."; } )
 
 Watch it:  ${repo}/ush/retro/rrfsstat --suite ${RRFS_SUITE}  (or ${ECF_HOME}/${RRFS_SUITE}/rrfs_status.txt)
      GUI:  ecflow_ui, server ${ECF_HOST} port ${ECF_PORT}

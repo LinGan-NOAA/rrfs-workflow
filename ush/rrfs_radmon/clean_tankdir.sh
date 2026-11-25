@@ -25,7 +25,7 @@ set -x
       subdir=${RUN}
    fi
 
-   dirs=`ls "${TANKverf}"`
+   dirs=$($(ls "${TANKverf}"))
 
    if [[ ${area} = 'rgn' ]]; then
       #-----------------------------------------------

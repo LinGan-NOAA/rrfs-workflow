@@ -11,10 +11,10 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-if [ "${SFC_CYC}" -eq 3 ] ; then
+if [[ "${SFC_CYC}" -eq 3 ]] ; then
 
    do_lake_surgery=".false."
-   if [ "${USE_CLM}" = "TRUE" ]; then
+   if [[ "${USE_CLM}" = "TRUE" ]]; then
      do_lake_surgery=".true."
    fi
    raphrrr_com=${COMROOT}
@@ -25,11 +25,11 @@ if [ "${SFC_CYC}" -eq 3 ] ; then
    new_cdate=$(${NDATE} -1 "${current_cdate}")
    new_pdy=$(echo "${new_cdate}"| cut -c1-8)
    new_cyc=$(echo "${new_cdate}"| cut -c9-10)
-   if [ -r "${COMINrap}"/nwges/rapges/rap_"${new_cdate}"f001 ]; then
+   if [[ -r "${COMINrap}"/nwges/rapges/rap_"${new_cdate}"f001 ]]; then
      cpreq -p "${COMINrap}"/nwges/rapges/rap_"${new_cdate}"f001 sfc_rap
           rapfile='sfc_rap'
    fi
-   if [ -r "${COMINhrrr}"/nwges/hrrrges_sfc/conus/hrrr_"${new_cdate}"f001 ]; then
+   if [[ -r "${COMINhrrr}"/nwges/hrrrges_sfc/conus/hrrr_"${new_cdate}"f001 ]]; then
      cpreq -p "${COMINhrrr}"/nwges/hrrrges_sfc/conus/hrrr_"${new_cdate}"f001 sfc_hrrr
      hrrrfile='sfc_hrrr'
    fi
@@ -38,10 +38,10 @@ if [ "${SFC_CYC}" -eq 3 ] ; then
    ln -sf "${FIX_GSI}"/"${PREDEF_GRID_NAME}"/fv3_grid_spec  fv3_grid_spec
    for file in ${rapfile} ${hrrrfile} ${hrrr_akfile}
    do
-     if [ "${file}" = "missing" ]; then
+     if [[ "${file}" = "missing" ]]; then
        continue
      else
-       if [ "${file}" = "${rapfile}" ]; then
+       if [[ "${file}" = "${rapfile}" ]]; then
 
 cat << EOF > use_raphrrr_sfc.namelist
 &setup
@@ -55,7 +55,7 @@ update_snow=true
 EOF
          cpreq use_raphrrr_sfc.namelist use_raphrrr_sfc.namelist_rap
 
-       elif [ "${file}" = "${hrrrfile}" ]; then
+       elif [[ "${file}" = "${hrrrfile}" ]]; then
 
 cat << EOF > use_raphrrr_sfc.namelist
 &setup
@@ -69,7 +69,7 @@ update_snow=false
 EOF
          cpreq use_raphrrr_sfc.namelist use_raphrrr_sfc.namelist_hrrr
 
-       elif [ "${file}" = "${hrrr_akfile}" ]; then
+       elif [[ "${file}" = "${hrrr_akfile}" ]]; then
 
 cat << EOF > use_raphrrr_sfc.namelist
 &setup
@@ -87,7 +87,7 @@ EOF
      fi
      cpreq sfc_data.nc sfc_data.nc_read
      . prep_step
-     ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+     ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
      export err=$?; err_chk
      mv errfile errfile_sfc_surgery."${file}"
    done

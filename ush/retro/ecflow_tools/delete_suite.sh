@@ -12,7 +12,7 @@ printf '  %s\n' "${RETRO_SELECTED_PATHS[@]}"
 # Disk cleanup is safe only when the selection is exactly the configured experiment pair.
 clean=NO
 clean_targets=()
-if [ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ] && \
+if [[ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ]] && \
    [[ " ${RETRO_SELECTED_PATHS[*]} " == *" /${RRFS_SUITE} "* ]] && \
    [[ " ${RETRO_SELECTED_PATHS[*]} " == *" /${PRODCLONE_SUITE} "* ]]; then
     read -r -p "Clean configured output, ptmp, stmp, and suite job/log files? [y/N] " clean_answer
@@ -22,21 +22,21 @@ if [ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ] && \
         *) echo "Please answer y or n." >&2; exit 1 ;;
     esac
 
-    if [ "${clean}" = YES ]; then
+    if [[ "${clean}" = YES ]]; then
         base=$(realpath -m -- "${RETRO_WORK_BASE}")
-        if [ "${base}" = "/" ] || [ -z "${base}" ]; then
+        if [[ "${base}" = "/" ]] || [[ -z "${base}" ]]; then
             echo "Refusing to clean with unsafe RETRO_WORK_BASE: ${base}" >&2
             exit 1
         fi
         # WCOSS2 keeps each experiment's working files on a separate stmp filesystem.
         # Allow only that experiment's child directory, never the shared stmp root.
         stmp_target=
-        if [ "${MACHINE}" = WCOSS2 ] && [ -n "${RETRO_STMP_ROOT:-}" ] && [ -n "${EXPT_ID:-}" ]; then
+        if [[ "${MACHINE}" = WCOSS2 ]] && [[ -n "${RETRO_STMP_ROOT:-}" ]] && [[ -n "${EXPT_ID:-}" ]]; then
           case ${EXPT_ID} in
             .|..|*/*) echo "Refusing to clean with unsafe EXPT_ID: ${EXPT_ID}" >&2; exit 1 ;;
           esac
           stmp_root=$(realpath -m -- "${RETRO_STMP_ROOT}")
-          if [ "${stmp_root}" = / ]; then
+          if [[ "${stmp_root}" = / ]]; then
             echo "Refusing to clean with unsafe RETRO_STMP_ROOT: ${stmp_root}" >&2
             exit 1
           fi
@@ -48,10 +48,10 @@ if [ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ] && \
         server_home=$(realpath -m -- "${ECF_HOME}")
         data_root=
         output_root=
-        if [ "${MACHINE}" = WCOSS2 ] && [ -n "${ECF_DATA_ROOT:-}" ]; then
+        if [[ "${MACHINE}" = WCOSS2 ]] && [[ -n "${ECF_DATA_ROOT:-}" ]]; then
           data_root=$(realpath -m -- "${ECF_DATA_ROOT}")
           output_root=$(realpath -m -- "${ECF_OUTPUTDIR:-${data_root}/output}")
-          if [ "${data_root}" = / ]; then
+          if [[ "${data_root}" = / ]]; then
             echo "Refusing to clean with unsafe ECF_DATA_ROOT: ${data_root}" >&2
             exit 1
           fi
@@ -72,8 +72,8 @@ if [ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ] && \
         for target in "${OUTPUTDIR}" "${DEV_PTMP}" "${DEV_DATAROOT}" \
                       "${ECF_HOME}/${RRFS_SUITE}" "${ECF_HOME}/${PRODCLONE_SUITE}"; do
             resolved=$(realpath -m -- "${target}")
-            if [ "${resolved}" = "${base}" ] || [ "${resolved}" = "${server_home}" ] || \
-               [ "${resolved}" = "${data_root}" ] || [ "${resolved}" = "${output_root}" ]; then
+            if [[ "${resolved}" = "${base}" ]] || [[ "${resolved}" = "${server_home}" ]] || \
+               [[ "${resolved}" = "${data_root}" ]] || [[ "${resolved}" = "${output_root}" ]]; then
               echo "Refusing to clean a shared or experiment root: ${resolved}" >&2
               exit 1
             fi
@@ -82,14 +82,14 @@ if [ "${#RETRO_SELECTED_PATHS[@]}" -eq 2 ] && \
                 *)
                   # Allow only this experiment stmp directory or the exact selected persistent children.
                   allowed=NO
-                  if [ -n "${stmp_target}" ] && [ "${target}" = "${DEV_DATAROOT}" ] && \
-                     [ "${resolved}" = "${stmp_target}" ]; then
+                  if [[ -n "${stmp_target}" ]] && [[ "${target}" = "${DEV_DATAROOT}" ]] && \
+                     [[ "${resolved}" = "${stmp_target}" ]]; then
                     allowed=YES
                   fi
                   for persistent_target in "${persistent_targets[@]}"; do
-                    if [ "${resolved}" = "${persistent_target}" ]; then allowed=YES; fi
+                    if [[ "${resolved}" = "${persistent_target}" ]]; then allowed=YES; fi
                   done
-                  if [ "${allowed}" = YES ]; then
+                  if [[ "${allowed}" = YES ]]; then
                     clean_targets+=("${resolved}")
                   else
                     echo "Refusing to clean outside the configured experiment directories: ${resolved}" >&2
@@ -107,7 +107,7 @@ else
 fi
 
 read -r -p "Type DELETE to continue: " confirmation
-if [ "${confirmation}" != "DELETE" ]; then
+if [[ "${confirmation}" != "DELETE" ]]; then
     echo "Deletion cancelled."
     exit 1
 fi
@@ -116,7 +116,7 @@ set -x
 
 ecflow_client --delete=force yes "${RETRO_SELECTED_PATHS[@]}"
 echo "Deleted the selected suite(s); leaving the ecFlow server running for other experiments."
-if [ "${clean}" = YES ]; then
+if [[ "${clean}" = YES ]]; then
     rm -rf -- "${clean_targets[@]}"
     echo "Cleaned the configured experiment directories."
 fi

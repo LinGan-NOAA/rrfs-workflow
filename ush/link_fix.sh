@@ -371,7 +371,7 @@ Please ensure that all files have the same resolution."
 
   for fp in "${fps[@]}"; do
     if [[ -f "${fp}" ]]; then
-      ln -sf ${relative_or_null} "${fp}" .
+      ln -sf "${relative_or_null}" "${fp}" .
     else
       print_err_msg_exit "\
 Cannot create symlink because target file (fp) does not exist:

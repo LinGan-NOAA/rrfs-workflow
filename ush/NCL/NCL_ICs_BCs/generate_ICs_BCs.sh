@@ -43,11 +43,11 @@ if true; then
 # on a cylindrical projection.
 #
 ncl -n generate_RAP_based_ICs_BCs.ncl \
-  CDATE=${CDATE} \
-  fcst_len_hrs=${fcst_len_hrs} \
-  BC_interval_hrs=${BC_interval_hrs} \
-  plot_RAP_fields=${plot_RAP_fields} \
-  plot_FV3LAM_fields=${plot_FV3LAM_fields} \
+  CDATE="${CDATE}" \
+  fcst_len_hrs="${fcst_len_hrs}" \
+  BC_interval_hrs="${BC_interval_hrs}" \
+  plot_RAP_fields="${plot_RAP_fields}" \
+  plot_FV3LAM_fields="${plot_FV3LAM_fields}" \
   'regions=[/ [/ "GLOBE",    (/-180,  180, -90,  90/), False, False /], \
               [/ "FV3LAM",   (/-140,  -60,  20,  55/), False, False /], \
               [/ "FV3LAMNW", (/-145, -135,  50,  60/),  True, True  /], \

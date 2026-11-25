@@ -321,6 +321,7 @@ for fhr in $(seq 0 60); do
   fhr_3d=$( printf "%03d" "${fhr}" )
   memuse=$( printf "%03d" "${mem}" )
   search_str=${memuse}${fhr_3d}00
+  # shellcheck disable=SC2321
   array_element_scan_release_ensf_post[$((10#${search_str}))]="NO"
 done
 done
@@ -624,6 +625,7 @@ while [[ ${proceed_trigger_scan} == "YES" ]]; do
         fc=$(count_matching_files "${umbrella_forecast_data}"/log.atm.f"${fhr_3d}"*)
         if [[ "${fc}" -gt 0 ]]; then
           search_str=${memuse}${fhr_3d}00
+          # shellcheck disable=SC2321
           if [[ "${array_element_scan_release_ensf_post[$((10#${search_str}))]}" == "NO" ]]; then
             array_element_scan_release_ensf_post[$((10#${search_str}))]="found"
             ecflow_client --event release_ensf_post_mem"${memuse}"_f"${fhr_3d}"

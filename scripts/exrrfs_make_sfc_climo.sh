@@ -59,10 +59,10 @@ nprocs=$(( NNODES_MAKE_SFC_CLIMO * PPN_MAKE_SFC_CLIMO ))
 #
 #-----------------------------------------------------------------------
 #
-if [ "${WGF}" = "firewx" ]; then
+if [[ "${WGF}" = "firewx" ]]; then
   hh="${CDATE:8:2}"
   firewx_loc="${COMrrfs}/firewx_input/rrfs_firewx_loc"
-  if [ -s "${firewx_loc}" ]; then
+  if [[ -s "${firewx_loc}" ]]; then
     LAT_CTR=""
     LON_CTR=""
     if [[ -s "${firewx_loc}" ]]; then
@@ -93,7 +93,7 @@ fi
 #
 #-----------------------------------------------------------------------
 #
-if [ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "RRFS_FIREWX_1.5km" ]]; then
   input_substrate_temperature_file="${SFC_CLIMO_INPUT_DIR}/substrate_temperature.gfs.0.5.nc"
   input_soil_type_file="${SFC_CLIMO_INPUT_DIR}/soil_type.bnu.v2.30s.nc"
   input_vegetation_type_file="${SFC_CLIMO_INPUT_DIR}/vegetation_type.viirs.v2.igbp.30s.nc"
@@ -177,7 +177,7 @@ esac
 export pgm="ufs_util_sfc_climo_gen"
 . prep_step
 
-${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
 export err=$?; err_chk
 #
 #-----------------------------------------------------------------------
@@ -216,7 +216,7 @@ case "${GTYPE}" in
 # zero) halo width (in units of number of grid cells).
 #
   for fn in *.halo.nc; do
-    if [ -f "${fn}" ]; then
+    if [[ -f "${fn}" ]]; then
       bn="${fn%.halo.nc}"
       cpreq -p "${fn}" "${firewx_input}"/"${CRES}"."${bn}".halo"${NH4}".nc
     fi
@@ -229,7 +229,7 @@ case "${GTYPE}" in
 # cate that the grids in these files do not contain a halo.
 #
   for fn in *.nc; do
-    if [ -f "${fn}" ]; then
+    if [[ -f "${fn}" ]]; then
       bn="${fn%.nc}"
       cpreq -p "${fn}" "${firewx_input}"/"${CRES}"."${bn}".halo"${NH0}".nc
     fi
@@ -245,7 +245,7 @@ esac
 #
 #-----------------------------------------------------------------------
 #
-if [ ${vegsoilt_frac} = .true. ]; then
+if [[ "${vegsoilt_frac}" = .true. ]]; then
   ncrename -d nx,lon -d ny,lat "${firewx_input}"/"${CRES}".soil_type.tile7.halo0.nc
   ncrename -d nx,lon -d ny,lat "${firewx_input}"/"${CRES}".soil_type.tile7.halo4.nc
   ncrename -d nx,lon -d ny,lat "${firewx_input}"/"${CRES}".vegetation_type.tile7.halo0.nc

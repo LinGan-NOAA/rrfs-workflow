@@ -52,7 +52,7 @@ preprocessing with RRFS for the specified cycle.
 #
 #-----------------------------------------------------------------------
 #
-if [ "${RUN}" == "enkfrrfs" ]; then
+if [[ "${RUN}" == "enkfrrfs" ]]; then
   export RADAR_REF_THINNING="2"
 else
   export RADAR_REF_THINNING="1"
@@ -127,24 +127,24 @@ YYYYMMDD=${YYYYMMDDHH:0:8}
 #-----------------------------------------------------------------------
 #
 BKTYPE=0
-if [ "${DO_SPINUP}" = "TRUE" ]; then
-  if [ "${CYCLE_TYPE}" = "spinup" ]; then
+if [[ "${DO_SPINUP}" = "TRUE" ]]; then
+  if [[ "${CYCLE_TYPE}" = "spinup" ]]; then
     for cyc_start in "${CYCL_HRS_SPINSTART[@]}"; do
-      if [ "${HH}" -eq "${cyc_start}" ]; then
+      if [[ "${HH}" -eq "${cyc_start}" ]]; then
         BKTYPE=1
       fi
     done
   fi
 else
   for cyc_start in "${CYCL_HRS_PRODSTART[@]}"; do
-    if [ "${HH}" -eq "${cyc_start}" ]; then
+    if [[ "${HH}" -eq "${cyc_start}" ]]; then
         BKTYPE=1
     fi
   done
 fi
 
 n_iolayouty=$((IO_LAYOUT_Y - 1))
-list_iolayout=$(seq 0 ${n_iolayouty})
+list_iolayout=$(seq 0 "${n_iolayouty}")
 #
 #-----------------------------------------------------------------------
 #
@@ -217,14 +217,14 @@ for bigmin in "${RADARREFL_TIMELEVEL[@]}"; do
     echo "Looking for data valid:""${YYYY}""-""${MM}""-""${DD}"" ""${HH}"":""${min}"
     s=0
     while [[ ${s} -le 59 ]]; do
-      ss=$(printf %2.2i ${s})
+      ss=$(printf %2.2i "${s}")
       nsslfiles=( "${NSSL}"/*"${mrms}"_00.50_"${YYYY}${MM}${DD}-${HH}${min}${ss}.${obs_appendix}" )
-      if [ -s "${nsslfiles[0]}" ]; then
+      if [[ -s "${nsslfiles[0]}" ]]; then
         echo 'Found '"${nsslfiles[0]}"
         nsslfiles=( "${NSSL}"/*"${mrms}"_*_"${YYYY}${MM}${DD}-${HH}${min}"*."${obs_appendix}" )
         numgrib2=${#nsslfiles[@]}
         echo 'Number of GRIB-2 files: '"${numgrib2}"
-        if [ "${numgrib2}" -ge 10 ] && [ ! -e filelist_mrms ]; then
+        if [[ "${numgrib2}" -ge 10 ]] && [[ ! -e filelist_mrms ]]; then
           cpreq -p "${nsslfiles[@]}" .
           printf '%s\n' "${nsslfiles[@]##*/}" > filelist_mrms
           echo 'Creating links for ${YYYY}${MM}${DD}-${HH}${min}'
@@ -240,12 +240,12 @@ for bigmin in "${RADARREFL_TIMELEVEL[@]}"; do
   #
   #-----------------------------------------------------------------------
   #
-  if [ ! -s filelist_mrms ]; then
+  if [[ ! -s filelist_mrms ]]; then
     rm -f filelist_mrms
   fi
 
-  if [ -s filelist_mrms ]; then
-     if [ "${obs_appendix}" == "grib2.gz" ]; then
+  if [[ -s filelist_mrms ]]; then
+     if [[ "${obs_appendix}" == "grib2.gz" ]]; then
         gzip -d -- ./*.gz
         mv filelist_mrms filelist_mrms_org
         ls MergedReflectivityQC_*_"${YYYY}""${MM}""${DD}"-"${HH}"????.grib2 > filelist_mrms
@@ -300,7 +300,7 @@ EOF
   #
   #-----------------------------------------------------------------------
   #
-  if [ ${BKTYPE} -eq 1 ]; then
+  if [[ "${BKTYPE}" -eq 1 ]]; then
     n_iolayouty=1
   else
     n_iolayouty=${IO_LAYOUT_Y}
@@ -315,14 +315,14 @@ cat << EOF > namelist.mosaic
    /
 EOF
 
-  if [ ${RADAR_REF_THINNING} -eq 2 ]; then
+  if [[ "${RADAR_REF_THINNING}" -eq 2 ]]; then
     # heavy data thinning, typically used for EnKF
     precipdbzhorizskip=1
     precipdbzvertskip=2
     clearairdbzhorizskip=2
     clearairdbzvertskip=4
   else
-    if [ ${RADAR_REF_THINNING} -eq 1 ]; then
+    if [[ "${RADAR_REF_THINNING}" -eq 1 ]]; then
       # light data thinning, typically used for hybrid EnVar
       precipdbzhorizskip=1
       precipdbzvertskip=1
@@ -358,19 +358,19 @@ EOF
   #
   #-----------------------------------------------------------------------
   #
-  ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
+  ${APRUN} "${EXECrrfs}"/"${pgm}" >>"${pgmout}" 2>errfile
   export err=$?; err_chk
-  if [ -f "${shared_output_data}"/rrfs.t"${HH}"z.RefInGSI3D.bin."${bigmin}" ] && [ -s "${DATA}"/"${bigmin}"/RefInGSI3D.dat ]; then
+  if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.RefInGSI3D.bin."${bigmin}" ]] && [[ -s "${DATA}"/"${bigmin}"/RefInGSI3D.dat ]]; then
     rm -f "${shared_output_data}"/rrfs.t"${HH}"z.RefInGSI3D.bin."${bigmin}"
   fi
   cpreq "${DATA}"/"${bigmin}"/RefInGSI3D.dat "${shared_output_data}"/rrfs.t"${HH}"z.RefInGSI3D.bin."${bigmin}"
   cpreq -p RefInGSI3D.dat  "${COMOUT_ANALYSIS}"/rrfs.t"${HH}"z.RefInGSI3D.bin."${bigmin}"
-  if [ -f "${shared_output_data}"/Gridded_ref.nc ] && [ -s "${DATA}"/"${bigmin}"/Gridded_ref.nc ]; then
+  if [[ -f "${shared_output_data}"/Gridded_ref.nc ]] && [[ -s "${DATA}"/"${bigmin}"/Gridded_ref.nc ]]; then
     rm -f "${shared_output_data}"/Gridded_ref.nc
   fi
   cpreq "${DATA}"/"${bigmin}"/Gridded_ref.nc "${shared_output_data}"/Gridded_ref.nc
   cpreq -p Gridded_ref.nc "${COMOUT_ANALYSIS}"/Gridded_ref.nc
-  if [ -f "${shared_output_data}"/rrfs.t"${HH}"z.Gridded_ref.nc."${bigmin}" ] && [ -s "${DATA}"/"${bigmin}"/Gridded_ref.nc ]; then
+  if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.Gridded_ref.nc."${bigmin}" ]] && [[ -s "${DATA}"/"${bigmin}"/Gridded_ref.nc ]]; then
     rm -f "${shared_output_data}"/rrfs.t"${HH}"z.Gridded_ref.nc."${bigmin}"
   fi
   cpreq "${DATA}"/"${bigmin}"/Gridded_ref.nc "${shared_output_data}"/rrfs.t"${HH}"z.Gridded_ref.nc."${bigmin}"
@@ -379,14 +379,14 @@ EOF
   # Convert the gridded reflectivity to IODA for the JEDI analyses, which read
   # ioda_mrms_refl.nc from the analysis COM directory. JEDI warns and goes on
   # without the file, so a failed conversion does not stop the cycle.
-  if [ "${DO_IODA_MRMS}" = "TRUE" ]; then
+  if [[ "${DO_IODA_MRMS}" = "TRUE" ]]; then
     shopt -s nullglob
     dirs=("${RDASAPP_DIR}"/build/lib/python3.*)
     PYIODALIB=${dirs[0]}
     shopt -u nullglob
     export PYTHONPATH="${PYIODALIB}:${PYIODALIB}/site-packages:${PYTHONPATH:-}"
     python "${USHrrfs}"/MRMS2ioda.py -i ./Gridded_ref.nc -c "${YYYY}-${MM}-${DD}T${HH}:${bigmin}:00" -o ioda_mrms_refl.nc
-    if [ -s ioda_mrms_refl.nc ]; then
+    if [[ -s ioda_mrms_refl.nc ]]; then
       cpreq -p ioda_mrms_refl.nc "${COMOUT_ANALYSIS}"/ioda_mrms_refl.nc
     else
       echo "WARNING: no IODA MRMS file made for loop ${bigmin}"

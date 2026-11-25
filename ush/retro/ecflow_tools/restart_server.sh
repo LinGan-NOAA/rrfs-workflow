@@ -40,9 +40,9 @@ if ! ecflow_client --ping >/dev/null 2>&1; then
   # Prefer the configured directory, then search this retro work root for a unique checkpoint.
   checkpoint=${ECF_HOME}/${ECF_HOST}.${ECF_PORT}.ecf.check
   checkpoint_backup=${checkpoint}.b
-  if [ ! -f "${checkpoint}" ] && [ ! -f "${checkpoint_backup}" ]; then
+  if [[ ! -f "${checkpoint}" ]] && [[ ! -f "${checkpoint_backup}" ]]; then
     checkpoint_files=()
-    if [ -n "${RETRO_WORK_ROOT:-}" ]; then
+    if [[ -n "${RETRO_WORK_ROOT:-}" ]]; then
       shopt -s nullglob
       checkpoint_files=(
         "${RETRO_WORK_ROOT}"/*/submit/"${ECF_HOST}.${ECF_PORT}.ecf.check"
@@ -56,22 +56,22 @@ if ! ecflow_client --ping >/dev/null 2>&1; then
       candidate_dir=${candidate%/*}
       found=NO
       for existing_dir in "${checkpoint_dirs[@]}"; do
-        if [ "${existing_dir}" = "${candidate_dir}" ]; then
+        if [[ "${existing_dir}" = "${candidate_dir}" ]]; then
           found=YES
           break
         fi
       done
-      if [ "${found}" = NO ]; then
+      if [[ "${found}" = NO ]]; then
         checkpoint_dirs+=("${candidate_dir}")
       fi
     done
 
-    if [ "${#checkpoint_dirs[@]}" -eq 1 ]; then
+    if [[ "${#checkpoint_dirs[@]}" -eq 1 ]]; then
       ECF_HOME=${checkpoint_dirs[0]}
       checkpoint=${ECF_HOME}/${ECF_HOST}.${ECF_PORT}.ecf.check
       checkpoint_backup=${checkpoint}.b
       echo "Using server checkpoint directory found under RETRO_WORK_ROOT: ${ECF_HOME}"
-    elif [ "${#checkpoint_dirs[@]}" -gt 1 ]; then
+    elif [[ "${#checkpoint_dirs[@]}" -gt 1 ]]; then
       echo "Multiple ecFlow checkpoint directories found for ${ECF_HOST}:${ECF_PORT}:" >&2
       printf '  %s\n' "${checkpoint_dirs[@]}" >&2
       echo "Set ECF_HOME to the server's checkpoint directory and retry." >&2
@@ -98,7 +98,7 @@ fi
 if ! ecflow_client --ping >/dev/null 2>&1; then
   echo "No ecFlow server answers on ${ECF_HOST}:${ECF_PORT}." >&2
   echo "Server log: ${ECF_HOME}/ecflow_server.out" >&2
-  if [ -f "${ECF_HOME}/ecflow_server.out" ]; then
+  if [[ -f "${ECF_HOME}/ecflow_server.out" ]]; then
     tail -40 "${ECF_HOME}/ecflow_server.out" >&2
   fi
   exit 1
