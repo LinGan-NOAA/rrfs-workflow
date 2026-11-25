@@ -22,6 +22,12 @@ on:
         required: false
         type: string
         default: "SCRIPTDIR:ush:ush/bash_utils:dev/ush"
+      # Deterministic per-pillar downloadable artifact name override.
+      artifact_name:
+        description: "Downloadable artifact name (default: ci_artifact_bash)."
+        required: false
+        type: string
+        default: "ci_artifact_bash"
   # Allow manual workflow dispatch from the GitHub Actions UI.
   workflow_dispatch:
 
@@ -43,7 +49,7 @@ env:
   NODE_OPTIONS: "--no-deprecation"
 
 jobs:
-  # Single sandboxed analyzer job for Bash static checks and audit logging.
+  # Single sandboxed analyzer job for Bash static checks and centralized log.
   bash-consistency-ci:
     # Execute on standard ephemeral GitHub-hosted Ubuntu runners.
     runs-on: ubuntu-latest
@@ -153,8 +159,8 @@ jobs:
           # Export ~/.local/bin onto GITHUB_PATH for downstream steps.
           printf '%s\n' "${bin_dir}" >> "${GITHUB_PATH}"
 
-      # Run Bash discovery, symlink containment, NCO rules, ShellCheck, and audit.
-      - name: Check Bash scripts and collect audit logs
+      # Run Bash discovery, symlink containment, NCO rules, ShellCheck, and log.
+      - name: Check Bash scripts and write centralized ci_artifact
         id: bash-check
         shell: bash
         env:
@@ -175,8 +181,8 @@ jobs:
         run: |
           # Keep undefined-variable and pipeline errors strict; handle exit codes.
           set -uo pipefail
-          # Resolve artifact staging directory safely under RUNNER_TEMP.
-          out_dir="${RUNNER_TEMP:-/tmp}/reviewdog"
+          # Resolve single centralized artifact staging directory (ci_artifact).
+          out_dir="${RUNNER_TEMP:-/tmp}/ci_artifact"
           # Guard against regular file or broken symlink at staging directory.
           if [[ -e "${out_dir}" || -L "${out_dir}" ]] && [[ ! -d "${out_dir}" ]]; then
             rm -f "${out_dir}"
@@ -185,14 +191,17 @@ jobs:
           if [[ ! -d "${out_dir}" ]]; then
             mkdir -p "${out_dir}"
           fi
-          # Initialize structured audit logs and Checkstyle diagnostic outputs.
-          audit_log="${out_dir}/nco_bash_ci_audit.log"
+          # Initialize centralized log, kept skip files, and Checkstyle XMLs.
+          ci_log="${out_dir}/ci_artifact_bash.log"
           excl_log="${out_dir}/excluded_files_from_list.txt"
           skip_log="${out_dir}/inline_skipped_directives.txt"
           xml_out="${out_dir}/shellcheck.checkstyle.xml"
-          : > "${audit_log}"
+          nco_xml="${out_dir}/nco_conventions.checkstyle.xml"
+          nco_xml_body="${RUNNER_TEMP:-/tmp}/.nco_conventions.body"
+          : > "${ci_log}"
           : > "${excl_log}"
           : > "${skip_log}"
+          : > "${nco_xml_body}"
           # Initialize empty valid Checkstyle XML so reporter always sees XML.
           printf '<?xml version="1.0" encoding="UTF-8"?><checkstyle version="4.3"></checkstyle>\n' > "${xml_out}"
           # Write PR metadata files when running on a pull_request event.
@@ -200,9 +209,34 @@ jobs:
             printf '%s\n' "${PR_NUMBER}" > "${out_dir}/pr-number"
             printf '%s\n' "${PR_HEAD_SHA}" > "${out_dir}/pr-head-sha"
           fi
-          # Helper function to echo and persist structured audit log lines.
-          log_audit() {
-            printf '%s\n' "$1" | tee -a "${audit_log}"
+          # Helper to write every log message to stdout and centralized ci_log.
+          log_msg() {
+            printf '%s\n' "$1" | tee -a "${ci_log}"
+          }
+          # Emit trigger-context header as line 1 of ci_artifact_bash.log.
+          wf_name="${GITHUB_WORKFLOW:-NCO_Consistency_Bash}"
+          wf_sha="${GITHUB_SHA:-unknown}"
+          log_msg "EVENT_CONTEXT: event=${EVENT_NAME} | workflow=${wf_name} | sha=${wf_sha}"
+          # Helper to XML-escape untrusted file paths and messages portably.
+          xml_escape() {
+            awk 'BEGIN {
+              s = ARGV[1];
+              gsub(/&/, "\\&amp;", s);
+              gsub(/</, "\\&lt;", s);
+              gsub(/>/, "\\&gt;", s);
+              gsub(/"/, "\\&quot;", s);
+              gsub(/\047/, "\\&apos;", s);
+              printf "%s", s;
+            }' "$1"
+          }
+          # Helper to append an NCO convention/security finding as Checkstyle XML.
+          add_nco_finding() {
+            local fpath="$1" lnum="$2" sev="$3" rule="$4" msg="$5"
+            printf '  <file name="%s"><error line="%s" column="1" ' \
+              "$(xml_escape "${fpath}")" "$(xml_escape "${lnum}")" >> "${nco_xml_body}"
+            printf 'severity="%s" message="%s" source="NCO.%s"/></file>\n' \
+              "$(xml_escape "${sev}")" "$(xml_escape "${msg}")" \
+              "$(xml_escape "${rule}")" >> "${nco_xml_body}"
           }
           # Resolve canonical workspace root for symlink containment checks.
           ws_root="$(realpath -e "${GITHUB_WORKSPACE:-$(pwd)}")"
@@ -217,37 +251,37 @@ jobs:
             label_lines="$(printf '%s' "${PR_LABELS}" | tr ',' '\n')"
             if printf '%s\n' "${label_lines}" | grep -ixq -- "ci-override:bash_shellcheck"; then
               run_shellcheck=0
-              log_audit "GLOBAL_SKIP: bash_shellcheck | REASON: maintainer label ci-override:bash_shellcheck"
+              log_msg "GLOBAL_SKIP: bash_shellcheck | REASON: maintainer label ci-override:bash_shellcheck"
             fi
             if printf '%s\n' "${label_lines}" | grep -ixq -- "ci-override:shebang_script"; then
               run_shebang=0
-              log_audit "GLOBAL_SKIP: shebang_script | REASON: maintainer label ci-override:shebang_script"
+              log_msg "GLOBAL_SKIP: shebang_script | REASON: maintainer label ci-override:shebang_script"
             fi
             if printf '%s\n' "${label_lines}" | grep -ixq -- "ci-override:bash_setx"; then
               run_setx=0
-              log_audit "GLOBAL_SKIP: bash_setx | REASON: maintainer label ci-override:bash_setx"
+              log_msg "GLOBAL_SKIP: bash_setx | REASON: maintainer label ci-override:bash_setx"
             fi
             if printf '%s\n' "${label_lines}" | grep -ixq -- "ci-override:bash_exitzero"; then
               run_exitzero=0
-              log_audit "GLOBAL_SKIP: bash_exitzero | REASON: maintainer label ci-override:bash_exitzero"
+              log_msg "GLOBAL_SKIP: bash_exitzero | REASON: maintainer label ci-override:bash_exitzero"
             fi
           else
             # On trusted push/dispatch events, honor commit-message CI_IGNORE.
             if printf '%s\n' "${COMMIT_MSG}" | grep -iq -- "bash_shellcheck"; then
               run_shellcheck=0
-              log_audit "GLOBAL_SKIP: bash_shellcheck | REASON: trusted commit message CI_IGNORE"
+              log_msg "GLOBAL_SKIP: bash_shellcheck | REASON: trusted commit message CI_IGNORE"
             fi
             if printf '%s\n' "${COMMIT_MSG}" | grep -iq -- "shebang_script"; then
               run_shebang=0
-              log_audit "GLOBAL_SKIP: shebang_script | REASON: trusted commit message CI_IGNORE"
+              log_msg "GLOBAL_SKIP: shebang_script | REASON: trusted commit message CI_IGNORE"
             fi
             if printf '%s\n' "${COMMIT_MSG}" | grep -iq -- "bash_setx"; then
               run_setx=0
-              log_audit "GLOBAL_SKIP: bash_setx | REASON: trusted commit message CI_IGNORE"
+              log_msg "GLOBAL_SKIP: bash_setx | REASON: trusted commit message CI_IGNORE"
             fi
             if printf '%s\n' "${COMMIT_MSG}" | grep -iq -- "bash_exitzero"; then
               run_exitzero=0
-              log_audit "GLOBAL_SKIP: bash_exitzero | REASON: trusted commit message CI_IGNORE"
+              log_msg "GLOBAL_SKIP: bash_exitzero | REASON: trusted commit message CI_IGNORE"
             fi
           fi
           # Load exclusion list into directory prune array and O(1) exact map.
@@ -261,8 +295,9 @@ jobs:
               pat="${pat%"${pat##*[![:space:]]}"}"
               # Skip blank lines and comment lines.
               [[ -z "${pat}" || "${pat}" == \#* ]] && continue
-              # Record active rule in excluded_files_from_list.txt.
+              # Record active exclusion rule in excluded_files_from_list.txt and ci_log.
               printf '%s\n' "${pat}" >> "${excl_log}"
+              log_msg "EXCLUDED_RULE: ${pat}"
               # Normalize leading ./ prefix for uniform path matching.
               norm_pat="${pat#./}"
               if [[ "${norm_pat}" == *"/*" ]]; then
@@ -298,15 +333,17 @@ jobs:
             if [[ -n "${exclude_file_map[${norm_file}]+x}" ]]; then
               matched_rule="${exclude_file_map[${norm_file}]}"
               printf 'MATCHED_FILE: %s (pattern: %s)\n' "${norm_file}" "${matched_rule}" >> "${excl_log}"
-              log_audit "SKIPPED_FILE: ${norm_file} | REASON: exclude_file_list (${matched_rule})"
+              log_msg "SKIPPED_FILE: ${norm_file} | REASON: exclude_file_list (${matched_rule})"
               continue
             fi
             # Enforce strict workspace symlink containment via realpath -e.
             if [[ -L "${file}" ]]; then
               real_target="$(realpath -e -- "${file}" 2>/dev/null || true)"
               if [[ -z "${real_target}" || "${real_target}" != "${ws_root}/"* ]]; then
-                log_audit "SKIPPED_FILE: ${norm_file} | REASON: security_symlink_outside_workspace"
-                printf 'FAIL (security_symlink): %s points outside workspace\n' "${norm_file}"
+                log_msg "SKIPPED_FILE: ${norm_file} | REASON: security_symlink_outside_workspace"
+                log_msg "FAIL (security_symlink): ${norm_file} points outside workspace"
+                add_nco_finding "${norm_file}" "1" "error" "security_symlink" \
+                  "Symlink points outside workspace"
                 failed=1
                 continue
               fi
@@ -315,7 +352,7 @@ jobs:
             fi
             # Skip binary files safely using POSIX grep -I check.
             if ! grep -Iq . "${file}" 2>/dev/null && [[ -s "${file}" ]]; then
-              log_audit "SKIPPED_FILE: ${norm_file} | REASON: binary_file"
+              log_msg "SKIPPED_FILE: ${norm_file} | REASON: binary_file"
               continue
             fi
             # Determine if path matches NCO/GFS Bash naming patterns.
@@ -327,15 +364,16 @@ jobs:
                 is_pattern_match=1 ;;
             esac
             # Single-pass awk extracts shebang, skips, set -x, and last code line.
+            # Use ASCII 0x1F (non-whitespace) delimiter so empty fields never shift.
             awk_out="$(awk '
-              BEGIN { first=""; has_setx=0; last_code=""; skip_all=0;
-                      skip_sc=0; skip_sb=0; skip_sx=0; skip_ez=0; }
+              BEGIN { first=""; has_setx=0; last_code=""; last_line=1;
+                      skip_all=0; skip_sc=0; skip_sb=0; skip_sx=0; skip_ez=0; }
               {
                 line = $0; sub(/\r$/, "", line);
                 if (NR == 1) { first = line; }
                 if (line ~ /^[[:space:]]*#[[:space:]]*(ci-ignore|ci-skip|shellcheck[[:space:]]+disable)[[:space:]:=]/) {
                   trimmed = line; sub(/^[[:space:]]+/, "", trimmed);
-                  printf "SKIP_LINE\t%d\t%s\n", NR, trimmed;
+                  printf "SKIP_LINE\037%d\037%s\n", NR, trimmed;
                   low = tolower(trimmed);
                   if (low ~ /^#[[:space:]]*(ci-ignore|ci-skip):.*all([[:space:],]|$)/) skip_all = 1;
                   if (low ~ /^#[[:space:]]*(ci-ignore|ci-skip):.*bash_shellcheck/) skip_sc = 1;
@@ -348,14 +386,14 @@ jobs:
                     clean ~ /(-[a-zA-Z0-9]*x[a-zA-Z0-9]*|-o[[:space:]]+xtrace)/) {
                   has_setx = 1;
                 }
-                if (clean !~ /^[[:space:]]*$/) { last_code = clean; }
+                if (clean !~ /^[[:space:]]*$/) { last_code = clean; last_line = NR; }
               }
               END {
-                printf "META\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
-                  first, has_setx, skip_all, skip_sc, skip_sb, skip_sx, skip_ez, last_code;
+                printf "META\037%s\037%d\037%d\037%d\037%d\037%d\037%d\037%d\037%s\n",
+                  first, has_setx, skip_all, skip_sc, skip_sb, skip_sx, skip_ez, last_line, last_code;
               }
             ' "${file}")"
-            # Parse single-pass awk output into Bash variables and skip logs.
+            # Parse single-pass awk output safely using non-whitespace 0x1F IFS.
             first_line=""
             has_setx=0
             skip_all=0
@@ -363,9 +401,10 @@ jobs:
             skip_sb=0
             skip_sx=0
             skip_ez=0
+            last_line=1
             last_code=""
             declare -a file_skip_lines=()
-            while IFS=$'\t' read -r tag col1 col2 col3 col4 col5 col6 col7 col8; do
+            while IFS=$'\x1f' read -r tag col1 col2 col3 col4 col5 col6 col7 col8 col9; do
               if [[ "${tag}" == "SKIP_LINE" ]]; then
                 file_skip_lines+=("${col1}:${col2}")
               elif [[ "${tag}" == "META" ]]; then
@@ -376,7 +415,8 @@ jobs:
                 skip_sb="${col5}"
                 skip_sx="${col6}"
                 skip_ez="${col7}"
-                last_code="${col8}"
+                last_line="${col8}"
+                last_code="${col9}"
               fi
             done <<< "${awk_out}"
             # Check if file qualifies via line-1 shell shebang (#!...sh).
@@ -388,16 +428,16 @@ jobs:
             if (( is_pattern_match == 0 && is_shebang_match == 0 )); then
               continue
             fi
-            # Record every file:line inline skip directive for auditability.
+            # Record every file:line inline skip in inline_skipped_directives.txt and ci_log.
             for sl in "${file_skip_lines[@]}"; do
               sl_num="${sl%%:*}"
               sl_txt="${sl#*:}"
               printf '%s:%s:%s\n' "${norm_file}" "${sl_num}" "${sl_txt}" >> "${skip_log}"
-              log_audit "SKIPPED_LINE: ${norm_file}:${sl_num} | DIRECTIVE: ${sl_txt}"
+              log_msg "SKIPPED_LINE: ${norm_file}:${sl_num} | DIRECTIVE: ${sl_txt}"
             done
             # Honor inline # ci-skip: all / # ci-ignore: all directive.
             if (( skip_all == 1 )); then
-              log_audit "SKIPPED_FILE: ${norm_file} | REASON: inline_skip_all"
+              log_msg "SKIPPED_FILE: ${norm_file} | REASON: inline_skip_all"
               continue
             fi
             # Track active checks applied to this Bash script.
@@ -407,42 +447,56 @@ jobs:
               shellcheck_files+=("${file}")
               active_checks+=("bash_shellcheck")
             else
-              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_shellcheck"
+              log_msg "SKIPPED_CHECK: ${norm_file} | CHECK: bash_shellcheck"
             fi
             # Evaluate NCO shebang_script rule (must start with #!/bin/bash).
             if (( run_shebang == 1 && skip_sb == 0 )); then
               active_checks+=("shebang_script")
               trimmed_first="${first_line%"${first_line##*[![:space:]]}"}"
               if [[ "${trimmed_first}" != "#!/bin/bash" ]]; then
-                log_audit "FAIL (shebang_script): ${norm_file} expected #!/bin/bash"
+                log_msg "FAIL (shebang_script): ${norm_file}:1 expected #!/bin/bash"
+                add_nco_finding "${norm_file}" "1" "error" "shebang_script" \
+                  "Expected #!/bin/bash on line 1"
                 failed=1
               fi
             else
-              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: shebang_script"
+              log_msg "SKIPPED_CHECK: ${norm_file} | CHECK: shebang_script"
             fi
             # Evaluate NCO bash_setx rule (must enable set -x or -o xtrace).
             if (( run_setx == 1 && skip_sx == 0 )); then
               active_checks+=("bash_setx")
               if (( has_setx == 0 )); then
-                log_audit "FAIL (bash_setx): ${norm_file} missing set -x / -o xtrace"
+                log_msg "FAIL (bash_setx): ${norm_file}:1 missing set -x / -o xtrace"
+                add_nco_finding "${norm_file}" "1" "error" "bash_setx" \
+                  "Missing set -x or set -o xtrace"
                 failed=1
               fi
             else
-              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_setx"
+              log_msg "SKIPPED_CHECK: ${norm_file} | CHECK: bash_setx"
             fi
             # Evaluate NCO bash_exitzero rule (forbid trailing exit 0).
             if (( run_exitzero == 1 && skip_ez == 0 )); then
               active_checks+=("bash_exitzero")
               if [[ "${last_code}" =~ ^[[:space:]]*exit[[:space:]]+0([[:space:]]*|;.*)?$ ]]; then
-                log_audit "FAIL (bash_exitzero): ${norm_file} ends with unconditional exit 0"
+                log_msg "FAIL (bash_exitzero): ${norm_file}:${last_line} ends with exit 0"
+                add_nco_finding "${norm_file}" "${last_line}" "error" "bash_exitzero" \
+                  "Unconditional trailing exit 0 is forbidden"
                 failed=1
               fi
             else
-              log_audit "SKIPPED_CHECK: ${norm_file} | CHECK: bash_exitzero"
+              log_msg "SKIPPED_CHECK: ${norm_file} | CHECK: bash_exitzero"
             fi
             # Record exact checked file and list of checks applied.
-            log_audit "CHECKED_FILE: ${norm_file} | CHECKS: ${active_checks[*]:-none}"
+            log_msg "CHECKED_FILE: ${norm_file} | CHECKS: ${active_checks[*]:-none}"
           done
+          # Finalize nco_conventions.checkstyle.xml and clean up temp body file.
+          {
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n'
+            printf '<checkstyle version="4.3">\n'
+            cat "${nco_xml_body}"
+            printf '</checkstyle>\n'
+          } > "${nco_xml}"
+          rm -f "${nco_xml_body}"
           # Define NCO standard ShellCheck exclusion codes (30 codes).
           SC_EXC="SC1090,SC1091,SC2001,SC2002,SC2012,SC2015,SC2016,SC2027,SC2034,"
           SC_EXC+="SC2046,SC2053,SC2064,SC2068,SC2086,SC2115,SC2129,SC2145,SC2153,"
@@ -450,49 +504,69 @@ jobs:
           SC_EXC+="SC2249,SC2250,SC2312"
           # Execute single-pass ShellCheck in Checkstyle XML format.
           if (( ${#shellcheck_files[@]} > 0 )); then
+            sc_rc=0
+            sc_err_tmp="${RUNNER_TEMP:-/tmp}/.shellcheck.stderr"
+            : > "${sc_err_tmp}"
             shellcheck --shell=bash --enable=all --exclude="${SC_EXC}" \
               -P "${SOURCE_PATH}" -x -f checkstyle "${shellcheck_files[@]}" \
-              > "${xml_out}" || sc_rc=$?
-            sc_rc="${sc_rc:-0}"
-            # Render human-readable console diagnostics via reviewdog local.
-            reviewdog -f=checkstyle -name=shellcheck -reporter=local \
-              -fail-level=none < "${xml_out}" >> "${audit_log}" 2>&1 || true
+              > "${xml_out}" 2> "${sc_err_tmp}" || sc_rc=$?
+            # Append any ShellCheck stderr directly to centralized ci_log.
+            if [[ -s "${sc_err_tmp}" ]]; then
+              log_msg "FAIL (bash_shellcheck_stderr): $(tr '\n' ' ' < "${sc_err_tmp}")"
+            fi
+            rm -f "${sc_err_tmp}"
+            # Always record explicit failure line in ci_log if sc_rc != 0.
             if (( sc_rc != 0 )); then
+              log_msg "FAIL (bash_shellcheck): shellcheck exited with code ${sc_rc}"
               failed=1
             fi
           fi
-          # Exit non-zero if any security, NCO rule, or ShellCheck gate failed.
+          # Render ALL Checkstyle XML findings unfiltered into centralized ci_log.
+          for xml_f in "${xml_out}" "${nco_xml}"; do
+            if [[ -s "${xml_f}" ]]; then
+              rd_name="$(basename "${xml_f}" .checkstyle.xml)"
+              reviewdog -f=checkstyle -name="${rd_name}" -reporter=local \
+                -filter-mode=nofilter -fail-level=none < "${xml_f}" \
+                2>&1 | tee -a "${ci_log}" || true
+            fi
+          done
+          # Record final exit status in centralized ci_log before returning.
+          log_msg "SUMMARY: bash-check exiting with status ${failed}"
           exit "${failed}"
 
-      # Publish full execution and skip audit log to GitHub Step Summary.
+      # Display ci_artifact_bash.log directly on the GitHub Actions run page.
       - name: Write GitHub Step Summary
         if: ${{ always() }}
         shell: bash
         run: |
           # Enable strict error checking for summary emission.
           set -euo pipefail
-          # Locate generated audit log in RUNNER_TEMP staging directory.
-          audit_log="${RUNNER_TEMP:-/tmp}/reviewdog/nco_bash_ci_audit.log"
-          # Write heading and fenced audit log block to GITHUB_STEP_SUMMARY.
+          # Locate centralized log file inside ci_artifact staging directory.
+          ci_log="${RUNNER_TEMP:-/tmp}/ci_artifact/ci_artifact_bash.log"
+          # Render log content directly onto the workflow run summary page.
           {
-            echo "## NCO Consistency Bash CI Audit Summary"
+            echo "## NCO Consistency Bash CI (ci_artifact_bash.log)"
             echo '```text'
-            if [[ -f "${audit_log}" ]]; then
-              cat "${audit_log}"
+            if [[ -f "${ci_log}" ]]; then
+              cat "${ci_log}"
             else
-              echo "No audit log generated."
+              echo "No centralized log generated (workflow aborted early)."
             fi
             echo '```'
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # Upload Checkstyle XML, audit logs, and PR metadata (SHA-pinned v7.0.1).
-      - name: Upload Bash diagnostics artifact
+      # Upload downloadable ci_artifact_bash on the workflow run page.
+      - name: Upload downloadable ci_artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          # Artifact name consumed by NCO_Consistency_Bash_Report.yml.
-          name: bash-code-analysis-reviewdog
-          # Upload entire staging directory containing XML and audit logs.
-          path: ${{ runner.temp }}/reviewdog
-          # Keep diagnostic artifacts for 14 days for audit traceability.
+          # Deterministic per-pillar artifact name (default: ci_artifact_bash).
+          name: ${{ inputs.artifact_name || 'ci_artifact_bash' }}
+          # Upload ci_artifact directory (log, skip files, XMLs, PR metadata).
+          path: ${{ runner.temp }}/ci_artifact
+          # Warn instead of failing if an early step aborted before staging.
+          if-no-files-found: warn
+          # Exclude hidden temporary files from the downloadable zip.
+          include-hidden-files: false
+          # Retain downloadable ci_artifact for 14 days.
           retention-days: 14

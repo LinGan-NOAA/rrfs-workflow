@@ -1,347 +1,365 @@
-#!/usr/bin/env python3
-"""Render a sanitized sticky PR summary comment for NCO Consistency Bash CI.
+# Workflow display name for the trusted Bash PR reporting companion.
+name: NCO_Consistency_Bash_Report
 
-Reads Checkstyle XML diagnostics and execution/skip audit logs produced by
-NCO_Consistency_Bash.yml, enforces a strict 10 MB artifact size ceiling
-(CWE-770), escapes Markdown table cells, surfaces prominent inline skip alerts
-(CWE-285), and caps output under GitHub's 65,536-character PR comment limit.
-"""
+# Trigger on workflow_run completion (direct) or workflow_call (central hub).
+on:
+  # Listen for completed runs of NCO_Consistency_Bash in this repository.
+  workflow_run:
+    workflows: ["NCO_Consistency_Bash"]
+    types: [completed]
+  # Allow consumer repos (e.g., GFS) to invoke this central reporter safely.
+  workflow_call:
+    inputs:
+      # Run ID of the completed NCO_Consistency_Bash analyzer workflow.
+      workflow_run_id:
+        description: "Workflow run ID that produced ci_artifact_bash."
+        required: true
+        type: string
+      # Control-plane head commit SHA from github.event.workflow_run.head_sha.
+      workflow_run_head_sha:
+        description: "Immutable head SHA from GitHub workflow_run event."
+        required: true
+        type: string
+      # HTML URL of the completed analyzer workflow run for summary links.
+      workflow_run_html_url:
+        description: "URL of the analyzer workflow run."
+        required: true
+        type: string
+      # Deterministic analyzer artifact name to download.
+      input_artifact_name:
+        description: "Analyzer artifact name (default: ci_artifact_bash)."
+        required: false
+        type: string
+        default: "ci_artifact_bash"
+      # Deterministic reporter artifact name to upload.
+      artifact_name:
+        description: "Reporter artifact name (default: ci_artifact_bash_report)."
+        required: false
+        type: string
+        default: "ci_artifact_bash_report"
+      # Git ref/SHA of NOAA-EMC/omd-ci-workflow for isolated tool checkout.
+      ci_workflow_ref:
+        description: "Pinned ref or SHA of NOAA-EMC/omd-ci-workflow."
+        required: false
+        type: string
+        default: "main"
 
-import os
-import sys
-import xml.etree.ElementTree as ET
+# Enforce minimal top-level permissions; elevate only inside the report job.
+permissions:
+  contents: read
 
-# Hidden HTML marker used to locate and update the single sticky PR comment.
-SUMMARY_MARKER = "<!-- bash-code-analysis-summary -->"
-# Maximum bytes permitted per untrusted artifact file (10 MB ceiling).
-MAX_ARTIFACT_BYTES = 10 * 1024 * 1024
-# Maximum table rows rendered per section to keep PR comments readable.
-MAX_ROWS = 50
-# Maximum total character length to stay safely below GitHub's 65,536 limit.
-MAX_COMMENT_CHARS = 65000
+# Define pinned reviewdog version, verified SHA-256 digest, and Node flags.
+env:
+  # Pinned reviewdog release version for GitHub PR review annotations.
+  REVIEWDOG_VERSION: "0.20.2"
+  # Verified SHA-256 digest for reviewdog_0.20.2_Linux_x86_64.tar.gz.
+  REVIEWDOG_SHA256: "25d0a8a0e64e50d84503332f498d2ab54979145ac97d5457e6b1dde79212e4ff"
+  # Enforce strict 10 MB upper bound on untrusted artifact files (CWE-770).
+  MAX_ARTIFACT_BYTES: "10485760"
+  # Suppress Node.js runtime deprecation stderr warnings on runners.
+  NODE_OPTIONS: "--no-deprecation"
 
+jobs:
+  # Trusted reporter job executing strictly on base-branch/central CI code.
+  report-bash-analysis:
+    # Run only for pull_request analyzer runs (or explicit workflow_call).
+    if: >-
+      ${{ github.event_name == 'workflow_call' ||
+      github.event.workflow_run.event == 'pull_request' }}
+    # Execute on ephemeral GitHub-hosted Ubuntu runners.
+    runs-on: ubuntu-latest
+    # Grant minimal write scopes needed for PR annotations and sticky comment.
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    # Prevent hung API calls from consuming runner minutes.
+    timeout-minutes: 10
+    steps:
+      # Check out ONLY the trusted default base branch (never fork PR code).
+      - name: Checkout trusted base branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Never clone submodules in the reporter workflow.
+          submodules: false
 
-def _validate_file_size(path):
-    """Ensure an artifact file exists and does not exceed MAX_ARTIFACT_BYTES.
+      # Check out NOAA-EMC/omd-ci-workflow tools into an isolated external dir.
+      - name: Checkout trusted omd-ci-workflow tools
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Central official NCO Consistency CI repository.
+          repository: NOAA-EMC/omd-ci-workflow
+          # Use pinned ref/SHA provided by caller or repository default.
+          ref: ${{ inputs.ci_workflow_ref || 'main' }}
+          # Isolate official tools outside GITHUB_WORKSPACE to prevent shadowing.
+          path: ${{ runner.temp }}/omd-ci-workflow
+          # Never clone submodules.
+          submodules: false
 
-    Args:
-        path: Filesystem path to an artifact file.
+      # Download analyzer artifact into isolated input_artifact directory.
+      - name: Download analyzer ci_artifact_bash
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          # Analyzer artifact name uploaded by NCO_Consistency_Bash.yml.
+          name: ${{ inputs.input_artifact_name || 'ci_artifact_bash' }}
+          # Source workflow run ID from workflow_call input or workflow_run.
+          run-id: ${{ inputs.workflow_run_id || github.event.workflow_run.id }}
+          # Use job token to fetch artifact from the same repository.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Keep downloaded analyzer files separate from reporter ci_artifact.
+          path: ${{ runner.temp }}/input_artifact
 
-    Returns:
-        True if the file exists, is non-empty, and is within the size ceiling.
+      # Cache pinned reviewdog binary keyed by version and SHA-256 digest.
+      - name: Cache reviewdog binary
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          # Local binary directory containing verified reviewdog executable.
+          path: ~/.local/bin
+          # Key strictly by OS, version, and cryptographic SHA-256 hash.
+          key: >-
+            ${{ runner.os }}-nco-reviewdog-${{ env.REVIEWDOG_VERSION }}-
+            ${{ env.REVIEWDOG_SHA256 }}
 
-    Raises:
-        ValueError: If the file exceeds MAX_ARTIFACT_BYTES.
-    """
-    # Return False immediately if the optional artifact file is absent.
-    if not os.path.isfile(path):
-        return False
-    # Measure exact byte length on disk before reading into memory.
-    size = os.path.getsize(path)
-    # Abort if an untrusted artifact exceeds the 10 MB safety ceiling.
-    if size > MAX_ARTIFACT_BYTES:
-        raise ValueError(
-            f"Artifact {os.path.basename(path)} ({size} bytes) exceeds "
-            f"MAX_ARTIFACT_BYTES ({MAX_ARTIFACT_BYTES})."
-        )
-    # Return True only when the file contains data to parse.
-    return size > 0
+      # Verify cached reviewdog binary or install pinned archive with SHA-256.
+      - name: Ensure verified reviewdog binary
+        shell: bash
+        run: |
+          # Enforce strict error checking and pipeline failure propagation.
+          set -euo pipefail
+          # Target local binary installation directory.
+          bin_dir="${HOME}/.local/bin"
+          # Guard against file or broken symlink collisions at ~/.local/bin.
+          if [[ -e "${bin_dir}" || -L "${bin_dir}" ]] && [[ ! -d "${bin_dir}" ]]; then
+            rm -f "${bin_dir}"
+          fi
+          # Create local binary directory safely if absent.
+          if [[ ! -d "${bin_dir}" ]]; then
+            mkdir -p "${bin_dir}"
+          fi
+          # Verify existing binary hash or download pinned release tarball.
+          rd_bin="${bin_dir}/reviewdog"
+          rd_stamp="${bin_dir}/.reviewdog.sha256"
+          if [[ ! -x "${rd_bin}" ]] || ! sha256sum --check --strict "${rd_stamp}" >/dev/null 2>&1; then
+            # Create collision-safe temporary download directory.
+            dl_dir="${RUNNER_TEMP:-/tmp}/nco-rd-dl"
+            if [[ -e "${dl_dir}" || -L "${dl_dir}" ]] && [[ ! -d "${dl_dir}" ]]; then
+              rm -f "${dl_dir}"
+            fi
+            if [[ ! -d "${dl_dir}" ]]; then
+              mkdir -p "${dl_dir}"
+            fi
+            # Download pinned reviewdog archive over HTTPS (no curl | sh).
+            rd_tar="reviewdog_${REVIEWDOG_VERSION}_Linux_x86_64.tar.gz"
+            rd_url="https://github.com/reviewdog/reviewdog/releases/download/v${REVIEWDOG_VERSION}/${rd_tar}"
+            curl -fsSL --retry 3 "${rd_url}" -o "${dl_dir}/${rd_tar}"
+            # Enforce cryptographic SHA-256 digest check before extraction.
+            printf '%s  %s\n' "${REVIEWDOG_SHA256}" "${dl_dir}/${rd_tar}" | sha256sum --check --strict
+            # Extract and install reviewdog binary with 0755 permissions.
+            tar -xzf "${dl_dir}/${rd_tar}" -C "${dl_dir}" reviewdog
+            install -m 0755 "${dl_dir}/reviewdog" "${rd_bin}"
+            # Persist binary hash for cache-restore integrity verification.
+            sha256sum "${rd_bin}" > "${rd_stamp}"
+            rm -rf "${dl_dir}"
+          fi
+          # Add ~/.local/bin to GITHUB_PATH for downstream steps.
+          printf '%s\n' "${bin_dir}" >> "${GITHUB_PATH}"
 
+      # Bind PR metadata to control-plane SHA, post reviewdog, and log to file.
+      - name: Validate PR ownership and post reviewdog annotations
+        id: validate-pr
+        shell: bash
+        env:
+          # Provide GitHub token for gh api and reviewdog PR review posting.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pass triggering event name safely via env for audit header.
+          EVENT_NAME: ${{ github.event_name }}
+          # Pass repository owner and name safely via env.
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          # Pass immutable GitHub control-plane head SHA for CWE-441 defense.
+          TRUSTED_HEAD_SHA: >-
+            ${{ inputs.workflow_run_head_sha ||
+            github.event.workflow_run.head_sha }}
+        run: |
+          # Enable strict error propagation.
+          set -euo pipefail
+          # Initialize Reporter's own centralized ci_artifact staging directory.
+          rep_dir="${RUNNER_TEMP:-/tmp}/ci_artifact"
+          if [[ -e "${rep_dir}" || -L "${rep_dir}" ]] && [[ ! -d "${rep_dir}" ]]; then
+            rm -f "${rep_dir}"
+          fi
+          if [[ ! -d "${rep_dir}" ]]; then
+            mkdir -p "${rep_dir}"
+          fi
+          # Single centralized log file for NCO_Consistency_Bash_Report.yml.
+          rep_log="${rep_dir}/ci_artifact_bash_report.log"
+          : > "${rep_log}"
+          log_rep() {
+            printf '%s\n' "$1" | tee -a "${rep_log}"
+          }
+          # Emit trigger-context header as line 1 of ci_artifact_bash_report.log.
+          wf_name="${GITHUB_WORKFLOW:-NCO_Consistency_Bash_Report}"
+          wf_sha="${GITHUB_SHA:-unknown}"
+          log_rep "EVENT_CONTEXT: event=${EVENT_NAME} | workflow=${wf_name} | sha=${wf_sha}"
+          # Locate downloaded analyzer artifact directory.
+          art_dir="${RUNNER_TEMP:-/tmp}/input_artifact"
+          pr_file="${art_dir}/pr-number"
+          sha_file="${art_dir}/pr-head-sha"
+          # Ensure required PR metadata files exist before proceeding.
+          if [[ ! -f "${pr_file}" || ! -f "${sha_file}" ]]; then
+            log_rep "INFO: No PR metadata in analyzer artifact; skipping PR reporting."
+            exit 0
+          fi
+          # Enforce strict 10 MB size ceiling on all downloaded artifact files.
+          for f in "${art_dir}"/*; do
+            [[ -f "${f}" ]] || continue
+            fsize="$(stat -c%s "${f}")"
+            if (( fsize > MAX_ARTIFACT_BYTES )); then
+              log_rep "FAIL (security_size): ${f} exceeds ${MAX_ARTIFACT_BYTES} bytes."
+              exit 1
+            fi
+          done
+          # Read and trim untrusted PR metadata from analyzer artifact.
+          pr_number="$(tr -d '[:space:]' < "${pr_file}")"
+          pr_head_sha="$(tr -d '[:space:]' < "${sha_file}")"
+          # Validate strict integer format for pr-number and hex for SHA.
+          if [[ ! "${pr_number}" =~ ^[0-9]+$ ]]; then
+            log_rep "FAIL (security_pr_number): invalid pr-number format."
+            exit 1
+          fi
+          if [[ ! "${pr_head_sha}" =~ ^[0-9a-fA-F]{7,64}$ ]]; then
+            log_rep "FAIL (security_pr_sha): invalid pr-head-sha format."
+            exit 1
+          fi
+          # Verify artifact SHA matches GitHub control-plane workflow_run SHA.
+          if [[ "${pr_head_sha}" != "${TRUSTED_HEAD_SHA}" ]]; then
+            log_rep "FAIL (security_sha_mismatch): artifact SHA != control-plane SHA."
+            exit 1
+          fi
+          # Verify live open PR head.sha via GitHub API (fixes CWE-441).
+          live_sha="$(
+            gh api "repos/${OWNER}/${REPO}/pulls/${pr_number}" \
+              --jq 'select(.state == "open") | .head.sha'
+          )"
+          if [[ -z "${live_sha}" || "${live_sha}" != "${TRUSTED_HEAD_SHA}" ]]; then
+            log_rep "FAIL (security_pr_binding): PR #${pr_number} SHA mismatch or closed."
+            exit 1
+          fi
+          log_rep "VERIFIED_PR: #${pr_number} | HEAD_SHA: ${TRUSTED_HEAD_SHA}"
+          # Export verified PR metadata to GITHUB_OUTPUT for sticky comment step.
+          printf 'pr_number=%s\n' "${pr_number}" >> "${GITHUB_OUTPUT}"
+          printf 'verified=true\n' >> "${GITHUB_OUTPUT}"
+          # Run reviewdog across ALL Checkstyle XML files inside input_artifact.
+          for xml_file in "${art_dir}"/*.checkstyle.xml; do
+            [[ -f "${xml_file}" && -s "${xml_file}" ]] || continue
+            rd_name="$(basename "${xml_file}" .checkstyle.xml)"
+            log_rep "REVIEWDOG_RUN: ${rd_name} (github-pr-review + github-pr-check)"
+            # 1) Post inline PR diff annotations on modified lines.
+            env -u GITHUB_ACTIONS \
+              CI_PULL_REQUEST="${pr_number}" \
+              CI_COMMIT="${TRUSTED_HEAD_SHA}" \
+              CI_REPO_OWNER="${OWNER}" \
+              CI_REPO_NAME="${REPO}" \
+              reviewdog -f=checkstyle -name="${rd_name}" \
+                -reporter=github-pr-review -fail-level=none \
+                < "${xml_file}" 2>&1 | tee -a "${rep_log}" || true
+            # 2) Publish EVERY finding in analyzer artifact to GitHub Checks tab.
+            env -u GITHUB_ACTIONS \
+              CI_PULL_REQUEST="${pr_number}" \
+              CI_COMMIT="${TRUSTED_HEAD_SHA}" \
+              CI_REPO_OWNER="${OWNER}" \
+              CI_REPO_NAME="${REPO}" \
+              reviewdog -f=checkstyle -name="${rd_name}-all" \
+                -reporter=github-pr-check -filter-mode=nofilter \
+                -fail-level=none < "${xml_file}" 2>&1 | tee -a "${rep_log}" || true
+          done
 
-def md_cell(text):
-    """Escape pipe characters and strip newlines for safe Markdown table cells.
+      # Build sanitized Markdown summary and post/update sticky PR comment.
+      - name: Post or update sticky PR summary comment
+        if: ${{ steps.validate-pr.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          # Provide GitHub token for gh api PR comment PATCH/POST calls.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pass repository owner, name, verified PR number, and run URL.
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ steps.validate-pr.outputs.pr_number }}
+          RUN_URL: >-
+            ${{ inputs.workflow_run_html_url ||
+            github.event.workflow_run.html_url }}
+        run: |
+          # Enable strict error checking.
+          set -euo pipefail
+          # Locate trusted summary script, input_artifact, and reporter log.
+          tool_py="${RUNNER_TEMP:-/tmp}/omd-ci-workflow/.github/workflows/tools/bash_analysis_summary.py"
+          art_dir="${RUNNER_TEMP:-/tmp}/input_artifact"
+          rep_dir="${RUNNER_TEMP:-/tmp}/ci_artifact"
+          rep_log="${rep_dir}/ci_artifact_bash_report.log"
+          comment_md="${RUNNER_TEMP:-/tmp}/bash_comment.md"
+          # Render sanitized Markdown summary comment from analyzer artifact.
+          has_findings="$(python3 "${tool_py}" "${art_dir}" "${comment_md}")"
+          printf 'SUMMARY_RENDERED: has_findings=%s\n' "${has_findings}" | tee -a "${rep_log}"
+          # Search existing PR comments for sticky marker to avoid spam.
+          marker="<!-- bash-code-analysis-summary -->"
+          comment_id="$(
+            gh api --paginate "repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments" \
+              --jq ".[] | select(.body | contains(\"${marker}\")) | .id" \
+              | head -n 1 || true
+          )"
+          # Update existing sticky comment in place or create a new comment.
+          if [[ -n "${comment_id}" ]]; then
+            gh api --method PATCH \
+              "repos/${OWNER}/${REPO}/issues/comments/${comment_id}" \
+              -F body=@"${comment_md}" >/dev/null
+            printf 'PR_COMMENT: updated existing comment %s on PR #%s\n' \
+              "${comment_id}" "${PR_NUMBER}" | tee -a "${rep_log}"
+          else
+            gh api --method POST \
+              "repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments" \
+              -F body=@"${comment_md}" >/dev/null
+            printf 'PR_COMMENT: created new sticky comment on PR #%s\n' \
+              "${PR_NUMBER}" | tee -a "${rep_log}"
+          fi
 
-    Args:
-        text: Raw diagnostic message, file path, or directive string.
+      # Display ci_artifact_bash_report.log on the Reporter workflow run page.
+      - name: Write Reporter Step Summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          # Enable strict error checking.
+          set -euo pipefail
+          rep_log="${RUNNER_TEMP:-/tmp}/ci_artifact/ci_artifact_bash_report.log"
+          comment_md="${RUNNER_TEMP:-/tmp}/bash_comment.md"
+          # Render Reporter's centralized log and PR summary on the run page.
+          {
+            echo "## NCO Consistency Bash Report (ci_artifact_bash_report.log)"
+            echo '```text'
+            if [[ -f "${rep_log}" ]]; then
+              cat "${rep_log}"
+            else
+              echo "No reporter log generated (workflow aborted early)."
+            fi
+            echo '```'
+            if [[ -f "${comment_md}" ]]; then
+              echo ""
+              cat "${comment_md}"
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
 
-    Returns:
-        Single-line string safe for embedding inside a Markdown table cell.
-    """
-    # Convert non-string values safely to string.
-    raw = "" if text is None else str(text)
-    # Strip carriage returns and replace newlines with spaces.
-    cleaned = raw.replace("\r", "").replace("\n", " ").strip()
-    # Escape Markdown pipe delimiters to prevent table column injection.
-    return cleaned.replace("|", "\\|")
-
-
-def parse_checkstyle(path):
-    """Parse ShellCheck Checkstyle XML safely using xml.etree.ElementTree.
-
-    Args:
-        path: Path to shellcheck.checkstyle.xml.
-
-    Returns:
-        List of finding dicts containing file, line, column, severity,
-        source, and message keys.
-    """
-    # Return an empty list if the XML file is missing or empty.
-    if not _validate_file_size(path):
-        return []
-    # Parse XML with standard ElementTree (immune to external entity XXE).
-    tree = ET.parse(path)
-    root = tree.getroot()
-    findings = []
-    # Iterate over every <file> element in the Checkstyle report.
-    for file_el in root.findall("file"):
-        fname = file_el.attrib.get("name", "")
-        # Normalize leading ./ prefix for clean display in PR tables.
-        if fname.startswith("./"):
-            fname = fname[2:]
-        # Extract each <error> child element under the file node.
-        for err_el in file_el.findall("error"):
-            findings.append(
-                {
-                    "file": fname,
-                    "line": err_el.attrib.get("line", "0"),
-                    "column": err_el.attrib.get("column", "0"),
-                    "severity": err_el.attrib.get("severity", "warning"),
-                    "source": err_el.attrib.get("source", "shellcheck"),
-                    "message": err_el.attrib.get("message", ""),
-                }
-            )
-    return findings
-
-
-def read_excluded_entries(path):
-    """Read configured exclusion rules and matched skipped files from log.
-
-    Args:
-        path: Path to excluded_files_from_list.txt.
-
-    Returns:
-        Tuple of (rules_list, matched_files_list).
-    """
-    # Return empty lists when the exclusion log is absent or empty.
-    if not _validate_file_size(path):
-        return [], []
-    rules = []
-    matched = []
-    # Read lines safely using UTF-8 with replacement for malformed bytes.
-    with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        for line in fh:
-            text = line.strip()
-            if not text:
-                continue
-            # Separate matched file records from configured .lst patterns.
-            if text.startswith("MATCHED_FILE: "):
-                matched.append(text[len("MATCHED_FILE: "):])
-            else:
-                rules.append(text)
-    return rules, matched
-
-
-def read_inline_skips(path):
-    """Read file:line:directive inline skip records from log.
-
-    Args:
-        path: Path to inline_skipped_directives.txt.
-
-    Returns:
-        List of (file_path, line_num, directive_text) tuples.
-    """
-    # Return an empty list when no inline skips were recorded.
-    if not _validate_file_size(path):
-        return []
-    skips = []
-    # Parse each colon-delimited file:line:directive entry.
-    with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        for line in fh:
-            text = line.strip()
-            if not text:
-                continue
-            parts = text.split(":", 2)
-            if len(parts) == 3:
-                skips.append((parts[0], parts[1], parts[2]))
-    return skips
-
-
-def read_audit_summary(path):
-    """Extract checked files, global skips, and NCO rule failures from audit.
-
-    Args:
-        path: Path to nco_bash_ci_audit.log.
-
-    Returns:
-        Tuple of (checked_files, global_skips, nco_failures).
-    """
-    # Return empty collections if audit log is absent or empty.
-    if not _validate_file_size(path):
-        return [], [], []
-    checked = []
-    global_skips = []
-    nco_failures = []
-    # Classify structured audit prefixes emitted by NCO_Consistency_Bash.yml.
-    with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        for line in fh:
-            text = line.strip()
-            if text.startswith("CHECKED_FILE: "):
-                checked.append(text[len("CHECKED_FILE: "):])
-            elif text.startswith("GLOBAL_SKIP: "):
-                global_skips.append(text[len("GLOBAL_SKIP: "):])
-            elif text.startswith("FAIL ("):
-                nco_failures.append(text)
-    return checked, global_skips, nco_failures
-
-
-def build_comment(diag_dir, run_url=""):
-    """Construct the complete sanitized Markdown PR summary comment.
-
-    Args:
-        diag_dir: Directory containing downloaded artifact files.
-        run_url: Optional URL to the analyzer GitHub Actions run.
-
-    Returns:
-        Tuple of (markdown_text, has_findings_bool).
-    """
-    # Parse Checkstyle XML findings and all structured audit logs.
-    findings = parse_checkstyle(
-        os.path.join(diag_dir, "shellcheck.checkstyle.xml")
-    )
-    rules, matched_excl = read_excluded_entries(
-        os.path.join(diag_dir, "excluded_files_from_list.txt")
-    )
-    inline_skips = read_inline_skips(
-        os.path.join(diag_dir, "inline_skipped_directives.txt")
-    )
-    checked, global_skips, nco_failures = read_audit_summary(
-        os.path.join(diag_dir, "nco_bash_ci_audit.log")
-    )
-    has_findings = bool(findings or nco_failures)
-    # Start comment with hidden sticky marker and title heading.
-    lines = [SUMMARY_MARKER, "## NCO Consistency Bash Analysis", ""]
-    # Render prominent uncollapsed security/audit warning if skips exist.
-    if inline_skips or global_skips or matched_excl:
-        lines.append(
-            f"> :warning: **Audit Alert:** {len(global_skips)} global "
-            f"override(s), {len(matched_excl)} excluded file(s), and "
-            f"{len(inline_skips)} inline skip directive(s) were detected. "
-            "Review the audit details below."
-        )
-        lines.append("")
-    # Render pass/fail status banner and findings tables.
-    if not has_findings:
-        lines.append(
-            ":white_check_mark: **ShellCheck** and **NCO Bash conventions** "
-            "found no issues."
-        )
-    else:
-        lines.append(
-            f":x: Found **{len(findings)}** ShellCheck finding(s) and "
-            f"**{len(nco_failures)}** NCO convention failure(s)."
-        )
-        # Render NCO convention failures list when present.
-        if nco_failures:
-            lines.append("")
-            lines.append("### NCO Convention & Security Failures")
-            for item in nco_failures[:MAX_ROWS]:
-                lines.append(f"- `{md_cell(item)}`")
-            if len(nco_failures) > MAX_ROWS:
-                extra = len(nco_failures) - MAX_ROWS
-                lines.append(f"- *...and {extra} more failure(s) truncated.*")
-        # Render Checkstyle findings table when present.
-        if findings:
-            lines.append("")
-            lines.append("### ShellCheck Findings")
-            lines.append("| File | Line | Severity | Rule | Message |")
-            lines.append("| --- | --- | --- | --- | --- |")
-            for item in findings[:MAX_ROWS]:
-                lines.append(
-                    f"| `{md_cell(item['file'])}` | {md_cell(item['line'])} "
-                    f"| {md_cell(item['severity'])} "
-                    f"| `{md_cell(item['source'])}` "
-                    f"| {md_cell(item['message'])} |"
-                )
-            if len(findings) > MAX_ROWS:
-                extra = len(findings) - MAX_ROWS
-                lines.append(
-                    f"\n*Showing first {MAX_ROWS} of {len(findings)} "
-                    f"findings ({extra} truncated).*"
-                )
-    # Append collapsible audit section for checked files, exclusions, skips.
-    lines.append("")
-    lines.append("### Checked Files, Exclusions & Inline Line Skips")
-    summary_hdr = (
-        f"Checked ({len(checked)}) | Excluded via list "
-        f"({len(rules)} rules, {len(matched_excl)} files) | "
-        f"Inline skips ({len(inline_skips)})"
-    )
-    lines.append(f"<details><summary>{summary_hdr}</summary>")
-    lines.append("")
-    # List checked files (capped at MAX_ROWS).
-    lines.append("**Checked files:**")
-    if checked:
-        for entry in checked[:MAX_ROWS]:
-            lines.append(f"- `{md_cell(entry)}`")
-    else:
-        lines.append("- *None*")
-    # List matched excluded files (capped at MAX_ROWS).
-    lines.append("")
-    lines.append("**Skipped files (matched exclusion list):**")
-    if matched_excl:
-        for entry in matched_excl[:MAX_ROWS]:
-            lines.append(f"- `{md_cell(entry)}`")
-    else:
-        lines.append("- *None*")
-    # Render inline skip directives table (capped at MAX_ROWS).
-    lines.append("")
-    lines.append(
-        "**Skipped lines (`# ci-skip`, `# ci-ignore`, `# shellcheck`):**"
-    )
-    if inline_skips:
-        lines.append("")
-        lines.append("| File | Line | Directive |")
-        lines.append("| --- | --- | --- |")
-        for fpath, lnum, dtext in inline_skips[:MAX_ROWS]:
-            lines.append(
-                f"| `{md_cell(fpath)}` | {md_cell(lnum)} "
-                f"| `{md_cell(dtext)}` |"
-            )
-    else:
-        lines.append("- *None*")
-    lines.append("")
-    lines.append("</details>")
-    # Append workflow run link when provided via RUN_URL environment variable.
-    if run_url:
-        lines.append("")
-        lines.append(
-            f"[View full workflow run and audit log]({md_cell(run_url)})"
-        )
-    # Assemble body and enforce GitHub's 65,000-character safety cap.
-    body = "\n".join(lines) + "\n"
-    if len(body) > MAX_COMMENT_CHARS:
-        notice = "\n\n*Comment truncated to fit GitHub length limit.*\n"
-        body = body[: MAX_COMMENT_CHARS - len(notice)] + notice
-    return body, has_findings
-
-
-def main(argv=None):
-    """CLI entrypoint: generate PR comment file and print '1' or '0'.
-
-    Args:
-        argv: Optional list of CLI arguments [diag_dir, output_md_path].
-
-    Returns:
-        Exit code 0 on success, 2 on invalid arguments.
-    """
-    args = sys.argv[1:] if argv is None else argv
-    # Require diagnostics directory and output Markdown path arguments.
-    if len(args) != 2:
-        sys.stderr.write(
-            "Usage: bash_analysis_summary.py <diag_dir> <output_md>\n"
-        )
-        return 2
-    diag_dir, out_path = args[0], args[1]
-    run_url = os.environ.get("RUN_URL", "")
-    # Generate sanitized Markdown body and finding indicator.
-    body, has_findings = build_comment(diag_dir, run_url=run_url)
-    # Write comment Markdown using UTF-8 encoding.
-    with open(out_path, "w", encoding="utf-8") as fh:
-        fh.write(body)
-    # Print "1" if findings exist, "0" otherwise (matches GFS/NCO contract).
-    print("1" if has_findings else "0")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+      # Upload Reporter's own downloadable ci_artifact_bash_report.
+      - name: Upload downloadable ci_artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          # Deterministic reporter artifact name (default: ci_artifact_bash_report).
+          name: ${{ inputs.artifact_name || 'ci_artifact_bash_report' }}
+          # Upload Reporter's ci_artifact directory (ci_artifact_bash_report.log).
+          path: ${{ runner.temp }}/ci_artifact
+          # Warn instead of failing if an early step aborted before staging.
+          if-no-files-found: warn
+          # Exclude hidden temporary files from the downloadable zip.
+          include-hidden-files: false
+          # Retain downloadable ci_artifact for 2 days.
+          retention-days: 2
