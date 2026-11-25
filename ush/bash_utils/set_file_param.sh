@@ -37,7 +37,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 3 ]; then
+  if [[ "$#" -ne 3 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -155,7 +155,7 @@ specified for this file:
 #
   grep -q -E "${regex_search}" "${file_fp}"
 
-  if [ $? -eq 0 ]; then
+  if [[ $? -eq 0 ]]; then
     sed -i -r -e "s%${regex_search}%${regex_replace}%" "${file_fp}"
   else
     print_err_msg_exit "\

@@ -34,7 +34,7 @@ esac
 # shellcheck source=/dev/null
 . "${repo}/ecf/defs/retro/load_config.sh"
 : "${RRFSE_NWGES:?retro/config.sh must set RRFSE_NWGES, the staged ensemble to link}"
-[ -d "${RRFSE_NWGES}" ] || { echo "FATAL: no such directory: ${RRFSE_NWGES}" >&2; exit 1; }
+[[ -d "${RRFSE_NWGES}" ]] || { echo "FATAL: no such directory: ${RRFSE_NWGES}" >&2; exit 1; }
 members=${NUM_ENS_MEMBERS:-30}
 
 # Match the suite-specific COMROOT built by envir-p1.h so concurrent DA experiments get separate
@@ -51,7 +51,7 @@ echo "period:          ${start} to ${RETRO_END}, ${members} members"
 
 linked=0 missing=0 missing_before=0 short_cycles=()
 day=${start}
-while [ "${day}" -le "${RETRO_END}" ]; do
+while [[ "${day}" -le "${RETRO_END}" ]]; do
   for hh in $(seq -w 0 23); do
     # The restart a cycle's forecast leaves is valid at the next hour, which is how it is named.
     # UTC before the offset, or date reads the "+1" as a time zone and the hour never advances.
@@ -59,9 +59,9 @@ while [ "${day}" -le "${RETRO_END}" ]; do
     found=0
     for m in $(seq 1 "${members}"); do
       src=$(printf '%s/%s%s/mem%04d/fcst_fv3lam' "${RRFSE_NWGES}" "${day}" "${hh}" "${m}")
-      if [ ! -r "${src}/RESTART/${valid}.fv_core.res.tile1.nc" ]; then
+      if [[ ! -r "${src}/RESTART/${valid}.fv_core.res.tile1.nc" ]]; then
         # the day before RETRO_START is a bonus, so count its gaps apart from the retro's own
-        if [ "${day}" -lt "${RETRO_START}" ]; then
+        if [[ "${day}" -lt "${RETRO_START}" ]]; then
           missing_before=$((missing_before + 1))
         else
           missing=$((missing + 1))
@@ -69,28 +69,28 @@ while [ "${day}" -le "${RETRO_END}" ]; do
         continue
       fi
       found=$((found + 1))
-      [ "${check_only}" = YES ] && continue
+      [[ "${check_only}" = YES ]] && continue
       dst=$(printf '%s/enkfrrfs.%s/%s/m%03d' "${com}" "${day}" "${hh}" "${m}")
       mkdir -p "${dst}"
       ln -snf "${src}" "${dst}/forecast"
       linked=$((linked + 1))
     done
-    if [ "${found}" -ne "${members}" ] && [ "${day}" -ge "${RETRO_START}" ]; then
+    if [[ "${found}" -ne "${members}" ]] && [[ "${day}" -ge "${RETRO_START}" ]]; then
       short_cycles+=("${day}${hh} (${found})")
     fi
   done
   day=$(date -u -d "${day} +1 day" +%Y%m%d)
 done
 
-if [ "${check_only}" = YES ]; then
+if [[ "${check_only}" = YES ]]; then
   echo "check only: ${missing} member cycle(s) missing in ${RETRO_START}-${RETRO_END}"
 else
   echo "${linked} member cycle(s) linked, ${missing} missing in ${RETRO_START}-${RETRO_END}"
 fi
-if [ "${missing_before}" -gt 0 ]; then
+if [[ "${missing_before}" -gt 0 ]]; then
   echo "${missing_before} more missing on ${start}, the day before, which the retro can do without"
 fi
-if [ ${#short_cycles[@]} -gt 0 ]; then
+if [[ ${#short_cycles[@]} -gt 0 ]]; then
   echo "FATAL: these cycles have fewer than ${members} members, which would send the analysis" >&2
   echo "       back to the GDAS ensemble without failing:" >&2
   printf '         %s\n' "${short_cycles[@]}" >&2

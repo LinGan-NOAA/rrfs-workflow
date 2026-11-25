@@ -40,12 +40,12 @@ retro_init_ecflow() {
       retro_suite=${retro_suite#/}
       retro_suite=${retro_suite%,}
       retro_suite=${retro_suite%/}
-      if [ -n "${retro_suite}" ]; then
+      if [[ -n "${retro_suite}" ]]; then
         retro_loaded_suites+=("${retro_suite}")
       fi
     done
   done <<< "${retro_suite_output}"
-  if [ "${#retro_loaded_suites[@]}" -eq 0 ]; then
+  if [[ "${#retro_loaded_suites[@]}" -eq 0 ]]; then
     echo "No suites are loaded on ${ECF_HOST}:${ECF_PORT}." >&2
     return 1
   fi
@@ -54,18 +54,18 @@ retro_init_ecflow() {
 retro_suite_is_loaded() {
   local wanted=$1 loaded
   for loaded in "${retro_loaded_suites[@]}"; do
-    [ "${loaded}" = "${wanted}" ] && return 0
+    [[ "${loaded}" = "${wanted}" ]] && return 0
   done
   return 1
 }
 
 retro_pair_for_suite() {
   local suite=$1 candidate
-  if [ "${suite}" = "${RRFS_SUITE}" ] && retro_suite_is_loaded "${PRODCLONE_SUITE}"; then
+  if [[ "${suite}" = "${RRFS_SUITE}" ]] && retro_suite_is_loaded "${PRODCLONE_SUITE}"; then
     printf '%s' "${PRODCLONE_SUITE}"
     return 0
   fi
-  if [ "${suite}" = "para" ] && retro_suite_is_loaded "prod_clone"; then
+  if [[ "${suite}" = "para" ]] && retro_suite_is_loaded "prod_clone"; then
     printf '%s' "prod_clone"
     return 0
   fi
@@ -81,7 +81,7 @@ retro_select_suite_paths() {
   RETRO_SELECTED_PATHS=()
 
   # Explicit suite names target only those suites; otherwise use the loaded server list.
-  if [ "$#" -gt 0 ]; then
+  if [[ "$#" -gt 0 ]]; then
     for argument in "$@"; do
       # Add one leading slash while avoiding a duplicate for absolute paths.
       suite=${argument#/}
@@ -100,7 +100,7 @@ retro_select_suite_paths() {
     esac
     candidates+=("${suite}")
   done
-  if [ "${#candidates[@]}" -eq 0 ]; then
+  if [[ "${#candidates[@]}" -eq 0 ]]; then
     echo "No RRFS suite choices were found among the loaded suites." >&2
     return 1
   fi
@@ -109,7 +109,7 @@ retro_select_suite_paths() {
   for index in "${!candidates[@]}"; do
     suite=${candidates[index]}
     pair=$(retro_pair_for_suite "${suite}")
-    if [ -n "${pair}" ]; then
+    if [[ -n "${pair}" ]]; then
       printf '  %d) /%s (+ /%s)\n' "$((index + 1))" "${suite}" "${pair}"
     else
       printf '  %d) /%s\n' "$((index + 1))" "${suite}"
@@ -118,7 +118,7 @@ retro_select_suite_paths() {
   read -r -p "Select suite number(s), comma separated, or 'a' for all: " choice
   choice=${choice//,/ }
   read -r -a selection_items <<< "${choice}"
-  if [ "${choice}" = "a" ] || [ "${choice}" = "A" ]; then
+  if [[ "${choice}" = "a" ]] || [[ "${choice}" = "A" ]]; then
     chosen=("${candidates[@]}")
   else
     for item in "${selection_items[@]}"; do
@@ -126,14 +126,14 @@ retro_select_suite_paths() {
         ''|*[!0-9]*) echo "Invalid suite selection: ${item}" >&2; return 1 ;;
       esac
       index=$((item - 1))
-      if [ "${index}" -lt 0 ] || [ "${index}" -ge "${#candidates[@]}" ]; then
+      if [[ "${index}" -lt 0 ]] || [[ "${index}" -ge "${#candidates[@]}" ]]; then
         echo "Selection is out of range: ${item}" >&2
         return 1
       fi
       chosen+=("${candidates[index]}")
     done
   fi
-  if [ "${#chosen[@]}" -eq 0 ]; then
+  if [[ "${#chosen[@]}" -eq 0 ]]; then
     echo "No suites selected." >&2
     return 1
   fi
@@ -141,7 +141,7 @@ retro_select_suite_paths() {
   for suite in "${chosen[@]}"; do
     RETRO_SELECTED_PATHS+=("/${suite}")
     pair=$(retro_pair_for_suite "${suite}")
-    if [ -n "${pair}" ]; then
+    if [[ -n "${pair}" ]]; then
       RETRO_SELECTED_PATHS+=("/${pair}")
     fi
   done

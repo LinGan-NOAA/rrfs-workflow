@@ -89,9 +89,9 @@ function set_thompson_mp_fix_files() {
   regex_search="^[ ]*<scheme>(${thompson_mp_name})<\/scheme>[ ]*$"
   thompson_mp_name_or_null=$( sed -r -n -e "s/${regex_search}/\1/p" "${ccpp_phys_suite_fp}" )
 
-  if [ "${thompson_mp_name_or_null}" = "${thompson_mp_name}" ]; then
+  if [[ "${thompson_mp_name_or_null}" = "${thompson_mp_name}" ]]; then
     sdf_uses_thompson_mp="TRUE"
-  elif [ -z "${thompson_mp_name_or_null}" ]; then
+  elif [[ -z "${thompson_mp_name_or_null}" ]]; then
     sdf_uses_thompson_mp="FALSE"
   else
     print_err_msg_exit "\
@@ -107,7 +107,7 @@ string."
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${sdf_uses_thompson_mp}" = "TRUE" ]; then
+  if [[ "${sdf_uses_thompson_mp}" = "TRUE" ]]; then
 #
 #-----------------------------------------------------------------------
 #

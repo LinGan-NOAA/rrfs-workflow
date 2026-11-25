@@ -22,7 +22,7 @@ PACKAGEHOME=${PACKAGEHOME:-$(cd "${clone_dir}/../.." && pwd)}
 # operations, where the spin-up cycles run from 03z; with them off (DO_SPINUP=FALSE) the
 # deterministic chain cold starts at DET_COLD_START_HRS instead.
 det_cold=9
-if [ "${DO_SPINUP:-TRUE}" = "FALSE" ]; then
+if [[ "${DO_SPINUP:-TRUE}" = "FALSE" ]]; then
   det_cold=$(echo "${DET_COLD_START_HRS:-03 15}" | awk '{print $1 + 0}')
 fi
 
@@ -81,7 +81,7 @@ ics_fhr=$(printf 'f%03d' "${EXTRN_MDL_ICS_OFFSET_HRS:-3}")
 if ! grep -q "task jgfs_atmos_post_${ics_fhr}$" "${out_def}"; then
   sed -i -E "s/^( *)task jgfs_atmos_post_f003$/&\n\1task jgfs_atmos_post_${ics_fhr}/" "${out_def}"
 fi
-if [ "${RETRO_LAYOUT:-families}" = "chains" ]; then
+if [[ "${RETRO_LAYOUT:-families}" = "chains" ]]; then
   python3 "${PACKAGEHOME}/ecf/defs/retro/chain_suite.py" clone "${out_def}" \
     --start "${RETRO_START}" \
     --end "${RETRO_END}"

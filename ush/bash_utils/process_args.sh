@@ -111,7 +111,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -lt 1 ]; then
+  if [[ "$#" -lt 1 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -174,7 +174,7 @@ where the arguments are defined as follows:
 #
   array_name_valid_arg_names="$1"
   valid_arg_names_0th="${array_name_valid_arg_names}[0]"
-  if [ "${!valid_arg_names_0th:-"__unset__"}" = "__unset__" ]; then
+  if [[ "${!valid_arg_names_0th:-"__unset__"}" = "__unset__" ]]; then
     valid_arg_names=()
   else
     valid_arg_names_at="${array_name_valid_arg_names}[@]"
@@ -189,7 +189,7 @@ where the arguments are defined as follows:
 #-----------------------------------------------------------------------
 #
   num_valid_args=${#valid_arg_names[@]}
-  if [ "${num_valid_args}" -eq 0 ]; then
+  if [[ "${num_valid_args}" -eq 0 ]]; then
     valid_arg_names_str=""
   else
     valid_arg_names_str=$( printf "\"%s\" " "${valid_arg_names[@]}" )
@@ -220,7 +220,7 @@ where the arguments are defined as follows:
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${num_arg_val_pairs}" -gt "${num_valid_args}" ]; then
+  if [[ "${num_arg_val_pairs}" -gt "${num_valid_args}" ]]; then
     print_err_msg_exit "\
 The number of argument-value pairs specified on the command line (num_-
 arg_val_pairs) must be less than or equal to the number of valid argu-
@@ -239,7 +239,7 @@ ments (num_valid_args) specified in the array valid_arg_names:
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${num_valid_args}" -eq 0 ]; then
+  if [[ "${num_valid_args}" -eq 0 ]]; then
     return
   fi
 #
@@ -258,7 +258,7 @@ ments (num_valid_args) specified in the array valid_arg_names:
     valid_arg_name_no_spaces=$( \
       printf "%s\n" "${valid_arg_name}" | sed -r -e 's/[[:space:]]//g' )
 
-    if [ "${valid_arg_name_no_spaces}" != "${valid_arg_name}" ]; then
+    if [[ "${valid_arg_name_no_spaces}" != "${valid_arg_name}" ]]; then
       print_err_msg_exit "\
 The name of an argument in the list of valid arguments (valid_arg_names)
 cannot contain any spaces, but the element with index i=${i} contains at
@@ -267,7 +267,7 @@ least one space:
   valid_arg_names[${i}] = \"${valid_arg_names[${i}]}\""
     fi
 
-    if [ -z "${valid_arg_name}" ]; then
+    if [[ -z "${valid_arg_name}" ]]; then
       print_err_msg_exit "\
 The list of valid arguments (valid_arg_names) cannot contain empty elements,
 but the element with index i=${i} is empty:
@@ -320,8 +320,8 @@ but the element with index i=${i} is empty:
 # is an array.  Check for this and set the is_array flag accordingly.
 #
     is_array="false"
-    if [ "${arg_value:0:1}" = "(" ] && \
-       [ "${arg_value: -1}" = ")" ]; then
+    if [[ "${arg_value:0:1}" = "(" ]] && \
+       [[ "${arg_value: -1}" = ")" ]]; then
       is_array="true"
     fi
 #
@@ -350,16 +350,16 @@ pair (arg_val_pair) is not valid:
     for (( i=0; i<num_valid_args; i++ )); do
 
       valid_arg_name="${valid_arg_names[${i}]}"
-      if [ "${arg_name}" = "${valid_arg_name}" ]; then
+      if [[ "${arg_name}" = "${valid_arg_name}" ]]; then
 #
 # Check whether the current argument has already been set by a previous
 # arg-val pair on the command line.  If not, proceed to set the argument
 # to the specified value.  If so, print out an error message and exit
 # the calling script.
 #
-        if [ "${arg_already_specified[${i}]}" = "false" ]; then
+        if [[ "${arg_already_specified[${i}]}" = "false" ]]; then
           arg_already_specified[i]="true"
-          if [ "${is_array}" = "true" ]; then
+          if [[ "${is_array}" = "true" ]]; then
             eval "${arg_name}"="${arg_value}"
           else
             eval "${arg_name}"=\""${arg_value}"\"

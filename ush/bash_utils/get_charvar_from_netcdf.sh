@@ -45,7 +45,7 @@ set -x
 #-----------------------------------------------------------------------
 #
   num_required_args=2
-  if [ "$#" -ne "${num_required_args}" ]; then
+  if [[ "$#" -ne "${num_required_args}" ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -185,7 +185,7 @@ from the file specified by nc_file failed:
 #
 #-----------------------------------------------------------------------
 #
-  if [ -z "${nc_var_value}" ]; then
+  if [[ -z "${nc_var_value}" ]]; then
 
     print_err_msg_exit "\
 In the specified NetCDF file (nc_file), the specified variable (nc_var_name)

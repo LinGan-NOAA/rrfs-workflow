@@ -55,12 +55,12 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -eq 1 ]; then
+  if [[ "$#" -eq 1 ]]; then
 
     verbose="TRUE"
     info_msg="$1"
 
-  elif [ "$#" -eq 2 ]; then
+  elif [[ "$#" -eq 2 ]]; then
 
     verbose="$1"
     info_msg="$2"
@@ -108,7 +108,7 @@ only if verbose is set to \"TRUE\".
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${verbose}" = "TRUE" ]; then
+  if [[ "${verbose}" = "TRUE" ]]; then
     printf "%s\n" "${info_msg}"
   fi
 #
@@ -188,8 +188,8 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${caller_name}" = "main" ] || \
-     [ "${caller_name}" = "script" ]; then
+  if [[ "${caller_name}" = "main" ]] || \
+     [[ "${caller_name}" = "script" ]]; then
 
     msg_header=$( printf "\n\
 ERROR:
@@ -219,7 +219,7 @@ ERROR:
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -gt 1 ]; then
+  if [[ "$#" -gt 1 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -247,9 +247,9 @@ the header and footer.
 #
   else
 
-    if [ "$#" -eq 0 ]; then
+    if [[ "$#" -eq 0 ]]; then
       err_msg=""
-    elif [ "$#" -eq 1 ]; then
+    elif [[ "$#" -eq 1 ]]; then
       err_msg="\n$1"
     fi
 

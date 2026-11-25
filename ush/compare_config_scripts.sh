@@ -100,7 +100,7 @@ while read crnt_line; do
 #
   var_name=$( printf "%s" "${crnt_line}" | sed -n -r -e "s/^([^ =\"]*)=.*/\1/p")
 
-  if [ -z "${var_name}" ]; then
+  if [[ -z "${var_name}" ]]; then
 
     print_info_msg "
 Current line (crnt_line) of user-specified experiment/workflow configu-

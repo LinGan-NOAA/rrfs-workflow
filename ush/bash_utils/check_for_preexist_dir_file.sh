@@ -38,7 +38,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 2 ]; then
+  if [[ "$#" -ne 2 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -88,7 +88,7 @@ where the arguments are defined as follows:
 #
 #-----------------------------------------------------------------------
 #
-  if [ -e "${dir_or_file}" ]; then
+  if [[ -e "${dir_or_file}" ]]; then
 
     case "${method}" in
 #
@@ -128,7 +128,7 @@ where the arguments are defined as follows:
         local i=1
         local old_indx=$( printf "%03d" "${i}" )
         local old_dir_or_file="${dir_or_file}_old${old_indx}"
-        while [ -d "${old_dir_or_file}" ]; do
+        while [[ -d "${old_dir_or_file}" ]]; do
           i=$(( i + 1 ))
           old_indx=$( printf "%03d" "${i}" )
           old_dir_or_file="${dir_or_file}_old${old_indx}"
@@ -156,7 +156,7 @@ where the arguments are defined as follows:
       local i=1
       local old_indx=$( printf "%03d" "${i}" )
       local old_dir_or_file="${dir_or_file}_old${old_indx}"
-      while [ -e "${old_dir_or_file}" ]; do
+      while [[ -e "${old_dir_or_file}" ]]; do
         i=$(( i + 1 ))
         old_indx=$( printf "%03d" "${i}" )
         old_dir_or_file="${dir_or_file}_old${old_indx}"

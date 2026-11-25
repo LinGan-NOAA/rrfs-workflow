@@ -28,25 +28,25 @@ else
     exit -1
 fi
 
-[[ -d $expdir/$pslot ]] && rm -rf $expdir/$pslot
-[[ -d $comrot/$pslot ]] && rm -rf $comrot/$pslot
-[[ -d $fv3gfs/$pslot ]] && rm -rf $fv3gfs/$pslot
+[[ -d $expdir/$pslot ]] && rm -rf $"expdir"/$"pslot"
+[[ -d $comrot/$pslot ]] && rm -rf $"comrot"/$"pslot"
+[[ -d $fv3gfs/$pslot ]] && rm -rf $"fv3gfs"/$"pslot"
 
 gfs_ver=v15.0.0
-mkdir -p $fv3gfs
-cd $fv3gfs
-git clone --recursive gerrit:fv3gfs gfs.${gfs_ver}
+mkdir -p $"fv3gfs"
+cd $"fv3gfs"
+git clone --recursive gerrit:fv3gfs gfs."${gfs_ver}"
 
-cd $fv3gfs/gfs.${gfs_ver}/sorc
+cd $"fv3gfs"/gfs."${gfs_ver}"/sorc
 sh checkout.sh
-sh build_all.sh $machine
-sh link_fv3gfs.sh emc $machine
+sh build_all.sh $"machine"
+sh link_fv3gfs.sh emc $"machine"
 
-cd $fv3gfs/gfs.${gfs_ver}/ush/rocoto
-python setup_expt.py --pslot $pslot --comrot $comrot --expdir $expdir --idate $idate --edate $edate --icsdir $icsdir --configdir ../parm/config
-python setup_workflow.py --expdir $expdir/$pslot
+cd $"fv3gfs"/gfs."${gfs_ver}"/ush/rocoto
+python setup_expt.py --pslot $"pslot" --comrot $"comrot" --expdir $"expdir" --idate $"idate" --edate $"edate" --icsdir $"icsdir" --configdir ../parm/config
+python setup_workflow.py --expdir $"expdir"/$"pslot"
 
-cd $expdir/$pslot
-crontab $pslot.crontab
+cd $"expdir"/$"pslot"
+crontab $"pslot".crontab
 
 exit

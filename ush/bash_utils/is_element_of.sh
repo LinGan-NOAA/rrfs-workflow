@@ -36,7 +36,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 2 ]; then
+  if [[ "$#" -ne 2 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -120,7 +120,7 @@ Use this function in a script as follows:
   found_match=1
   num_elems=${#array[@]}
   for (( n=0; n<num_elems; n++ )); do
-    if [ "${array[${n}]}" = "${str_to_match}" ]; then
+    if [[ "${array[${n}]}" = "${str_to_match}" ]]; then
       found_match=0
       break
     fi
@@ -133,5 +133,5 @@ Use this function in a script as follows:
 #
 #-----------------------------------------------------------------------
 #
-  return ${found_match}
+  return "${found_match}"
 }

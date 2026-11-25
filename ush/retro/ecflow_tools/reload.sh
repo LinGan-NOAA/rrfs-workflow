@@ -22,7 +22,7 @@ export ECF_PORT=${port_requested:-${default_port}}
 suite_path="/${RRFS_SUITE}"
 generated_def=
 cleanup() {
-  if [ -n "${generated_def}" ]; then rm -f "${generated_def}"; fi
+  if [[ -n "${generated_def}" ]]; then rm -f "${generated_def}"; fi
 }
 trap cleanup EXIT
 
@@ -34,7 +34,7 @@ if ! ecflow_client --get_state="${suite_path}" >/dev/null 2>&1; then
   echo "Suite ${suite_path} is not loaded on ${ECF_HOST}:${ECF_PORT}." >&2
   exit 1
 fi
-if [ ! -d "${ECF_HOME}" ]; then
+if [[ ! -d "${ECF_HOME}" ]]; then
   echo "ECF_HOME does not exist: ${ECF_HOME}" >&2
   exit 1
 fi

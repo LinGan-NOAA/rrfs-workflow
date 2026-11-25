@@ -11,19 +11,19 @@ yyyymmdd=$1 #i.e. "20191224"
 hh=$2 #i.e. "12"
 ##
 ## file format (grib2 or nemsio), the default format is grib2
-if [ "$#" -ge 3 ]; then
+if [[ "$#" -ge 3 ]]; then
    file_fmt=$3
 else
    file_fmt="grib2"
 fi
 ## forecast length, the default value are 6 hours
-if [ "$#" -ge 4 ]; then
+if [[ "$#" -ge 4 ]]; then
    nfcst=$4
 else
    nfcst=6
 fi
 ## forecast interval, the default interval are 3 hours
-if [ "$#" -ge 5 ]; then
+if [[ "$#" -ge 5 ]]; then
    nfcst_int=$5
 else
    nfcst_int=3
@@ -37,7 +37,7 @@ echo "Download files to ${din_loc_ic}/${yyyymm}/${yyyymmdd} ..."
 cd gfs."${yyyymmdd}"/"${hh}"
 
 #getting online analysis data
-if [ "${file_fmt}" == "grib2" ] || [ "${file_fmt}" == "GRIB2" ]; then
+if [[ "${file_fmt}" == "grib2" ]] || [[ "${file_fmt}" == "GRIB2" ]]; then
    wget -c https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs."${yyyymmdd}"/"${hh}"/gfs.t"${hh}"z.pgrb2.0p25.f000
 else
    wget -c https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs."${yyyymmdd}"/"${hh}"/gfs.t"${hh}"z.atmanl.nemsio
@@ -46,11 +46,11 @@ fi
 
 #getting online forecast data
 ifcst=${nfcst_int}
-while [ "${ifcst}" -le "${nfcst}" ]
+while [[ "${ifcst}" -le "${nfcst}" ]]
 do
 echo "${ifcst}"
-  if [ "${ifcst}" -le 99 ]; then
-     if [ "${ifcst}" -le 9 ]; then
+  if [[ "${ifcst}" -le 99 ]]; then
+     if [[ "${ifcst}" -le 9 ]]; then
         ifcst_str="00"${ifcst}
      else
         ifcst_str="0"${ifcst}
@@ -60,7 +60,7 @@ echo "${ifcst}"
  fi
  echo "${ifcst_str}"
 #
-if [ "${file_fmt}" == "grib2" ] || [ "${file_fmt}" == "GRIB2" ]; then
+if [[ "${file_fmt}" == "grib2" ]] || [[ "${file_fmt}" == "GRIB2" ]]; then
   wget -c https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs."${yyyymmdd}"/"${hh}"/gfs.t"${hh}"z.pgrb2.0p25.f"${ifcst_str}"
 else
   wget -c https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs."${yyyymmdd}"/"${hh}"/gfs.t"${hh}"z.atmf"${ifcst_str}".nemsio

@@ -67,7 +67,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 1 ]; then
+  if [[ "$#" -ne 1 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -113,7 +113,7 @@ function.
 #
   array_name_valid_caller_args="$1"
   valid_arg_names_0th="${array_name_valid_caller_args}[0]"
-  if [ "${!valid_arg_names_0th:-"__unset__"}" = "__unset__" ]; then
+  if [[ "${!valid_arg_names_0th:-"__unset__"}" = "__unset__" ]]; then
     valid_caller_args=()
   else
     valid_caller_args_at="${array_name_valid_caller_args}[@]"
@@ -128,14 +128,14 @@ function.
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${caller_name}" = "main" ] || \
-     [ "${caller_name}" = "script" ]; then
+  if [[ "${caller_name}" = "main" ]] || \
+     [[ "${caller_name}" = "script" ]]; then
     script_or_function="the script"
   else
     script_or_function="function \"${caller_name}\""
   fi
 
-  if [ "${num_valid_caller_args}" -eq 0 ]; then
+  if [[ "${num_valid_caller_args}" -eq 0 ]]; then
 
     msg="
 No arguments have been passed to ${script_or_function} in file
@@ -167,7 +167,7 @@ have been set as follows:
 #
 #-----------------------------------------------------------------------
 #
-  if [ ! -v VERBOSE ]; then
+  if [[ ! -v VERBOSE ]]; then
     print_info_msg "${msg}"
   else
     print_info_msg "${VERBOSE}" "${msg}"

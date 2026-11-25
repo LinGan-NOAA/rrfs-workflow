@@ -69,14 +69,14 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ -z "${target}" ]; then
+  if [[ -z "${target}" ]]; then
     print_err_msg_exit "\
 The argument \"target\" specifying the target of the symbolic link that
 this function will create was not specified in the call to this function:
   target = \"${target}\""
   fi
 
-  if [ -z "${symlink}" ]; then
+  if [[ -z "${symlink}" ]]; then
     print_err_msg_exit "\
 The argument \"symlink\" specifying the symbolic link that this function
 will create was not specified in the call to this function:
@@ -111,7 +111,7 @@ will create was not specified in the call to this function:
 #
 #-----------------------------------------------------------------------
 #
-  if [ ! -f "${target}" ]; then
+  if [[ ! -f "${target}" ]]; then
     print_err_msg_exit "\
 Cannot create symlink to specified target file because the latter does
 not exist or is not a file:
@@ -126,7 +126,7 @@ not exist or is not a file:
 #-----------------------------------------------------------------------
 #
   relative_flag=""
-  if [ "${relative}" = "TRUE" ]; then
+  if [[ "${relative}" = "TRUE" ]]; then
     relative_flag="${RELATIVE_LINK_FLAG}"
   fi
 #

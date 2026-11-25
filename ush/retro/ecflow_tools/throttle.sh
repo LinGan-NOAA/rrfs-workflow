@@ -26,7 +26,7 @@ for selected_path in "${RETRO_SELECTED_PATHS[@]}"; do
       ;;
     *)
       pair=$(retro_pair_for_suite "${suite_name}")
-      if [ -n "${pair}" ]; then
+      if [[ -n "${pair}" ]]; then
         target_path="/${pair}"
       else
         target_path=${selected_path}

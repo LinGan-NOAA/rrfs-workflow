@@ -29,7 +29,7 @@ set -x
   # Verify that the required arguments to this function have been specified.
   # If not, print out an error message and exit.
   #
-  if [ -z "${fp}" ]; then
+  if [[ -z "${fp}" ]]; then
     print_err_msg_exit "\
 The argument \"fp\" specifying the relative or full path to the file to
 read was not specified in the call to this function:

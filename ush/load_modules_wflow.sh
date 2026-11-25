@@ -22,13 +22,13 @@ EOF_USAGE
 }
 
 # Make sure machine name is passed as first argument
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
   usage
   exit 1
 fi
 
 # help message
-if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
   usage
   exit 0
 fi
@@ -42,10 +42,10 @@ scrfunc_dir=$( dirname "${scrfunc_fp}" )
 HOMEdir=$( dirname "${scrfunc_dir}" )
 
 # source version file (run) only if it is specified in versions directory
-if [ "${machine}" = "wcoss2" ]; then
+if [[ "${machine}" = "wcoss2" ]]; then
   RUN_VER_FN="run.ver"
   VERSION_FILE="${HOMEdir}/versions/${RUN_VER_FN}"
-  if [ -f ${VERSION_FILE} ]; then
+  if [[ -f ${VERSION_FILE} ]]; then
     . ${VERSION_FILE}
   fi
 fi
@@ -64,7 +64,7 @@ task failed:
 
 $has_mu && set +u
 
-if [ ! -z $(command -v conda) ]; then
+if [[ ! -z $(command -v conda) ]]; then
     conda activate workflow_tools
 fi
 

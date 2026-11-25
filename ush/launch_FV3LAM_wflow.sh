@@ -158,7 +158,7 @@ cd "$exptdir"
 #
 tmp_fn="rocotorun_output.txt"
 rocotorun_cmd="rocotorun -w \"${WFLOW_XML_FN}\" -d \"${rocoto_database_fn}\" -v 10"
-eval ${rocotorun_cmd} > ${tmp_fn} 2>&1 || \
+eval ${rocotorun_cmd} > "${tmp_fn}" 2>&1 || \
   print_err_msg_exit "\
 Call to \"rocotorun\" failed with return code $?."
 rocotorun_output=$( cat "${tmp_fn}" )
@@ -167,7 +167,7 @@ rm "${tmp_fn}"
 error_msg="sbatch: error: Batch job submission failed:"
 while read -r line; do
   grep_output=$( printf "%s" "$line" | grep "${error_msg}" )
-  if [ $? -eq 0 ]; then
+  if [[ $? -eq 0 ]]; then
     wflow_status="FAILURE"
     break
   fi
@@ -191,7 +191,7 @@ Call to \"rocotostat\" failed with return code $?."
 error_msg="DEAD"
 while read -r line; do
   grep_output=$( printf "%s" "$line" | grep "${error_msg}" )
-  if [ $? -eq 0 ]; then
+  if [[ $? -eq 0 ]]; then
     wflow_status="FAILURE"
     break
   fi
@@ -266,7 +266,7 @@ while read -r line; do
 # the column titles.  Thus, we ignore it and consider only the remaining
 # lines (of which there is one per cycle).
 #
-  if [ $i -gt 0 ]; then
+  if [[ $"i" -gt 0 ]]; then
     im1=$((i-1))
     cycle_str[im1]=$( echo "$line" | sed -r -n -e "s/${regex_search}/\1/p" )
     cycle_status[im1]=$( echo "$line" | sed -r -n -e "s/${regex_search}/\2/p" )
@@ -285,7 +285,7 @@ done <<< "${rocotostat_output}"
 num_cycles_total=${#cycle_str[@]}
 num_cycles_completed=0
 for (( i=0; i<=$((num_cycles_total-1)); i++ )); do
-  if [ "${cycle_status[i]}" = "Done" ]; then
+  if [[ "${cycle_status[i]}" = "Done" ]]; then
     num_cycles_completed=$((num_cycles_completed+1))
   fi
 done
@@ -298,7 +298,7 @@ done
 #
 #-----------------------------------------------------------------------
 #
-if [ ${num_cycles_completed} -eq ${num_cycles_total} ]; then
+if [[ "${num_cycles_completed}" -eq ${num_cycles_total} ]]; then
   wflow_status="SUCCESS"
 fi
 #
@@ -331,8 +331,8 @@ End of output from script \"${scrfunc_fn}\".
 #
 #-----------------------------------------------------------------------
 #
-if [ "${wflow_status}" = "SUCCESS" ] || \
-   [ "${wflow_status}" = "FAILURE" ]; then
+if [[ "${wflow_status}" = "SUCCESS" ]] || \
+   [[ "${wflow_status}" = "FAILURE" ]]; then
 
   msg="
 The end-to-end run of the workflow for the forecast experiment specified
@@ -348,7 +348,7 @@ by expt_name has completed with the following workflow status (wflow_status):
 # Thus, there is no need to try to relaunch it.  We also append a message
 # to the completion message above to indicate this.
 #
-  if [ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]; then
+  if [[ "${USE_CRON_TO_RELAUNCH}" = "TRUE" ]]; then
 
     msg="${msg}\
 Thus, there is no need to relaunch the workflow via a cron job.  Removing
@@ -371,7 +371,7 @@ script for this experiment:
 # not being redirected to a file), then also print out the workflow
 # completion message to the screen.
 #
-  if [ -t 1 ]; then
+  if [[ -t 1 ]]; then
     printf "%s" "$msg"
   fi
 

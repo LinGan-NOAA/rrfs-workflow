@@ -23,7 +23,7 @@ function setfirewx {
    echo "Otherwise format is xx.x -yyy.y"
    read -r clat clon
 
-   if [ "${clat}" != "0.0" ] && [ "${clon}" != "0.0" ]; then
+   if [[ "${clat}" != "0.0" ]] && [[ "${clon}" != "0.0" ]]; then
     lat=${clat}
     lon=${clon}
    fi
@@ -50,7 +50,7 @@ module load intel/"${intel_ver}"
 module load ve/rrfs/"${rrfs_pythonve_ver}"
 
 COMOUT="/lfs/h1/ops/${envir}/com/rrfs/${rrfs_ver_2d}/firewx_input"
-if [ ! -e "${COMOUT}" ]; then
+if [[ ! -e "${COMOUT}" ]]; then
   mkdir -p "${COMOUT}"
 fi
 
@@ -66,7 +66,7 @@ rm rrfs_firewx_loc
 
 ###clear
 endloop=""
-until [ -n "${endloop}" ]
+until [[ -n "${endloop}" ]]
 do
  prcss_points="no"
  enter_dat="no"
@@ -119,9 +119,9 @@ do
   *) echo "You entered ${choice}...Invalid Choice...try again"  ;;
  esac
 
- if [ "${prcss_points}" = "yes" ]
+ if [[ "${prcss_points}" = "yes" ]]
   then
- if [ "${enter_dat}" = "yes" ]
+ if [[ "${enter_dat}" = "yes" ]]
   then
 
   for cyc in 00 06 12 18
@@ -129,7 +129,7 @@ do
 
 # Call setfirewx function to set latitude and longitude
    check="incomplete"
-   while [ "${check}" = "incomplete" ]
+   while [[ "${check}" = "incomplete" ]]
    do
     if ! setfirewx; then
      echo
@@ -158,7 +158,7 @@ do
    echo "${cyc}        ${lt}     ${lg}"
   done
 
-  if [ -s "${COMOUT}"/rrfs_firewx_loc ]; then
+  if [[ -s "${COMOUT}"/rrfs_firewx_loc ]]; then
     cp "${COMOUT}"/rrfs_firewx_loc "${COMOUT}"/rrfs_firewx_loc_prev
   fi
   cp rrfs_firewx_loc "${COMOUT}"/rrfs_firewx_loc

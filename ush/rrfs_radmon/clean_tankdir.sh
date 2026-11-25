@@ -39,7 +39,7 @@ set -x
          file="${file_name%.*}"
          file_extension="${file_name##*.}"
 
-         if [ "${file}" = "${subdir}" ]; then
+         if [[ "${file}" = "${subdir}" ]]; then
 
             #----------------------------------------------
             # Use date utility to determine number of days
@@ -52,7 +52,7 @@ set -x
             #----------------------------------------
             #  rm anything older than $days_to_keep
             #
-            if [ ${days} -gt "${days_to_keep}" ]; then
+            if [[ "${days}" -gt "${days_to_keep}" ]]; then
 
                cycle_dir="${TANKverf}/${dir}"
 
@@ -78,7 +78,7 @@ set -x
          file="${file_name%.*}"
          file_extension="${file_name##*.}"
 
-         if [ "${file}" = "${subdir}" ]; then
+         if [[ "${file}" = "${subdir}" ]]; then
 
             #----------------------------------------------
             # Use date utility to determine number of days
@@ -91,7 +91,7 @@ set -x
             #----------------------------------------
             #  rm anything older than $days_to_keep
             #
-            if [ ${days} -gt "${days_to_keep}" ]; then
+            if [[ "${days}" -gt "${days_to_keep}" ]]; then
                cycles="00 06 12 18"
 
                for cyc in ${cycles}; do
@@ -111,5 +111,5 @@ set -x
 
    echo "<-- clean_tankdir.sh"
 
-exit ${rc}
+exit "${rc}"
 

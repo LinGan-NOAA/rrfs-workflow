@@ -56,7 +56,7 @@ scrfunc_dir=$( dirname "${scrfunc_fp}" )
 #
 #-----------------------------------------------------------------------
 #
-if [ $# -eq 0 ] || [ $# -gt 2 ]; then
+if [[ $# -eq 0 ]] || [[ $# -gt 2 ]]; then
 
   printf "
 ERROR from script ${scrfunc_fn}:
@@ -79,7 +79,7 @@ fi
 #-----------------------------------------------------------------------
 #
 expt_dir="$1"
-if [ ! -d "${expt_dir}" ]; then
+if [[ ! -d "${expt_dir}" ]]; then
   print_err_msg_exit "\
 The specified experiment directory (expt_dir) does not exist:
   expt_dir = \"${expt_dir}\"
@@ -105,14 +105,14 @@ CDATE="${DATE_FIRST_CYCL[0]}${CYCL_HRS[0]}"
 #
 #-----------------------------------------------------------------------
 #
-if [ $# -eq 2 ]; then
+if [[ $# -eq 2 ]]; then
 
   baseline_dir="$2"
 
 else
 
   baseline_dir="/scratch2/BMC/det/regional_FV3/regr_baselines"
-  if [ -n "${PREDEF_GRID_NAME}" ]; then
+  if [[ -n "${PREDEF_GRID_NAME}" ]]; then
     baseline_dir="${baseline_dir}/${PREDEF_GRID_NAME}"
   else
     printf "\
@@ -131,7 +131,7 @@ fi
 #
 # Make sure that the baseline directory exists.
 #
-if [ ! -d "${baseline_dir}" ]; then
+if [[ ! -d "${baseline_dir}" ]]; then
   printf "\n
 A baseline directory corresponding to the configuration used in the ex-
 periment directory (expt_dir) does not exist:
@@ -244,9 +244,9 @@ for subdir in "${subdirs[@]}"; do
 #
 #-----------------------------------------------------------------------
 #
-    if [ "${file_ext}" = "nemsio" ] || [ "${file_ext}" = "grb" ]; then
+    if [[ "${file_ext}" = "nemsio" ]] || [[ "${file_ext}" = "grb" ]]; then
       compare_tool="cmp"
-    elif [ "${file_ext}" = "nc" ]; then
+    elif [[ "${file_ext}" = "nc" ]]; then
       compare_tool="nccmp -d"
     else
       printf "\
@@ -277,7 +277,7 @@ Exiting script with nonzero exit code.
     of the experiment directory is:  ${num_files}
 "
 
-    if [ "${num_files}" -eq "0" ]; then
+    if [[ "${num_files}" -eq "0" ]]; then
       printf "\
     Skipping comparison of files with extension \"${file_ext}\" in this subdirectory.
 "
@@ -286,7 +286,7 @@ Exiting script with nonzero exit code.
       fn_len_max=0
       for fn in *."${file_ext}"; do
         fn_len=${#fn}
-        if [ "${fn_len}" -gt "${fn_len_max}" ]; then
+        if [[ "${fn_len}" -gt "${fn_len_max}" ]]; then
           fn_len_max=${fn_len}
         fi
       done
@@ -299,7 +299,7 @@ Exiting script with nonzero exit code.
 
         fn1="${fn}"
         fn2="${baseline_dir}/${subdir}/${fn}"
-        if [ ! -e "${fn2}" ]; then  # Check if file exists in baseline directory.
+        if [[ ! -e "${fn2}" ]]; then  # Check if file exists in baseline directory.
 
           printf "
         File specified by fn exists in subdirectory \"${subdir}\" of the
@@ -324,7 +324,7 @@ Exiting script with nonzero exit code.
           printf "%s" "${msg}"
           eval_output=$( eval "${compare_tool}" "${fn1}" "${fn2}" 2>&1 )
 
-          if [ $? -eq 0 ]; then
+          if [[ $? -eq 0 ]]; then
             printf " Files are identical.\n"
           else
             printf " FILES ARE DIFFERENT!!!\n"
@@ -391,17 +391,17 @@ where
 
 "
 
-if [ ${nfiles_missing} -eq 0 ] && [ ${nfiles_different} -eq 0 ]; then
+if [[ "${nfiles_missing}" -eq 0 ]] && [[ "${nfiles_different}" -eq 0 ]]; then
   result_str="PASS :)"
   exit_code=0
 else
 
   exit_code=1
-  if [ ${nfiles_missing} -ne 0 ] && [ ${nfiles_different} -eq 0 ]; then
+  if [[ "${nfiles_missing}" -ne 0 ]] && [[ "${nfiles_different}" -eq 0 ]]; then
     result_str="FAIL (due to missing files)"
-  elif [ ${nfiles_missing} -eq 0 ] && [ ${nfiles_different} -ne 0 ]; then
+  elif [[ "${nfiles_missing}" -eq 0 ]] && [[ "${nfiles_different}" -ne 0 ]]; then
     result_str="FAIL (due to differing files)"
-  elif [ ${nfiles_missing} -ne 0 ] && [ ${nfiles_different} -ne 0 ]; then
+  elif [[ "${nfiles_missing}" -ne 0 ]] && [[ "${nfiles_different}" -ne 0 ]]; then
     result_str="FAIL (due to missing and differing files)"
   fi
 
@@ -418,4 +418,4 @@ printf "Final result of regression test:  ${result_str}\n"
 #
 { restore_shell_opts; } > /dev/null 2>&1
 
-exit ${exit_code}
+exit "${exit_code}"

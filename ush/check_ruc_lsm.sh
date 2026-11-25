@@ -82,9 +82,9 @@ function check_ruc_lsm() {
   regex_search="^[ ]*<scheme>(${ruc_lsm_name})<\/scheme>[ ]*$"
   ruc_lsm_name_or_null=$( sed -r -n -e "s/${regex_search}/\1/p" "${ccpp_phys_suite_fp}" )
 
-  if [ "${ruc_lsm_name_or_null}" = "${ruc_lsm_name}" ]; then
+  if [[ "${ruc_lsm_name_or_null}" = "${ruc_lsm_name}" ]]; then
     sdf_uses_ruc_lsm="TRUE"
-  elif [ -z "${ruc_lsm_name_or_null}" ]; then
+  elif [[ -z "${ruc_lsm_name_or_null}" ]]; then
     sdf_uses_ruc_lsm="FALSE"
   else
     print_err_msg_exit "\

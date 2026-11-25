@@ -32,7 +32,7 @@ echo "All suites currently loaded on that server will be affected:"
 printf '  %s\n' "${suites}"
 echo "Afterward, reload each experiment you want using its start_retro.sh --hold."
 read -r -p "Type TERMINATE to continue: " confirmation
-if [ "${confirmation}" != "TERMINATE" ]; then
+if [[ "${confirmation}" != "TERMINATE" ]]; then
   echo "Server termination cancelled."
   exit 1
 fi

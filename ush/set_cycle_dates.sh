@@ -76,7 +76,7 @@ function set_cycle_dates() {
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${date_end}" -lt "${date_start}" ]; then
+  if [[ "${date_end}" -lt "${date_start}" ]]; then
     print_err_msg_exit "\
 End date (date_end) must be at or after start date (date_start):
   date_start = \"${date_start}\"
@@ -98,7 +98,7 @@ End date (date_end) must be at or after start date (date_start):
 #
   all_cdates=()
   date_crnt="${date_start}"
-  while [ "${date_crnt}" -le "${date_end}" ]; do
+  while [[ "${date_crnt}" -le "${date_end}" ]]; do
     all_cdates+=( "${cycle_hrs[@]/#/${date_crnt}}" )
     date_crnt=$( date -d "${date_crnt} + 1 days" +%Y%m%d )
   done

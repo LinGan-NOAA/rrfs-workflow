@@ -21,7 +21,7 @@ set -x
   local func_name="${FUNCNAME[0]}"
   local input uc_input
 
-  if [ "$#" -eq 1 ]; then
+  if [[ "$#" -eq 1 ]]; then
     input="$1"
   else
 
@@ -43,11 +43,11 @@ where:
   fi
 
   uc_input=$(echo_uppercase "${input}")
-  if [ "${uc_input}" = "TRUE" ] || \
-       [ "${uc_input}" = "YES" ]; then
+  if [[ "${uc_input}" = "TRUE" ]] || \
+       [[ "${uc_input}" = "YES" ]]; then
     echo "TRUE"
-  elif [ "${uc_input}" = "FALSE" ] || \
-         [ "${uc_input}" = "NO" ]; then
+  elif [[ "${uc_input}" = "FALSE" ]] || \
+         [[ "${uc_input}" = "NO" ]]; then
     echo "FALSE"
   fi
 

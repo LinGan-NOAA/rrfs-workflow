@@ -39,7 +39,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 3 ]; then
+  if [[ "$#" -ne 3 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -104,11 +104,11 @@ where the arguments are defined as follows:
   i_min=0
   i_max=$( bc -l <<< "${num_valid_RESes} - 1" )
 
-  if [ "${RES}" -le "${RES_array[${i_min}]}" ]; then
+  if [[ "${RES}" -le "${RES_array[${i_min}]}" ]]; then
 
     prop="${prop_array[${i_min}]}"
 
-  elif [ "${RES}" -gt "${RES_array[${i_max}]}" ]; then
+  elif [[ "${RES}" -gt "${RES_array[${i_max}]}" ]]; then
 
     prop="${prop_array[${i_max}]}"
 
@@ -116,8 +116,8 @@ where the arguments are defined as follows:
 
     for (( i=0; i<$((num_valid_RESes-1)); i++ )); do
 
-      if [ "${RES}" -gt "${RES_array[${i}]}" ] && \
-         [ "${RES}" -le "${RES_array[${i}+1]}" ]; then
+      if [[ "${RES}" -gt "${RES_array[${i}]}" ]] && \
+         [[ "${RES}" -le "${RES_array[${i}+1]}" ]]; then
         RES1="${RES_array[${i}]}"
         RES2="${RES_array[${i}+1]}"
         prop1="${prop_array[${i}]}"

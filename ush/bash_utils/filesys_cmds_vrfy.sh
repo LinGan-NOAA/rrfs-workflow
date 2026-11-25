@@ -61,7 +61,7 @@ set -x
 #
   local caller_name="main"
   local caller_fp=""
-  if [ -z "${BASH_SOURCE[2]-x}" ]; then
+  if [[ -z "${BASH_SOURCE[2]-x}" ]]; then
     caller_fp=$( readlink -f "${BASH_SOURCE[2]}" )
     local caller_fn=$( basename "${caller_fp}" )
     local caller_dir=$( dirname "${caller_fp}" )
@@ -86,7 +86,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -lt 1 ]; then
+  if [[ "$#" -lt 1 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -136,7 +136,7 @@ are zero or more options and arguments to pass to that command.
 #
 #-----------------------------------------------------------------------
 #
-  if [ -n "${output}" ]; then
+  if [[ -n "${output}" ]]; then
     local double_space="  "
     output="${double_space}${output}"
     output=${output/$'\n'/$'\n'${double_space}}
@@ -149,14 +149,14 @@ are zero or more options and arguments to pass to that command.
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${caller_name}" = "main" ] || \
-     [ "${caller_name}" = "script" ]; then
+  if [[ "${caller_name}" = "main" ]] || \
+     [[ "${caller_name}" = "script" ]]; then
     local script_or_function="the script"
   else
     local script_or_function="function \"${caller_name}\""
   fi
 
-  if [ ${exit_code} -ne 0 ]; then
+  if [[ "${exit_code}" -ne 0 ]]; then
 
     print_err_msg_exit "\
 Call to function \"${cmd}_vrfy\" failed.  This function was called from
@@ -180,7 +180,7 @@ ${output}"
 #
 #-----------------------------------------------------------------------
 #
-  if [ "${cmd}" = "cd" ]; then
+  if [[ "${cmd}" = "cd" ]]; then
     "${cmd}" "$@" > /dev/null
   fi
 #
@@ -191,7 +191,7 @@ ${output}"
 #
 #-----------------------------------------------------------------------
 #
-  if [ -n "${output}" ]; then
+  if [[ -n "${output}" ]]; then
 
     print_info_msg "
 \"${cmd}_vrfy\" operation returned with a message.  This command was

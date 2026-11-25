@@ -22,7 +22,7 @@ export FIX_GSI="${FIXrrfs}/gsi"
 #
 #-----------------------------------------------------------------------
 #
-scrfunc_fp=$( readlink -f "${BASH_SOURCE[0]}" )
+scrfunc_fp=$( readlink -f "${BASH_SOURCE[[0]]}" )
 scrfunc_fn=$( basename "${scrfunc_fp}" )
 scrfunc_dir=$( dirname "${scrfunc_fp}" )
 #
@@ -166,7 +166,7 @@ fi
 run_lightning=false
 obs_file=${obspath_tmp}/${obsfileprefix}.t${HH}${SUBH}z.lghtng.tm00.bufr_d
 print_info_msg "${VERBOSE}" "obsfile is ${obs_file}"
-if [ -r "${obs_file}" ]; then
+if [[ -r "${obs_file}" ]]; then
    cpreq -p "${obs_file}" "lghtngbufr"
    run_lightning=true
 else
@@ -224,7 +224,7 @@ if [[ "${run_lightning}" == true ]]; then
   ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_lightning
-  if [ -f "${shared_output_data}"/rrfs.t"${HH}"z.LightningInFV3LAM.bin ] && [ -s "${DATA}"/LightningInFV3LAM.dat ]; then
+  if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.LightningInFV3LAM.bin ]] && [[ -s "${DATA}"/LightningInFV3LAM.dat ]]; then
     rm -f "${shared_output_data}"/rrfs.t"${HH}"z.LightningInFV3LAM.bin
   fi
   cpreq "${DATA}"/LightningInFV3LAM.dat "${shared_output_data}"/rrfs.t"${HH}"z.LightningInFV3LAM.bin
@@ -240,7 +240,7 @@ fi
 obs_file=${obspath_tmp}/${obsfileprefix}.t${HH}${SUBH}z.lgycld.tm00.bufr_d
 print_info_msg "${VERBOSE}" "obsfile is ${obs_file}"
 run_cloud=false
-if [ -r "${obs_file}" ]; then
+if [[ -r "${obs_file}" ]]; then
    cpreq -p "${obs_file}" "lgycld.bufr_d"
    run_cloud=true
 else
@@ -274,7 +274,7 @@ fi
 #                   = 1 for FV3LAM
 #-----------------------------------------------------------------------
 #
-if [ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ] || [ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_13km" ]; then
+if [[ "${PREDEF_GRID_NAME}" = "GSD_RAP13km" ]] || [[ "${PREDEF_GRID_NAME}" = "RRFS_CONUS_13km" ]]; then
    npts_rad_number=1
    metar_impact_radius_number=9
 else
@@ -306,8 +306,8 @@ if [[ "${run_cloud}" == true ]]; then
   export err=$?; err_chk
   mv errfile errfile_larccld
 
-  if [ -s NASALaRC_cloud4fv3.bin ]; then
-    if [ -f "${shared_output_data}"/rrfs.t"${HH}"z.NASALaRC_cloud4fv3.bin ] && [ -s "${DATA}"/NASALaRC_cloud4fv3.bin ]; then
+  if [[ -s NASALaRC_cloud4fv3.bin ]]; then
+    if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.NASALaRC_cloud4fv3.bin ]] && [[ -s "${DATA}"/NASALaRC_cloud4fv3.bin ]]; then
       rm -f "${shared_output_data}"/rrfs.t"${HH}"z.NASALaRC_cloud4fv3.bin
     fi
     cpreq "${DATA}"/NASALaRC_cloud4fv3.bin "${shared_output_data}"/rrfs.t"${HH}"z.NASALaRC_cloud4fv3.bin
@@ -324,7 +324,7 @@ fi
 obs_file=${obspath_tmp}/${obsfileprefix}.t${HH}${SUBH}z.prepbufr.tm00
 print_info_msg "${VERBOSE}" "obsfile is ${obs_file}"
 run_metar=false
-if [ -r "${obs_file}" ]; then
+if [[ -r "${obs_file}" ]]; then
    cpreq -p "${obs_file}" "prepbufr"
    run_metar=true
 else
@@ -385,7 +385,7 @@ if [[ "${run_metar}" == true ]]; then
   ${APRUN} "${EXECrrfs}"/${pgm} >>"${pgmout}" 2>errfile
   export err=$?; err_chk
   mv errfile errfile_metarcld
-  if [ -f "${shared_output_data}"/rrfs.t"${HH}"z.fv3_metarcloud.bin ] && [ -s "${DATA}"/fv3_metarcloud.bin ]; then
+  if [[ -f "${shared_output_data}"/rrfs.t"${HH}"z.fv3_metarcloud.bin ]] && [[ -s "${DATA}"/fv3_metarcloud.bin ]]; then
     rm -f "${shared_output_data}"/rrfs.t"${HH}"z.fv3_metarcloud.bin
   fi
   cpreq "${DATA}"/fv3_metarcloud.bin "${shared_output_data}"/rrfs.t"${HH}"z.fv3_metarcloud.bin

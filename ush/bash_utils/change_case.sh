@@ -43,7 +43,7 @@ set -x
 
   local input
 
-  if [ "$#" -eq 1 ]; then
+  if [[ "$#" -eq 1 ]]; then
 
     input="$1"
 
@@ -116,7 +116,7 @@ set -x
 
   local input
 
-  if [ "$#" -eq 1 ]; then
+  if [[ "$#" -eq 1 ]]; then
 
     input="$1"
 

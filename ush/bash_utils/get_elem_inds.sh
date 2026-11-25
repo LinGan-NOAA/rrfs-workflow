@@ -36,7 +36,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
+  if [[ "$#" -ne 2 ]] && [[ "$#" -ne 3 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -103,7 +103,7 @@ The arguments to this function are defined as follows:
   str_to_match="$2"
 
   inds_to_return="all"
-  if [ "$#" -eq 3 ]; then
+  if [[ "$#" -eq 3 ]]; then
     inds_to_return="$3"
   fi
 
@@ -137,10 +137,10 @@ The arguments to this function are defined as follows:
 
   num_elems=${#array[@]}
   for (( n=0; n<num_elems; n++ )); do
-    if [ "${array[${n}]}" = "${str_to_match}" ]; then
+    if [[ "${array[${n}]}" = "${str_to_match}" ]]; then
       match_inds[num_matches]=n
       num_matches=$((num_matches+1))
-      if [ "${inds_to_return}" = "first" ]; then
+      if [[ "${inds_to_return}" = "first" ]]; then
         break
       fi
     fi
@@ -154,8 +154,8 @@ The arguments to this function are defined as follows:
 #-----------------------------------------------------------------------
 #
   num_matches=${#match_inds[@]}
-  if [ "${num_matches}" -gt 0 ]; then
-    if [ "${inds_to_return}" = "last" ]; then
+  if [[ "${num_matches}" -gt 0 ]]; then
+    if [[ "${inds_to_return}" = "last" ]]; then
       printf "%s\n" "${match_inds[-1]}"
     else
       printf "%s\n" "${match_inds[@]}"

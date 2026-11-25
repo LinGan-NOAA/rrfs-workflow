@@ -36,7 +36,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 3 ]; then
+  if [[ "$#" -ne 3 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -104,7 +104,7 @@ The arguments to this function are defined as follows:
 #
 #-----------------------------------------------------------------------
 #
-  if [ ! -f "${externals_cfg_fp}" ]; then
+  if [[ ! -f "${externals_cfg_fp}" ]]; then
     print_err_msg_exit "\
 The specified manage_externals configuration file (externals_cfg_fp)
 does not exist:
@@ -197,7 +197,7 @@ does not exist:
 #
 #-----------------------------------------------------------------------
 #
-  if [ -z "${line}" ]; then
+  if [[ -z "${line}" ]]; then
 
     print_err_msg_exit "\
 In the specified manage_externals configuration file (externals_cfg_fp),

@@ -37,7 +37,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -ne 1 ]; then
+  if [[ "$#" -ne 1 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:

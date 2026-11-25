@@ -37,7 +37,7 @@ set -x
 #
 #-----------------------------------------------------------------------
 #
-  if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  if [[ "$#" -lt 2 ]] || [[ "$#" -gt 3 ]]; then
 
     print_err_msg_exit "
 Incorrect number of arguments specified:
@@ -92,7 +92,7 @@ where the arguments are defined as follows:
   valid_var_values_at="${valid_var_values_array_name}[@]"
   valid_var_values=("${!valid_var_values_at}")
 
-  if [ "$#" -eq 3 ]; then
+  if [[ "$#" -eq 3 ]]; then
     err_msg="$3"
   else
     err_msg="\
