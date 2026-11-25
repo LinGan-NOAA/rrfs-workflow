@@ -1,247 +1,347 @@
 #!/usr/bin/env python3
-"""Build a Markdown summary of ShellCheck findings, checked files, excluded files, and inline line skips.
+"""Render a sanitized sticky PR summary comment for NCO Consistency Bash CI.
 
-Location: .github/workflows/tools/bash_analysis_summary.py
-Reads (any may be missing/empty):
-  <dir>/shellcheck.checkstyle.xml       ShellCheck findings in Checkstyle XML format
-  <dir>/excluded_files_from_list.txt    Configured rules and matched files from exclude_file_list_Bash.lst
-  <dir>/inline_skipped_directives.txt   file:line:directive records for # ci-skip, # ci-ignore, # shellcheck disable
-  <dir>/nco_bash_ci_audit.log           Full line-by-line execution log of checked files, skipped files, and skipped lines
-Writes the sanitized Markdown comment body to <out>.
-Prints "1" to stdout if ShellCheck findings exist, else "0".
+Reads Checkstyle XML diagnostics and execution/skip audit logs produced by
+NCO_Consistency_Bash.yml, enforces a strict 10 MB artifact size ceiling
+(CWE-770), escapes Markdown table cells, surfaces prominent inline skip alerts
+(CWE-285), and caps output under GitHub's 65,536-character PR comment limit.
 """
-# Import os module for file existence, file size, path joining, and environment variable lookups
+
 import os
-# Import sys module for reading positional CLI arguments
 import sys
-# Import ElementTree for safe standard-library XML parsing (immune to XXE entity expansion)
 import xml.etree.ElementTree as ET
 
-# Define HTML comment marker used to identify and update a single sticky PR comment in place
-MARKER = "<!-- bash-code-analysis-summary -->"
-# Define maximum table rows rendered per section to keep PR comments readable and compact
+# Hidden HTML marker used to locate and update the single sticky PR comment.
+SUMMARY_MARKER = "<!-- bash-code-analysis-summary -->"
+# Maximum bytes permitted per untrusted artifact file (10 MB ceiling).
+MAX_ARTIFACT_BYTES = 10 * 1024 * 1024
+# Maximum table rows rendered per section to keep PR comments readable.
 MAX_ROWS = 50
+# Maximum total character length to stay safely below GitHub's 65,536 limit.
+MAX_COMMENT_CHARS = 65000
 
 
-def parse_checkstyle(path):
-    """Parse ShellCheck checkstyle XML safely without executing or interpolating untrusted values."""
-    # Initialize list to store parsed finding dictionaries
-    rows = []
-    # Return empty list immediately if XML file does not exist or has zero bytes
-    if not (os.path.exists(path) and os.path.getsize(path) > 0):
-        return rows
-    try:
-        # Parse XML document root using ElementTree
-        root = ET.parse(path).getroot()
-    except ET.ParseError:
-        # Return empty list gracefully if XML is malformed or truncated
-        return rows
-    # Iterate over each <file> node in the Checkstyle XML report
-    for f in root.findall("file"):
-        # Retrieve file path attribute
-        name = f.get("name", "")
-        # Normalize leading ./ prefix for clean repository-relative display
-        if name.startswith("./"):
-            name = name[2:]
-        # Iterate over each <error> child node inside the file
-        for e in f.findall("error"):
-            # Append structured finding record to result list
-            rows.append({
-                "file": name,
-                "line": e.get("line", ""),
-                "col": e.get("column", ""),
-                "severity": e.get("severity", ""),
-                "message": e.get("message", ""),
-                "source": e.get("source", ""),
-            })
-    # Return all parsed ShellCheck findings
-    return rows
+def _validate_file_size(path):
+    """Ensure an artifact file exists and does not exceed MAX_ARTIFACT_BYTES.
+
+    Args:
+        path: Filesystem path to an artifact file.
+
+    Returns:
+        True if the file exists, is non-empty, and is within the size ceiling.
+
+    Raises:
+        ValueError: If the file exceeds MAX_ARTIFACT_BYTES.
+    """
+    # Return False immediately if the optional artifact file is absent.
+    if not os.path.isfile(path):
+        return False
+    # Measure exact byte length on disk before reading into memory.
+    size = os.path.getsize(path)
+    # Abort if an untrusted artifact exceeds the 10 MB safety ceiling.
+    if size > MAX_ARTIFACT_BYTES:
+        raise ValueError(
+            f"Artifact {os.path.basename(path)} ({size} bytes) exceeds "
+            f"MAX_ARTIFACT_BYTES ({MAX_ARTIFACT_BYTES})."
+        )
+    # Return True only when the file contains data to parse.
+    return size > 0
 
 
 def md_cell(text):
-    """Neutralize characters that could break Markdown table cells or inject formatting."""
-    # Convert None to empty string and coerce non-string inputs to str
-    text = "" if text is None else str(text)
-    # Escape pipe delimiters, replace CR/LF with spaces, and strip outer whitespace
-    return (
-        text.replace("|", "\\|")
-        .replace("\r", " ")
-        .replace("\n", " ")
-        .strip()
-    )
+    """Escape pipe characters and strip newlines for safe Markdown table cells.
+
+    Args:
+        text: Raw diagnostic message, file path, or directive string.
+
+    Returns:
+        Single-line string safe for embedding inside a Markdown table cell.
+    """
+    # Convert non-string values safely to string.
+    raw = "" if text is None else str(text)
+    # Strip carriage returns and replace newlines with spaces.
+    cleaned = raw.replace("\r", "").replace("\n", " ").strip()
+    # Escape Markdown pipe delimiters to prevent table column injection.
+    return cleaned.replace("|", "\\|")
+
+
+def parse_checkstyle(path):
+    """Parse ShellCheck Checkstyle XML safely using xml.etree.ElementTree.
+
+    Args:
+        path: Path to shellcheck.checkstyle.xml.
+
+    Returns:
+        List of finding dicts containing file, line, column, severity,
+        source, and message keys.
+    """
+    # Return an empty list if the XML file is missing or empty.
+    if not _validate_file_size(path):
+        return []
+    # Parse XML with standard ElementTree (immune to external entity XXE).
+    tree = ET.parse(path)
+    root = tree.getroot()
+    findings = []
+    # Iterate over every <file> element in the Checkstyle report.
+    for file_el in root.findall("file"):
+        fname = file_el.attrib.get("name", "")
+        # Normalize leading ./ prefix for clean display in PR tables.
+        if fname.startswith("./"):
+            fname = fname[2:]
+        # Extract each <error> child element under the file node.
+        for err_el in file_el.findall("error"):
+            findings.append(
+                {
+                    "file": fname,
+                    "line": err_el.attrib.get("line", "0"),
+                    "column": err_el.attrib.get("column", "0"),
+                    "severity": err_el.attrib.get("severity", "warning"),
+                    "source": err_el.attrib.get("source", "shellcheck"),
+                    "message": err_el.attrib.get("message", ""),
+                }
+            )
+    return findings
 
 
 def read_excluded_entries(path):
-    """Read configured rules and matched files from excluded_files_from_list.txt."""
-    # Initialize list for raw patterns read from exclude_file_list_Bash.lst
-    configured = []
-    # Initialize list for repository files skipped due to matching an exclusion rule
+    """Read configured exclusion rules and matched skipped files from log.
+
+    Args:
+        path: Path to excluded_files_from_list.txt.
+
+    Returns:
+        Tuple of (rules_list, matched_files_list).
+    """
+    # Return empty lists when the exclusion log is absent or empty.
+    if not _validate_file_size(path):
+        return [], []
+    rules = []
     matched = []
-    # Return empty lists if audit file is missing or empty
-    if not (os.path.exists(path) and os.path.getsize(path) > 0):
-        return configured, matched
-    # Open audit file with UTF-8 replacement decoding for safety
-    with open(path, "r", errors="replace") as fh:
-        # Process file line by line
-        for raw in fh:
-            # Strip surrounding whitespace
-            line = raw.strip()
-            # Skip blank lines
-            if not line:
+    # Read lines safely using UTF-8 with replacement for malformed bytes.
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            text = line.strip()
+            if not text:
                 continue
-            # Separate matched file entries from configured rule entries
-            if line.startswith("MATCHED_FILE: "):
-                matched.append(line[len("MATCHED_FILE: "):])
+            # Separate matched file records from configured .lst patterns.
+            if text.startswith("MATCHED_FILE: "):
+                matched.append(text[len("MATCHED_FILE: "):])
             else:
-                configured.append(line)
-    # Return both lists
-    return configured, matched
+                rules.append(text)
+    return rules, matched
 
 
 def read_inline_skips(path):
-    """Read exact file:line:directive records from inline_skipped_directives.txt."""
-    # Initialize list of inline skip dictionaries
+    """Read file:line:directive inline skip records from log.
+
+    Args:
+        path: Path to inline_skipped_directives.txt.
+
+    Returns:
+        List of (file_path, line_num, directive_text) tuples.
+    """
+    # Return an empty list when no inline skips were recorded.
+    if not _validate_file_size(path):
+        return []
     skips = []
-    # Return empty list if inline skips audit file is missing or empty
-    if not (os.path.exists(path) and os.path.getsize(path) > 0):
-        return skips
-    # Open inline skips file safely
-    with open(path, "r", errors="replace") as fh:
-        # Parse each file:line:directive line
-        for raw in fh:
-            # Trim outer whitespace
-            line = raw.strip()
-            # Ignore empty lines
-            if not line:
+    # Parse each colon-delimited file:line:directive entry.
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            text = line.strip()
+            if not text:
                 continue
-            # Split into at most 3 parts (file, line number, directive comment)
-            parts = line.split(":", 2)
-            # Store valid 3-part records
+            parts = text.split(":", 2)
             if len(parts) == 3:
-                skips.append({"file": parts[0], "line": parts[1], "directive": parts[2]})
-    # Return parsed inline skip entries
+                skips.append((parts[0], parts[1], parts[2]))
     return skips
 
 
-def read_checked_files(audit_log_path):
-    """Extract checked file records from nco_bash_ci_audit.log."""
-    # Initialize list for checked file entries
+def read_audit_summary(path):
+    """Extract checked files, global skips, and NCO rule failures from audit.
+
+    Args:
+        path: Path to nco_bash_ci_audit.log.
+
+    Returns:
+        Tuple of (checked_files, global_skips, nco_failures).
+    """
+    # Return empty collections if audit log is absent or empty.
+    if not _validate_file_size(path):
+        return [], [], []
     checked = []
-    # Return empty list if audit log does not exist or is empty
-    if not (os.path.exists(audit_log_path) and os.path.getsize(audit_log_path) > 0):
-        return checked
-    # Read audit log lines safely
-    with open(audit_log_path, "r", errors="replace") as fh:
-        # Scan for CHECKED_FILE entries
-        for raw in fh:
-            # Strip outer whitespace
-            line = raw.strip()
-            # Extract entries prefixed with CHECKED_FILE:
-            if line.startswith("CHECKED_FILE: "):
-                checked.append(line[len("CHECKED_FILE: "):])
-    # Return checked file summary strings
-    return checked
+    global_skips = []
+    nco_failures = []
+    # Classify structured audit prefixes emitted by NCO_Consistency_Bash.yml.
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            text = line.strip()
+            if text.startswith("CHECKED_FILE: "):
+                checked.append(text[len("CHECKED_FILE: "):])
+            elif text.startswith("GLOBAL_SKIP: "):
+                global_skips.append(text[len("GLOBAL_SKIP: "):])
+            elif text.startswith("FAIL ("):
+                nco_failures.append(text)
+    return checked, global_skips, nco_failures
 
 
-def main():
-    """Generate Markdown summary comment from diagnostics and audit logs."""
-    # Read diagnostics directory path from argv[1] (default current directory)
-    d = sys.argv[1] if len(sys.argv) > 1 else "."
-    # Read output Markdown file path from argv[2] (default comment.md)
-    out = sys.argv[2] if len(sys.argv) > 2 else "comment.md"
-    # Read optional GitHub Actions run URL from environment
-    run_url = os.environ.get("RUN_URL", "")
+def build_comment(diag_dir, run_url=""):
+    """Construct the complete sanitized Markdown PR summary comment.
 
-    # Parse ShellCheck XML findings
-    sc = parse_checkstyle(os.path.join(d, "shellcheck.checkstyle.xml"))
-    # Parse global exclusion rules and matched skipped files
-    configured_excl, matched_excl = read_excluded_entries(os.path.join(d, "excluded_files_from_list.txt"))
-    # Parse file:line inline skip directives
-    inline_skips = read_inline_skips(os.path.join(d, "inline_skipped_directives.txt"))
-    # Parse checked file entries from main audit log
-    checked_files = read_checked_files(os.path.join(d, "nco_bash_ci_audit.log"))
-    # Determine whether any ShellCheck findings exist
-    has_findings = bool(sc)
+    Args:
+        diag_dir: Directory containing downloaded artifact files.
+        run_url: Optional URL to the analyzer GitHub Actions run.
 
-    # Start Markdown output with sticky comment marker and heading
-    lines = [MARKER, "## Bash code analysis", ""]
-
-    # Format ShellCheck results table or clean pass badge
+    Returns:
+        Tuple of (markdown_text, has_findings_bool).
+    """
+    # Parse Checkstyle XML findings and all structured audit logs.
+    findings = parse_checkstyle(
+        os.path.join(diag_dir, "shellcheck.checkstyle.xml")
+    )
+    rules, matched_excl = read_excluded_entries(
+        os.path.join(diag_dir, "excluded_files_from_list.txt")
+    )
+    inline_skips = read_inline_skips(
+        os.path.join(diag_dir, "inline_skipped_directives.txt")
+    )
+    checked, global_skips, nco_failures = read_audit_summary(
+        os.path.join(diag_dir, "nco_bash_ci_audit.log")
+    )
+    has_findings = bool(findings or nco_failures)
+    # Start comment with hidden sticky marker and title heading.
+    lines = [SUMMARY_MARKER, "## NCO Consistency Bash Analysis", ""]
+    # Render prominent uncollapsed security/audit warning if skips exist.
+    if inline_skips or global_skips or matched_excl:
+        lines.append(
+            f"> :warning: **Audit Alert:** {len(global_skips)} global "
+            f"override(s), {len(matched_excl)} excluded file(s), and "
+            f"{len(inline_skips)} inline skip directive(s) were detected. "
+            "Review the audit details below."
+        )
+        lines.append("")
+    # Render pass/fail status banner and findings tables.
     if not has_findings:
-        lines.append(":white_check_mark: **shellcheck** found no issues.")
+        lines.append(
+            ":white_check_mark: **ShellCheck** and **NCO Bash conventions** "
+            "found no issues."
+        )
     else:
-        lines.append("### shellcheck &mdash; {} finding(s)".format(len(sc)))
-        lines.append("")
-        lines.append("| File | Line:Col | Severity | Rule | Message |")
-        lines.append("| --- | --- | --- | --- | --- |")
-        # Render up to MAX_ROWS ShellCheck findings
-        for r in sc[:MAX_ROWS]:
-            rule = r["source"].split(".")[-1] if r["source"] else ""
-            lines.append("| `{}` | {}:{} | {} | {} | {} |".format(
-                md_cell(r["file"]), md_cell(r["line"]), md_cell(r["col"]),
-                md_cell(r["severity"]), md_cell(rule), md_cell(r["message"]),
-            ))
-        # Indicate truncation if findings exceed MAX_ROWS
-        if len(sc) > MAX_ROWS:
+        lines.append(
+            f":x: Found **{len(findings)}** ShellCheck finding(s) and "
+            f"**{len(nco_failures)}** NCO convention failure(s)."
+        )
+        # Render NCO convention failures list when present.
+        if nco_failures:
             lines.append("")
-            lines.append("_...and {} more. See the full run for details._".format(len(sc) - MAX_ROWS))
+            lines.append("### NCO Convention & Security Failures")
+            for item in nco_failures[:MAX_ROWS]:
+                lines.append(f"- `{md_cell(item)}`")
+            if len(nco_failures) > MAX_ROWS:
+                extra = len(nco_failures) - MAX_ROWS
+                lines.append(f"- *...and {extra} more failure(s) truncated.*")
+        # Render Checkstyle findings table when present.
+        if findings:
+            lines.append("")
+            lines.append("### ShellCheck Findings")
+            lines.append("| File | Line | Severity | Rule | Message |")
+            lines.append("| --- | --- | --- | --- | --- |")
+            for item in findings[:MAX_ROWS]:
+                lines.append(
+                    f"| `{md_cell(item['file'])}` | {md_cell(item['line'])} "
+                    f"| {md_cell(item['severity'])} "
+                    f"| `{md_cell(item['source'])}` "
+                    f"| {md_cell(item['message'])} |"
+                )
+            if len(findings) > MAX_ROWS:
+                extra = len(findings) - MAX_ROWS
+                lines.append(
+                    f"\n*Showing first {MAX_ROWS} of {len(findings)} "
+                    f"findings ({extra} truncated).*"
+                )
+    # Append collapsible audit section for checked files, exclusions, skips.
     lines.append("")
-
-    # Render collapsible audit section showing checked files, excluded files, and skipped lines
-    lines.append("### Checked files, excluded files, and inline line skips")
+    lines.append("### Checked Files, Exclusions & Inline Line Skips")
+    summary_hdr = (
+        f"Checked ({len(checked)}) | Excluded via list "
+        f"({len(rules)} rules, {len(matched_excl)} files) | "
+        f"Inline skips ({len(inline_skips)})"
+    )
+    lines.append(f"<details><summary>{summary_hdr}</summary>")
     lines.append("")
-    lines.append("<details><summary>Checked ({}) | Excluded via list ({} rules, {} files) | Inline line skips ({})</summary>".format(
-        len(checked_files), len(configured_excl), len(matched_excl), len(inline_skips)
-    ))
+    # List checked files (capped at MAX_ROWS).
+    lines.append("**Checked files:**")
+    if checked:
+        for entry in checked[:MAX_ROWS]:
+            lines.append(f"- `{md_cell(entry)}`")
+    else:
+        lines.append("- *None*")
+    # List matched excluded files (capped at MAX_ROWS).
     lines.append("")
-    # List checked files and which rules ran on each
-    if checked_files:
-        lines.append("**Checked files:**")
-        for c in checked_files[:MAX_ROWS]:
-            lines.append("- `{}`".format(md_cell(c)))
-        lines.append("")
-    # List configured exclude_file_list_Bash.lst entries
-    if configured_excl:
-        lines.append("**Configured `exclude_file_list_Bash.lst` entries:**")
-        for entry in configured_excl[:MAX_ROWS]:
-            lines.append("- `{}`".format(md_cell(entry)))
-        lines.append("")
-    # List exact repository files skipped due to exclude_file_list_Bash.lst
+    lines.append("**Skipped files (matched exclusion list):**")
     if matched_excl:
-        lines.append("**Skipped files (matched `exclude_file_list_Bash.lst`):**")
-        for m in matched_excl[:MAX_ROWS]:
-            lines.append("- `{}`".format(md_cell(m)))
-        lines.append("")
-    # Render table of exact file:line inline skip directives
+        for entry in matched_excl[:MAX_ROWS]:
+            lines.append(f"- `{md_cell(entry)}`")
+    else:
+        lines.append("- *None*")
+    # Render inline skip directives table (capped at MAX_ROWS).
+    lines.append("")
+    lines.append(
+        "**Skipped lines (`# ci-skip`, `# ci-ignore`, `# shellcheck`):**"
+    )
     if inline_skips:
-        lines.append("**Skipped lines (`# ci-skip`, `# ci-ignore`, `# shellcheck disable`):**")
         lines.append("")
         lines.append("| File | Line | Directive |")
         lines.append("| --- | --- | --- |")
-        for s in inline_skips[:MAX_ROWS]:
-            lines.append("| `{}` | {} | `{}` |".format(
-                md_cell(s["file"]), md_cell(s["line"]), md_cell(s["directive"])
-            ))
-        lines.append("")
-    lines.append("</details>")
+        for fpath, lnum, dtext in inline_skips[:MAX_ROWS]:
+            lines.append(
+                f"| `{md_cell(fpath)}` | {md_cell(lnum)} "
+                f"| `{md_cell(dtext)}` |"
+            )
+    else:
+        lines.append("- *None*")
     lines.append("")
-
-    # Append link to GitHub Actions workflow run if RUN_URL is provided
+    lines.append("</details>")
+    # Append workflow run link when provided via RUN_URL environment variable.
     if run_url:
         lines.append("")
-        lines.append("[View the analysis run]({})".format(run_url))
-
-    # Join lines and enforce GitHub's 65536-character PR comment limit
+        lines.append(
+            f"[View full workflow run and audit log]({md_cell(run_url)})"
+        )
+    # Assemble body and enforce GitHub's 65,000-character safety cap.
     body = "\n".join(lines) + "\n"
-    if len(body) > 65000:
-        body = body[:64000] + "\n_...comment truncated._\n"
-    # Write final Markdown content to output file
-    with open(out, "w") as fh:
+    if len(body) > MAX_COMMENT_CHARS:
+        notice = "\n\n*Comment truncated to fit GitHub length limit.*\n"
+        body = body[: MAX_COMMENT_CHARS - len(notice)] + notice
+    return body, has_findings
+
+
+def main(argv=None):
+    """CLI entrypoint: generate PR comment file and print '1' or '0'.
+
+    Args:
+        argv: Optional list of CLI arguments [diag_dir, output_md_path].
+
+    Returns:
+        Exit code 0 on success, 2 on invalid arguments.
+    """
+    args = sys.argv[1:] if argv is None else argv
+    # Require diagnostics directory and output Markdown path arguments.
+    if len(args) != 2:
+        sys.stderr.write(
+            "Usage: bash_analysis_summary.py <diag_dir> <output_md>\n"
+        )
+        return 2
+    diag_dir, out_path = args[0], args[1]
+    run_url = os.environ.get("RUN_URL", "")
+    # Generate sanitized Markdown body and finding indicator.
+    body, has_findings = build_comment(diag_dir, run_url=run_url)
+    # Write comment Markdown using UTF-8 encoding.
+    with open(out_path, "w", encoding="utf-8") as fh:
         fh.write(body)
-    # Print 1 if ShellCheck findings exist, else 0
+    # Print "1" if findings exist, "0" otherwise (matches GFS/NCO contract).
     print("1" if has_findings else "0")
+    return 0
 
 
 if __name__ == "__main__":
-    # Invoke main entry point when executed as a script
-    main()
+    sys.exit(main())
