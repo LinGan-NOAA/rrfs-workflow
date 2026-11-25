@@ -28,6 +28,12 @@ on:
         required: false
         type: string
         default: "ci_artifact_bash"
+      # Optional relative folder inside GITHUB_WORKSPACE to mirror ci_artifact.
+      workspace_artifact_dir:
+        description: "Optional relative folder in workspace to mirror ci_artifact."
+        required: false
+        type: string
+        default: ""
   # Allow manual workflow dispatch from the GitHub Actions UI.
   workflow_dispatch:
 
@@ -533,6 +539,66 @@ jobs:
           # Record final exit status in centralized ci_log before returning.
           log_msg "SUMMARY: bash-check exiting with status ${failed}"
           exit "${failed}"
+
+      # Optionally mirror staged ci_artifact into a validated workspace folder.
+      - name: Mirror ci_artifact into workspace folder
+        id: mirror-artifact
+        if: ${{ always() && inputs.workspace_artifact_dir != '' }}
+        shell: bash
+        env:
+          # Pass caller-configured relative workspace folder safely via env.
+          MIRROR_DIR: ${{ inputs.workspace_artifact_dir }}
+        run: |
+          # Enable strict error propagation for security containment checks.
+          set -euo pipefail
+          # Source staging directory remains ${RUNNER_TEMP}/ci_artifact.
+          src_dir="${RUNNER_TEMP:-/tmp}/ci_artifact"
+          ci_log="${src_dir}/ci_artifact_bash.log"
+          # Skip mirroring cleanly if no staged artifact directory exists.
+          [[ -d "${src_dir}" ]] || exit 0
+          # Trim leading ./ and trailing / from configured relative path.
+          rel_dir="${MIRROR_DIR#./}"
+          rel_dir="${rel_dir%/}"
+          # Reject empty, absolute, backslash, parent-traversal, or .git paths.
+          if [[ -z "${rel_dir}" || "${rel_dir}" == /* || "${rel_dir}" == *\\* ]]; then
+            echo "Security error: workspace_artifact_dir must be a relative path."
+            exit 1
+          fi
+          if [[ "${rel_dir}" == ".." || "${rel_dir}" == *"../"* || "${rel_dir}" == *"/.." ]]; then
+            echo "Security error: workspace_artifact_dir cannot contain '..'."
+            exit 1
+          fi
+          if [[ "${rel_dir}" == ".git" || "${rel_dir}" == ".git/"* || "${rel_dir}" == *"/.git"* ]]; then
+            echo "Security error: workspace_artifact_dir cannot target .git."
+            exit 1
+          fi
+          # Verify target path resolves strictly inside GITHUB_WORKSPACE.
+          ws_root="$(realpath -e "${GITHUB_WORKSPACE:-$(pwd)}")"
+          target_dir="$(realpath -m -- "${ws_root}/${rel_dir}")"
+          if [[ "${target_dir}" != "${ws_root}/"* ]]; then
+            echo "Security error: workspace_artifact_dir escapes GITHUB_WORKSPACE."
+            exit 1
+          fi
+          # Guard against regular file or symlink collision at target_dir.
+          if [[ -e "${target_dir}" || -L "${target_dir}" ]] && [[ ! -d "${target_dir}" ]]; then
+            rm -f "${target_dir}"
+          fi
+          # Create target directory safely inside workspace.
+          if [[ ! -d "${target_dir}" ]]; then
+            mkdir -p "${target_dir}"
+          fi
+          # Re-verify canonical path after creation to block symlink traversal.
+          real_target="$(realpath -e -- "${target_dir}")"
+          if [[ "${real_target}" != "${ws_root}/"* ]]; then
+            echo "Security error: resolved mirror directory escapes workspace."
+            exit 1
+          fi
+          # Record mirror location in ci_artifact_bash.log before copying.
+          if [[ -f "${ci_log}" ]]; then
+            printf 'MIRRORED_ARTIFACT: %s\n' "${rel_dir}" | tee -a "${ci_log}"
+          fi
+          # Copy only regular files from ${RUNNER_TEMP}/ci_artifact to workspace.
+          find "${src_dir}" -maxdepth 1 -type f -exec cp -f -t "${real_target}" -- {} +
 
       # Display ci_artifact_bash.log directly on the GitHub Actions run page.
       - name: Write GitHub Step Summary
